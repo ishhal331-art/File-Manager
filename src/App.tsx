@@ -12,6 +12,29 @@ export default function App() {
 
   useEffect(() => {
     checkSession();
+
+    // Prevent browser back button from closing application or leaving site
+    try {
+      window.history.pushState({ app: 'portal_home' }, '', window.location.href);
+    } catch (err) {
+      console.warn('History API initialized:', err);
+    }
+
+    const handlePopState = () => {
+      // Dispatch custom backbutton event so open modals or sub-views close smoothly
+      const backEvt = new CustomEvent('app:backbutton', { cancelable: true });
+      window.dispatchEvent(backEvt);
+
+      // Re-push history entry so the browser stays within the website home page
+      try {
+        window.history.pushState({ app: 'portal_home' }, '', window.location.href);
+      } catch (err) {
+        // ignore
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   const checkSession = async () => {

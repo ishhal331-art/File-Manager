@@ -82,21 +82,30 @@ export const api = {
     });
   },
 
+  updateProfile: async (profileData: {
+    fullName?: string;
+    email?: string;
+    phone?: string;
+    employeeId?: string;
+  }): Promise<{ user: User; message: string }> => {
+    return request('/api/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(profileData),
+    });
+  },
+
   // Users Management (Admin/Manager)
   getUsers: async (): Promise<{ users: User[] }> => {
     return request('/api/users');
   },
 
   createUser: async (userData: {
-    fullName: string;
     username: string;
     password: string;
     confirmPassword: string;
     role: string;
-    email?: string;
-    phone?: string;
-    employeeId?: string;
-    status: string;
+    fullName?: string;
+    status?: string;
   }) => {
     return request('/api/users', {
       method: 'POST',

@@ -45,9 +45,25 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
     }
   };
 
-  const salesFile = files.find((f) => f.fileType === 'SALES');
-  const purchaseFile = files.find((f) => f.fileType === 'PURCHASE');
-  const bankFile = files.find((f) => f.fileType === 'BANK_STATEMENT');
+  const salesFiles = files.filter((f) => f.fileType === 'SALES');
+  const purchaseFiles = files.filter((f) => f.fileType === 'PURCHASE');
+  const bankFiles = files.filter((f) => f.fileType === 'BANK_STATEMENT');
+
+  // Handle browser back button within ClientDashboard so pressing Back doesn't leave the app
+  useEffect(() => {
+    const handleBackButton = (e: Event) => {
+      if (selectedFileForViewer) {
+        e.preventDefault();
+        setSelectedFileForViewer(null);
+      } else if (activeTab !== 'dashboard') {
+        e.preventDefault();
+        setActiveTab('dashboard');
+      }
+    };
+
+    window.addEventListener('app:backbutton', handleBackButton);
+    return () => window.removeEventListener('app:backbutton', handleBackButton);
+  }, [selectedFileForViewer, activeTab]);
 
   const handleUploadSuccess = (newFile: UploadedFile) => {
     setFiles((prev) => [newFile, ...prev]);
@@ -136,9 +152,9 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
           <div className="space-y-6 sm:space-y-8 animate-fade-in" id="client-dashboard-tab-view">
             {/* PROGRESS WHEEL SECTION */}
             <ProgressWheel
-              salesUploaded={!!salesFile}
-              purchaseUploaded={!!purchaseFile}
-              bankUploaded={!!bankFile}
+              salesUploaded={salesFiles.length > 0}
+              purchaseUploaded={purchaseFiles.length > 0}
+              bankUploaded={bankFiles.length > 0}
             />
 
             {/* THREE FILE UPLOAD CARDS */}
@@ -161,9 +177,10 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                   title="1. Sales File"
                   description="Upload revenue invoices, sales ledger, or customer transaction lists."
                   badgeNumber="01"
-                  currentFile={salesFile}
+                  categoryFiles={salesFiles}
                   onUploadSuccess={handleUploadSuccess}
                   onViewFile={(file) => setSelectedFileForViewer(file)}
+                  onDeleteFile={handleDeleteFile}
                 />
 
                 {/* 2. PURCHASE FILE */}
@@ -172,9 +189,10 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                   title="2. Purchase File"
                   description="Upload vendor bills, supplier accounts, or operating expense receipts."
                   badgeNumber="02"
-                  currentFile={purchaseFile}
+                  categoryFiles={purchaseFiles}
                   onUploadSuccess={handleUploadSuccess}
                   onViewFile={(file) => setSelectedFileForViewer(file)}
+                  onDeleteFile={handleDeleteFile}
                 />
 
                 {/* 3. BANK STATEMENT */}
@@ -183,9 +201,10 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                   title="3. Bank Statement"
                   description="Upload official monthly bank statements, credit logs, or deposit records."
                   badgeNumber="03"
-                  currentFile={bankFile}
+                  categoryFiles={bankFiles}
                   onUploadSuccess={handleUploadSuccess}
                   onViewFile={(file) => setSelectedFileForViewer(file)}
+                  onDeleteFile={handleDeleteFile}
                 />
               </div>
             </div>

@@ -314,6 +314,30 @@ app.post("/api/auth/change-password", (req: Request, res: Response) => {
   return res.json({ success: true, message: "Password changed successfully." });
 });
 
+app.put("/api/auth/profile", (req: Request, res: Response) => {
+  const currentUser = getAuthenticatedUser(req);
+  if (!currentUser) {
+    return res.status(401).json({ error: "Unauthorized." });
+  }
+
+  const { fullName, email, phone, employeeId } = req.body;
+
+  const user = usersStore.get(currentUser.id);
+  if (!user) {
+    return res.status(404).json({ error: "User record not found." });
+  }
+
+  if (fullName !== undefined) user.fullName = String(fullName).trim();
+  if (email !== undefined) user.email = String(email).trim();
+  if (phone !== undefined) user.phone = String(phone).trim();
+  if (employeeId !== undefined) user.employeeId = String(employeeId).trim();
+
+  usersStore.set(user.id, user);
+
+  const { passwordHash, ...updatedProfile } = user;
+  return res.json({ user: updatedProfile, message: "Personal profile updated successfully." });
+});
+
 // API ROUTE 2: USER MANAGEMENT (Admin/Manager)
 app.get("/api/users", (req: Request, res: Response) => {
   const currentUser = getAuthenticatedUser(req);
@@ -335,10 +359,10 @@ app.post("/api/users", (req: Request, res: Response) => {
     return res.status(403).json({ error: "Forbidden. Admin or Manager permissions required to add users." });
   }
 
-  const { fullName, username, password, confirmPassword, role, email, phone, employeeId, status } = req.body;
+  const { username, password, confirmPassword, role, fullName, status } = req.body;
 
-  if (!fullName || !username || !password || !confirmPassword) {
-    return res.status(400).json({ error: "Full Name, Username, Password, and Confirm Password are required." });
+  if (!username || !password || !confirmPassword) {
+    return res.status(400).json({ error: "Username, Password, and Confirm Password are required." });
   }
 
   // Password confirmation check
@@ -362,13 +386,15 @@ app.post("/api/users", (req: Request, res: Response) => {
   // Managers can only create standard USER accounts; Admins can choose
   const userRole = currentUser.role === "MANAGER" ? "USER" : (role === "MANAGER" ? "MANAGER" : "USER");
 
+  const displayName = fullName ? String(fullName).trim() : cleanUsername;
+
   const newUser: StoredUser = {
     id: `usr_${Math.random().toString(36).substring(2, 9)}`,
     username: cleanUsername,
-    fullName: String(fullName).trim(),
-    email: email ? String(email).trim() : undefined,
-    phone: phone ? String(phone).trim() : undefined,
-    employeeId: employeeId ? String(employeeId).trim() : `EMP-${Math.floor(100 + Math.random() * 900)}`,
+    fullName: displayName,
+    email: undefined,
+    phone: undefined,
+    employeeId: `EMP-${Math.floor(100 + Math.random() * 900)}`,
     role: userRole,
     status: status === "DISABLED" ? "DISABLED" : "ACTIVE",
     createdAt: new Date().toISOString(),

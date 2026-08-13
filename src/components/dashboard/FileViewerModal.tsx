@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UploadedFile } from '../../types';
 import { X, Save, Plus, Trash2, Download, Sparkles, FileText, CheckCircle2 } from 'lucide-react';
 import { api } from '../../lib/api';
@@ -16,6 +16,14 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
   const [extractedText, setExtractedText] = useState<string>(file.extractedText || '');
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  useEffect(() => {
+    const handleBackButton = () => {
+      onClose();
+    };
+    window.addEventListener('app:backbutton', handleBackButton);
+    return () => window.removeEventListener('app:backbutton', handleBackButton);
+  }, [onClose]);
 
   const handleRowChange = (index: number, field: string, value: any) => {
     const updated = [...extractedData];

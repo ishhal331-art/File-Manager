@@ -1,17 +1,17 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { FileType, UploadedFile } from '../../types';
 import { api } from '../../lib/api';
-import { Upload, CheckCircle2, FileSpreadsheet, Eye, Sparkles, RefreshCw } from 'lucide-react';
+import { Upload, CheckCircle2, FileSpreadsheet, Eye, Sparkles, RefreshCw, Download, Trash2 } from 'lucide-react';
 
 interface Props {
   fileType: FileType;
   title: string;
   description: string;
   badgeNumber: string;
-  currentFile?: UploadedFile;
+  categoryFiles: UploadedFile[];
   onUploadSuccess: (file: UploadedFile) => void;
   onViewFile: (file: UploadedFile) => void;
-  onDeleteFile?: (fileId: string) => void;
+  onDeleteFile: (fileId: string) => void;
 }
 
 export const UploadCard: React.FC<Props> = ({
@@ -19,7 +19,7 @@ export const UploadCard: React.FC<Props> = ({
   title,
   description,
   badgeNumber,
-  currentFile,
+  categoryFiles = [],
   onUploadSuccess,
   onViewFile,
   onDeleteFile,
@@ -27,7 +27,17 @@ export const UploadCard: React.FC<Props> = ({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState<string>('Q3 2026');
+  const [selectedFileId, setSelectedFileId] = useState<string>('ALL');
+
+  // Keep selected file in sync if files change
+  useEffect(() => {
+    if (categoryFiles.length > 0 && selectedFileId !== 'ALL') {
+      const exists = categoryFiles.some((f) => f.id === selectedFileId);
+      if (!exists) {
+        setSelectedFileId(categoryFiles[0].id);
+      }
+    }
+  }, [categoryFiles, selectedFileId]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -60,10 +70,10 @@ export const UploadCard: React.FC<Props> = ({
         mimeType: file.type || 'application/octet-stream',
         base64Data,
         textContent,
-        period: selectedPeriod,
       });
 
       onUploadSuccess(resData.file);
+      setSelectedFileId(resData.file.id);
     } catch (err: any) {
       alert(`Upload error: ${err.message || 'Error uploading file'}`);
     } finally {
@@ -92,9 +102,25 @@ export const UploadCard: React.FC<Props> = ({
     }
   };
 
+  const handleDownloadSingle = (file: UploadedFile) => {
+    if (!file.fileUrl) return;
+    const a = document.createElement('a');
+    a.href = file.fileUrl;
+    a.download = `${file.fileType}_${file.originalName}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  const handleDownloadAll = () => {
+    categoryFiles.forEach((file) => handleDownloadSingle(file));
+  };
+
+  const activeSelectedFile = categoryFiles.find((f) => f.id === selectedFileId);
+
   return (
     <div 
-      className={`bg-[#FCFBF8] rounded-[32px] p-6 shadow-[0_18px_40px_rgba(110,85,190,0.09)] border border-[#F0ECE1] flex flex-col justify-between relative transition-all duration-300 hover:shadow-[0_22px_45px_rgba(110,85,190,0.15)] ${
+      className={`bg-[#FCFBF8] rounded-[32px] p-5 sm:p-6 shadow-[0_18px_40px_rgba(110,85,190,0.09)] border border-[#F0ECE1] flex flex-col justify-between relative transition-all duration-300 hover:shadow-[0_22px_45px_rgba(110,85,190,0.15)] ${
         dragActive ? 'border-[#8364ED] ring-4 ring-[#8364ED]/20 bg-[#F6F3FE]' : ''
       }`}
       onDragOver={handleDragOver}
@@ -117,16 +143,22 @@ export const UploadCard: React.FC<Props> = ({
           <span className="w-8 h-8 rounded-2xl bg-[#F0EBFA] text-[#8364ED] font-extrabold text-xs flex items-center justify-center shadow-inner">
             {badgeNumber}
           </span>
-          {currentFile ? (
-            <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-2xs">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-              Uploaded
+          
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-extrabold text-[#8364ED] bg-[#F0EBFA] border border-[#E2D8F7] px-2.5 py-0.5 rounded-full shadow-2xs">
+              Count: {categoryFiles.length}
             </span>
-          ) : (
-            <span className="text-[11px] font-semibold text-slate-500 bg-[#F2ECE0] px-3 py-1 rounded-full">
-              Action Required
-            </span>
-          )}
+            {categoryFiles.length > 0 ? (
+              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                Uploaded
+              </span>
+            ) : (
+              <span className="text-[11px] font-semibold text-slate-500 bg-[#F2ECE0] px-2.5 py-0.5 rounded-full">
+                Action Required
+              </span>
+            )}
+          </div>
         </div>
 
         <h3 className="text-lg font-bold text-slate-800 tracking-tight" id={`title-${fileType.toLowerCase()}`}>
@@ -136,29 +168,33 @@ export const UploadCard: React.FC<Props> = ({
           {description}
         </p>
 
-        {/* PERIOD SELECTOR */}
-        <div className="mt-3 flex items-center justify-between gap-2 pt-2 border-t border-[#F0ECE1]">
-          <span className="text-[11px] font-bold text-slate-500">Filing Period:</span>
-          <select
-            value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value)}
-            className="text-[11px] font-extrabold text-[#8364ED] bg-[#F0EBFA] border border-[#E2D8F7] px-2.5 py-1 rounded-xl focus:outline-none cursor-pointer"
-          >
-            <option value="Q3 2026">Q3 2026 (Current)</option>
-            <option value="Q4 2026">Q4 2026</option>
-            <option value="Q1 2026">Q1 2026</option>
-            <option value="Q2 2026">Q2 2026</option>
-            <option value="August 2026">August 2026</option>
-            <option value="September 2026">September 2026</option>
-            <option value="October 2026">October 2026</option>
-          </select>
-        </div>
-
         {/* AI CAPABILITY TAG */}
         <div className="mt-2.5 flex items-center gap-1.5 text-[10px] font-semibold text-[#8364ED] bg-[#F3E3FD]/60 px-2.5 py-1 rounded-xl w-max border border-[#E9D9FA]">
           <Sparkles className="w-3 h-3" />
           <span>Supports Excel, Word, PDF, JPG/PNG (AI OCR)</span>
         </div>
+
+        {/* FILE SELECTION DROPDOWN BY FILE NAME */}
+        {categoryFiles.length > 0 && (
+          <div className="mt-3 pt-2.5 border-t border-[#F0ECE1] space-y-1.5">
+            <label className="block text-[11px] font-extrabold text-slate-600">
+              Uploaded Files in Section ({categoryFiles.length}):
+            </label>
+            <select
+              value={selectedFileId}
+              onChange={(e) => setSelectedFileId(e.target.value)}
+              className="w-full text-xs font-bold text-slate-800 bg-[#F0EBFA] border border-[#E2D8F7] px-3 py-2 rounded-xl focus:outline-none focus:border-[#8364ED] cursor-pointer truncate"
+              id={`select-file-${fileType.toLowerCase()}`}
+            >
+              <option value="ALL">📁 All Files in Section ({categoryFiles.length})</option>
+              {categoryFiles.map((f, idx) => (
+                <option key={f.id} value={f.id}>
+                  📄 #{idx + 1}: {f.originalName} ({(f.size / 1024).toFixed(1)} KB)
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* FILE STATUS / DISPLAY OR UPLOAD AREA */}
@@ -166,60 +202,141 @@ export const UploadCard: React.FC<Props> = ({
         {uploading ? (
           <div className="p-5 rounded-2xl bg-[#F5F1FD] border border-[#E8DEF8] flex flex-col items-center text-center gap-2 animate-pulse">
             <RefreshCw className="w-6 h-6 text-[#8364ED] animate-spin" />
-            <p className="text-xs font-bold text-slate-800">Processing File Ingestion...</p>
+            <p className="text-xs font-bold text-slate-800">Processing Ingestion...</p>
             <p className="text-[11px] text-slate-500">Executing AI OCR document extraction</p>
           </div>
-        ) : currentFile ? (
+        ) : categoryFiles.length > 0 ? (
           <div className="p-3.5 rounded-2xl bg-[#F8F6EF] border border-[#EAE5D7] space-y-3">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="p-2 rounded-xl bg-white border border-[#E2DDD0] text-[#8364ED] shadow-xs shrink-0">
-                  <FileSpreadsheet className="w-4 h-4" />
+            {selectedFileId === 'ALL' ? (
+              /* ALL FILES VIEW */
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs font-bold text-slate-700 pb-1 border-b border-[#EAE4D6]">
+                  <span>Showing {categoryFiles.length} file(s)</span>
+                  <span className="text-[10px] text-[#8364ED]">Lifetime Uploads</span>
                 </div>
-                <div className="truncate">
-                  <div className="flex items-center gap-1">
-                    <p className="text-xs font-bold text-slate-800 truncate" title={currentFile.originalName}>
-                      {currentFile.originalName}
-                    </p>
-                    <span className="text-[9px] font-black text-[#8364ED] bg-white px-1.5 py-0.5 rounded border border-[#E2D8F7]">
-                      {currentFile.period || 'Q3 2026'}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-slate-400">
-                    {(currentFile.size / 1024).toFixed(1)} KB • {new Date(currentFile.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
+                <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1">
+                  {categoryFiles.map((f) => (
+                    <div key={f.id} className="p-2 bg-white rounded-xl border border-[#E2DDD0] flex items-center justify-between gap-2 text-xs">
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-800 truncate" title={f.originalName}>{f.originalName}</p>
+                        <p className="text-[9px] text-slate-400">{(f.size / 1024).toFixed(1)} KB • {new Date(f.uploadedAt).toLocaleTimeString()}</p>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => onViewFile(f)}
+                          className="p-1 text-slate-600 hover:text-[#8364ED] hover:bg-[#F0EBFA] rounded-lg"
+                          title="Inspect Data"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadSingle(f)}
+                          className="p-1 text-slate-600 hover:text-[#8364ED] hover:bg-[#F0EBFA] rounded-lg"
+                          title="Download"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDeleteFile(f.id)}
+                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"
+                          title="Delete file"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleDownloadAll}
+                    className="w-full py-2 px-2.5 rounded-xl bg-white hover:bg-[#F3EFE6] text-slate-700 border border-[#E0DBCF] text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5 text-[#8364ED]" />
+                    <span>Download All</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (fileInputRef.current) fileInputRef.current.click();
+                    }}
+                    className="w-full py-2 px-2.5 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white border border-[#7150EA] text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>+ Upload New</span>
+                  </button>
                 </div>
               </div>
-            </div>
+            ) : activeSelectedFile ? (
+              /* SINGLE SELECTED FILE VIEW */
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="p-2 rounded-xl bg-white border border-[#E2DDD0] text-[#8364ED] shadow-xs shrink-0">
+                      <FileSpreadsheet className="w-4 h-4" />
+                    </div>
+                    <div className="truncate">
+                      <p className="text-xs font-bold text-slate-800 truncate" title={activeSelectedFile.originalName}>
+                        {activeSelectedFile.originalName}
+                      </p>
+                      <p className="text-[10px] text-slate-400">
+                        {(activeSelectedFile.size / 1024).toFixed(1)} KB • {new Date(activeSelectedFile.uploadedAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
 
-            {/* ACTION BUTTONS */}
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <button
-                type="button"
-                onClick={() => onViewFile(currentFile)}
-                className="w-full py-2 px-2.5 rounded-xl bg-white hover:bg-[#F3EFE6] text-slate-700 border border-[#E0DBCF] text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer"
-                id={`btn-view-${fileType.toLowerCase()}`}
-              >
-                <Eye className="w-3.5 h-3.5 text-[#8364ED]" />
-                <span>Inspect</span>
-              </button>
+                  <button
+                    type="button"
+                    onClick={() => onDeleteFile(activeSelectedFile.id)}
+                    className="p-1.5 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer shrink-0"
+                    title="Delete file"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  if (fileInputRef.current) fileInputRef.current.click();
-                }}
-                className="w-full py-2 px-2.5 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white border border-[#7150EA] text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer"
-                id={`btn-upload-more-${fileType.toLowerCase()}`}
-                title="Upload another file for this category"
-              >
-                <Upload className="w-3.5 h-3.5" />
-                <span>+ Upload New</span>
-              </button>
-            </div>
+                {/* ACTION BUTTONS */}
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => onViewFile(activeSelectedFile)}
+                    className="w-full py-2 px-2 rounded-xl bg-white hover:bg-[#F3EFE6] text-slate-700 border border-[#E0DBCF] text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer"
+                  >
+                    <Eye className="w-3.5 h-3.5 text-[#8364ED]" />
+                    <span>Inspect</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleDownloadSingle(activeSelectedFile)}
+                    className="w-full py-2 px-2 rounded-xl bg-[#F0EBFA] hover:bg-[#E2D6FA] text-[#8364ED] border border-[#E2D8F7] text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download</span>
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (fileInputRef.current) fileInputRef.current.click();
+                  }}
+                  className="w-full py-2 px-2.5 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white border border-[#7150EA] text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>+ Upload Another File</span>
+                </button>
+              </div>
+            ) : null}
           </div>
         ) : (
-          /* UPLOAD PROMPT BUTTON */
+          /* UPLOAD PROMPT BUTTON WHEN NO FILES EXIST */
           <button
             type="button"
             onClick={() => {
@@ -239,3 +356,4 @@ export const UploadCard: React.FC<Props> = ({
     </div>
   );
 };
+

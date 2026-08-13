@@ -43,6 +43,37 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
     loadData();
   }, []);
 
+  // Handle browser back button in ManagerDashboard so pressing Back closes modals or returns to tracker
+  useEffect(() => {
+    const handleBackButton = (e: Event) => {
+      if (selectedFileForViewer) {
+        e.preventDefault();
+        setSelectedFileForViewer(null);
+      } else if (selectedUserForReview) {
+        e.preventDefault();
+        setSelectedUserForReview(null);
+      } else if (showAddUserModal) {
+        e.preventDefault();
+        setShowAddUserModal(false);
+      } else if (viewingUserDetail) {
+        e.preventDefault();
+        setViewingUserDetail(null);
+      } else if (activeTab !== 'users') {
+        e.preventDefault();
+        setActiveTab('users');
+      }
+    };
+
+    window.addEventListener('app:backbutton', handleBackButton);
+    return () => window.removeEventListener('app:backbutton', handleBackButton);
+  }, [
+    selectedFileForViewer,
+    selectedUserForReview,
+    showAddUserModal,
+    viewingUserDetail,
+    activeTab,
+  ]);
+
   const loadData = async () => {
     setLoading(true);
     try {
@@ -141,8 +172,8 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
 
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newFullName.trim() || !newUsername.trim() || !newPassword || !newConfirmPassword) {
-      alert('Please fill in all required user creation fields.');
+    if (!newUsername.trim() || !newPassword || !newConfirmPassword) {
+      alert('Username, password, and confirm password are required.');
       return;
     }
 
@@ -154,26 +185,20 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
     setCreatingUser(true);
     try {
       await api.createUser({
-        fullName: newFullName.trim(),
+        fullName: newFullName.trim() || newUsername.trim(),
         username: newUsername.trim(),
         password: newPassword,
         confirmPassword: newConfirmPassword,
         role: 'USER',
-        email: newEmail.trim() || undefined,
-        phone: newPhone.trim() || undefined,
-        employeeId: newEmployeeId.trim() || undefined,
         status: 'ACTIVE',
       });
 
-      alert('User account created successfully!');
+      alert('User account created successfully! The client can log in and update their personal profile.');
       setShowAddUserModal(false);
       setNewFullName('');
       setNewUsername('');
       setNewPassword('');
       setNewConfirmPassword('');
-      setNewEmail('');
-      setNewPhone('');
-      setNewEmployeeId('');
       await loadData();
     } catch (err: any) {
       alert(`User creation error: ${err.message || 'Could not create user.'}`);
@@ -524,69 +549,36 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
 
             <div className="flex items-center gap-2.5 pb-2 border-b border-[#F2ECE0]">
               <UserPlus className="w-5 h-5 text-[#8364ED]" />
-              <h3 className="text-base font-extrabold text-slate-800">Add New Client User</h3>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-800">Add New Client Account</h3>
+                <p className="text-[11px] text-slate-500">
+                  Assign username, password, and CLIENT role. Users self-manage their personal contact details upon login.
+                </p>
+              </div>
             </div>
 
             <form onSubmit={handleCreateUser} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Username (Unique ID) *</label>
                 <input
                   type="text"
-                  value={newFullName}
-                  onChange={(e) => setNewFullName(e.target.value)}
-                  placeholder="e.g. Robert Vance"
-                  className="w-full px-3.5 py-2 bg-[#F7F5EE] border border-[#E8E4D8] rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#8364ED]"
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  placeholder="e.g. client_rvance"
+                  className="w-full px-3.5 py-2 bg-[#F7F5EE] border border-[#E8E4D8] rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:border-[#8364ED]"
                   required
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Username *</label>
-                  <input
-                    type="text"
-                    value={newUsername}
-                    onChange={(e) => setNewUsername(e.target.value)}
-                    placeholder="e.g. rvance"
-                    className="w-full px-3.5 py-2 bg-[#F7F5EE] border border-[#E8E4D8] rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#8364ED]"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Employee ID</label>
-                  <input
-                    type="text"
-                    value={newEmployeeId}
-                    onChange={(e) => setNewEmployeeId(e.target.value)}
-                    placeholder="e.g. EMP-204"
-                    className="w-full px-3.5 py-2 bg-[#F7F5EE] border border-[#E8E4D8] rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#8364ED]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
-                  <input
-                    type="email"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    placeholder="robert@example.com"
-                    className="w-full px-3.5 py-2 bg-[#F7F5EE] border border-[#E8E4D8] rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#8364ED]"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Phone Number</label>
-                  <input
-                    type="tel"
-                    value={newPhone}
-                    onChange={(e) => setNewPhone(e.target.value)}
-                    placeholder="+1 (555) 000-0000"
-                    className="w-full px-3.5 py-2 bg-[#F7F5EE] border border-[#E8E4D8] rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#8364ED]"
-                  />
-                </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Display Full Name (Optional)</label>
+                <input
+                  type="text"
+                  value={newFullName}
+                  onChange={(e) => setNewFullName(e.target.value)}
+                  placeholder="e.g. Robert Vance (Defaults to Username if empty)"
+                  className="w-full px-3.5 py-2 bg-[#F7F5EE] border border-[#E8E4D8] rounded-xl text-xs text-slate-800 focus:outline-none focus:border-[#8364ED]"
+                />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -615,6 +607,11 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
                 </div>
               </div>
 
+              <div className="p-3 bg-[#F8F6EF] rounded-xl border border-[#EAE5D7] text-xs">
+                <p className="font-bold text-slate-700">Assigned Role: <span className="text-[#8364ED]">USER / CLIENT</span></p>
+                <p className="text-[11px] text-slate-500 mt-0.5">Managers assign standard client accounts.</p>
+              </div>
+
               <div className="pt-3 flex justify-end gap-2">
                 <button
                   type="button"
@@ -629,7 +626,7 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
                   className="px-5 py-2 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white text-xs font-bold flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
-                  <span>{creatingUser ? 'Creating...' : 'Register User'}</span>
+                  <span>{creatingUser ? 'Creating...' : 'Create Account'}</span>
                 </button>
               </div>
             </form>
