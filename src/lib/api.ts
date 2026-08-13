@@ -1,18 +1,19 @@
 import { User, UploadedFile, AppNotification, FileType } from '../types';
 
-let authToken: string | null = localStorage.getItem('clay_portal_token');
+let authToken: string | null = localStorage.getItem('files_manager_token') || localStorage.getItem('clay_portal_token');
 
 export function setAuthToken(token: string | null) {
   authToken = token;
   if (token) {
-    localStorage.setItem('clay_portal_token', token);
+    localStorage.setItem('files_manager_token', token);
   } else {
+    localStorage.removeItem('files_manager_token');
     localStorage.removeItem('clay_portal_token');
   }
 }
 
 export function getAuthToken(): string | null {
-  return authToken || localStorage.getItem('clay_portal_token');
+  return authToken || localStorage.getItem('files_manager_token') || localStorage.getItem('clay_portal_token');
 }
 
 async function request(endpoint: string, options: RequestInit = {}) {
@@ -133,6 +134,7 @@ export const api = {
     mimeType: string;
     base64Data?: string;
     textContent?: string;
+    period?: string;
   }): Promise<{ file: UploadedFile; message: string }> => {
     return request('/api/files/upload', {
       method: 'POST',
@@ -140,16 +142,16 @@ export const api = {
     });
   },
 
+  deleteFile: async (fileId: string) => {
+    return request(`/api/files/${fileId}`, {
+      method: 'DELETE',
+    });
+  },
+
   updateFileData: async (fileId: string, extractedData: any[], extractedText?: string) => {
     return request(`/api/files/${fileId}/data`, {
       method: 'PUT',
       body: JSON.stringify({ extractedData, extractedText }),
-    });
-  },
-
-  deleteFile: async (fileId: string) => {
-    return request(`/api/files/${fileId}`, {
-      method: 'DELETE',
     });
   },
 
@@ -169,6 +171,12 @@ export const api = {
     return request(`/api/notifications/${notificationId}/reply`, {
       method: 'POST',
       body: JSON.stringify({ message }),
+    });
+  },
+
+  deleteNotification: async (notificationId: string) => {
+    return request(`/api/notifications/${notificationId}`, {
+      method: 'DELETE',
     });
   },
 };

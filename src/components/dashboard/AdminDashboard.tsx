@@ -23,6 +23,9 @@ import {
   Check,
   Send,
   MessageSquare,
+  Calendar,
+  Clock,
+  Trash2,
 } from 'lucide-react';
 
 interface Props {
@@ -139,10 +142,23 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
     try {
       const res = await api.getFiles(user.id);
       setSelectedUserFiles(res.files);
+      setSelectedFileIdsForDownload(res.files.map((f) => f.id));
     } catch (err) {
       console.error('Error loading user files:', err);
     } finally {
       setLoadingSelectedUserFiles(false);
+    }
+  };
+
+  const handleDeleteFileInAdmin = async (fileId: string) => {
+    if (!confirm('Are you sure you want to delete this file from the system?')) return;
+    try {
+      await api.deleteFile(fileId);
+      setSelectedUserFiles((prev) => prev.filter((f) => f.id !== fileId));
+      setSelectedFileIdsForDownload((prev) => prev.filter((id) => id !== fileId));
+      await loadUsersData();
+    } catch (err: any) {
+      alert(`Delete error: ${err.message || 'Could not delete file.'}`);
     }
   };
 
@@ -597,25 +613,64 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                           onChange={() => handleToggleFileSelection(file.id)}
                           className="w-4 h-4 text-[#8364ED] rounded focus:ring-0 cursor-pointer"
                         />
-                        <div>
-                          <span className="text-[10px] font-bold text-[#8364ED] bg-white px-2 py-0.5 rounded-md border border-[#E2D8F7]">
-                            {file.fileType}
-                          </span>
-                          <p className="text-xs font-bold text-slate-800 mt-1">{file.originalName}</p>
-                          <p className="text-[10px] text-slate-400">
-                            Uploaded {new Date(file.uploadedAt).toLocaleString()} • {(file.size / 1024).toFixed(1)} KB
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-[10px] font-black text-[#8364ED] bg-white px-2 py-0.5 rounded-md border border-[#E2D8F7]">
+                              {file.fileType}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-700 bg-[#EAE4D6] px-2 py-0.5 rounded-md flex items-center gap-1">
+                              <Calendar className="w-3 h-3 text-[#8364ED]" />
+                              <span>{file.period || 'Q3 2026'}</span>
+                            </span>
+                          </div>
+                          <p className="text-xs font-bold text-slate-800">{file.originalName}</p>
+                          <p className="text-[10px] text-slate-400 flex items-center gap-2">
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-slate-400" />
+                              Timestamp: {new Date(file.uploadedAt).toLocaleString()}
+                            </span>
+                            <span>•</span>
+                            <span>{(file.size / 1024).toFixed(1)} KB</span>
                           </p>
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => setSelectedFileForViewer(file)}
-                        className="px-3 py-1.5 rounded-xl bg-white text-[#8364ED] border border-[#E0D8F5] text-xs font-bold flex items-center gap-1 hover:bg-[#F0EBFA]"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>Inspect Data</span>
-                      </button>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedFileForViewer(file)}
+                          className="px-3 py-1.5 rounded-xl bg-white text-slate-700 border border-[#E0DBCF] text-xs font-bold flex items-center gap-1 hover:bg-[#F0EBFA] cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-[#8364ED]" />
+                          <span>Inspect Data</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!file.fileUrl) return;
+                            const a = document.createElement('a');
+                            a.href = file.fileUrl;
+                            a.download = `${file.fileType}_${selectedUserForReview?.username}_${file.period || 'Period'}_${file.originalName}`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                          }}
+                          className="px-3 py-1.5 rounded-xl bg-[#8364ED] text-white text-xs font-bold flex items-center gap-1 hover:bg-[#7150EA] shadow-2xs cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          <span>Download</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteFileInAdmin(file.id)}
+                          className="p-1.5 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                          title="Delete file"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
                   );
                 })

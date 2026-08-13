@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { FileType, UploadedFile } from '../../types';
-import { Upload, CheckCircle2, FileSpreadsheet, Eye, Download, Sparkles, RefreshCw, Trash2 } from 'lucide-react';
+import { api } from '../../lib/api';
+import { Upload, CheckCircle2, FileSpreadsheet, Eye, Sparkles, RefreshCw } from 'lucide-react';
 
 interface Props {
   fileType: FileType;
@@ -26,6 +27,7 @@ export const UploadCard: React.FC<Props> = ({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('Q3 2026');
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -52,26 +54,14 @@ export const UploadCard: React.FC<Props> = ({
         reader.readAsDataURL(file);
       });
 
-      const response = await fetch('/api/files/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('clay_portal_token')}`,
-        },
-        body: JSON.stringify({
-          fileType,
-          fileName: file.name,
-          mimeType: file.type || 'application/octet-stream',
-          base64Data,
-          textContent,
-        }),
+      const resData = await api.uploadFile({
+        fileType,
+        fileName: file.name,
+        mimeType: file.type || 'application/octet-stream',
+        base64Data,
+        textContent,
+        period: selectedPeriod,
       });
-
-      const resData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(resData.error || 'Failed to upload file.');
-      }
 
       onUploadSuccess(resData.file);
     } catch (err: any) {
@@ -146,42 +136,60 @@ export const UploadCard: React.FC<Props> = ({
           {description}
         </p>
 
+        {/* PERIOD SELECTOR */}
+        <div className="mt-3 flex items-center justify-between gap-2 pt-2 border-t border-[#F0ECE1]">
+          <span className="text-[11px] font-bold text-slate-500">Filing Period:</span>
+          <select
+            value={selectedPeriod}
+            onChange={(e) => setSelectedPeriod(e.target.value)}
+            className="text-[11px] font-extrabold text-[#8364ED] bg-[#F0EBFA] border border-[#E2D8F7] px-2.5 py-1 rounded-xl focus:outline-none cursor-pointer"
+          >
+            <option value="Q3 2026">Q3 2026 (Current)</option>
+            <option value="Q4 2026">Q4 2026</option>
+            <option value="Q1 2026">Q1 2026</option>
+            <option value="Q2 2026">Q2 2026</option>
+            <option value="August 2026">August 2026</option>
+            <option value="September 2026">September 2026</option>
+            <option value="October 2026">October 2026</option>
+          </select>
+        </div>
+
         {/* AI CAPABILITY TAG */}
-        <div className="mt-3 flex items-center gap-1.5 text-[10px] font-semibold text-[#8364ED] bg-[#F3E3FD]/60 px-2.5 py-1 rounded-xl w-max border border-[#E9D9FA]">
+        <div className="mt-2.5 flex items-center gap-1.5 text-[10px] font-semibold text-[#8364ED] bg-[#F3E3FD]/60 px-2.5 py-1 rounded-xl w-max border border-[#E9D9FA]">
           <Sparkles className="w-3 h-3" />
-          <span>Supports Excel, Word, PDF, JPG/PNG (AI OCR Extracted)</span>
+          <span>Supports Excel, Word, PDF, JPG/PNG (AI OCR)</span>
         </div>
       </div>
 
       {/* FILE STATUS / DISPLAY OR UPLOAD AREA */}
-      <div className="mt-6">
+      <div className="mt-4">
         {uploading ? (
-          <div className="p-6 rounded-2xl bg-[#F5F1FD] border border-[#E8DEF8] flex flex-col items-center text-center gap-2 animate-pulse">
+          <div className="p-5 rounded-2xl bg-[#F5F1FD] border border-[#E8DEF8] flex flex-col items-center text-center gap-2 animate-pulse">
             <RefreshCw className="w-6 h-6 text-[#8364ED] animate-spin" />
             <p className="text-xs font-bold text-slate-800">Processing File Ingestion...</p>
             <p className="text-[11px] text-slate-500">Executing AI OCR document extraction</p>
           </div>
         ) : currentFile ? (
-          <div className="p-4 rounded-2xl bg-[#F8F6EF] border border-[#EAE5D7] space-y-3">
+          <div className="p-3.5 rounded-2xl bg-[#F8F6EF] border border-[#EAE5D7] space-y-3">
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="p-2 rounded-xl bg-white border border-[#E2DDD0] text-[#8364ED] shadow-xs shrink-0">
-                  <FileSpreadsheet className="w-5 h-5" />
+                  <FileSpreadsheet className="w-4 h-4" />
                 </div>
                 <div className="truncate">
-                  <p className="text-xs font-bold text-slate-800 truncate" title={currentFile.originalName}>
-                    {currentFile.originalName}
-                  </p>
+                  <div className="flex items-center gap-1">
+                    <p className="text-xs font-bold text-slate-800 truncate" title={currentFile.originalName}>
+                      {currentFile.originalName}
+                    </p>
+                    <span className="text-[9px] font-black text-[#8364ED] bg-white px-1.5 py-0.5 rounded border border-[#E2D8F7]">
+                      {currentFile.period || 'Q3 2026'}
+                    </span>
+                  </div>
                   <p className="text-[10px] text-slate-400">
                     {(currentFile.size / 1024).toFixed(1)} KB • {new Date(currentFile.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </p>
                 </div>
               </div>
-              {currentFile.isAiProcessed && (
-                <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md shrink-0">
-                  AI OCR Ready
-                </span>
-              )}
             </div>
 
             {/* ACTION BUTTONS */}
@@ -189,11 +197,11 @@ export const UploadCard: React.FC<Props> = ({
               <button
                 type="button"
                 onClick={() => onViewFile(currentFile)}
-                className="w-full py-2 px-3 rounded-xl bg-white hover:bg-[#F3EFE6] text-slate-700 border border-[#E0DBCF] text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                className="w-full py-2 px-2.5 rounded-xl bg-white hover:bg-[#F3EFE6] text-slate-700 border border-[#E0DBCF] text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer"
                 id={`btn-view-${fileType.toLowerCase()}`}
               >
                 <Eye className="w-3.5 h-3.5 text-[#8364ED]" />
-                <span>Read / Edit</span>
+                <span>Inspect</span>
               </button>
 
               <button
@@ -201,11 +209,12 @@ export const UploadCard: React.FC<Props> = ({
                 onClick={() => {
                   if (fileInputRef.current) fileInputRef.current.click();
                 }}
-                className="w-full py-2 px-3 rounded-xl bg-[#F0EBFA] hover:bg-[#E4DCF7] text-[#8364ED] border border-[#E0D5F7] text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
-                id={`btn-replace-${fileType.toLowerCase()}`}
+                className="w-full py-2 px-2.5 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white border border-[#7150EA] text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer"
+                id={`btn-upload-more-${fileType.toLowerCase()}`}
+                title="Upload another file for this category"
               >
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Replace</span>
+                <Upload className="w-3.5 h-3.5" />
+                <span>+ Upload New</span>
               </button>
             </div>
           </div>

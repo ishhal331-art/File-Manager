@@ -25,6 +25,7 @@ export interface UploadedFile {
   mimeType: string;
   size: number;
   uploadedAt: string;
+  period?: string;
   isAiProcessed: boolean;
   extractedText?: string;
   extractedData?: Array<{

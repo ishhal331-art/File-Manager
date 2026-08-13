@@ -107,7 +107,7 @@ const notificationsStore: Map<string, AppNotification> = new Map();
 const initialNotifId = "notif_welcome_001";
 notificationsStore.set(initialNotifId, {
   id: initialNotifId,
-  title: "Welcome to Clay Portal",
+  title: "Welcome to Files Manager Portal",
   message: "Please complete uploading your Sales File, Purchase File, and Bank Statement to ensure full quarterly compliance.",
   senderId: "usr_admin_001",
   senderName: "System Administrator",
@@ -126,17 +126,32 @@ notificationsStore.set(initialNotifId, {
   ],
 });
 
-// Helper: Auth middleware
+// Helper: Auth middleware with resilient token recovery across server restarts
 function getAuthenticatedUser(req: Request): StoredUser | null {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   const token = authHeader.substring(7);
   const session = sessions.get(token);
-  if (!session || Date.now() > session.expiresAt) {
-    if (session) sessions.delete(token);
-    return null;
+  if (session && Date.now() <= session.expiresAt) {
+    return usersStore.get(session.userId) || null;
   }
-  return usersStore.get(session.userId) || null;
+
+  // Fallback if session memory cleared on server restart or hot-reload:
+  // Recover user from token pattern `token_usr_xxx_yyy_zzz`
+  if (token.startsWith("token_usr_")) {
+    const parts = token.split("_");
+    if (parts.length >= 4) {
+      const targetUserId = `${parts[1]}_${parts[2]}_${parts[3]}`;
+      const user = usersStore.get(targetUserId);
+      if (user && user.status === "ACTIVE") {
+        // Automatically restore session map
+        sessions.set(token, { userId: user.id, expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000 });
+        return user;
+      }
+    }
+  }
+
+  return null;
 }
 
 // Initialize Gemini Client safely on server side
@@ -214,8 +229,8 @@ app.post("/api/auth/login", (req: Request, res: Response) => {
   // Clear failed attempts on successful login
   loginAttempts.delete(cleanUsername);
 
-  // Generate session token
-  const token = `token_${Math.random().toString(36).substring(2)}_${Date.now()}`;
+  // Generate session token embedded with userId for persistent session recovery
+  const token = `token_${foundUser.id}_${Math.random().toString(36).substring(2)}_${Date.now()}`;
   const expiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
   sessions.set(token, { userId: foundUser.id, expiresAt });
 
@@ -316,14 +331,14 @@ app.get("/api/users", (req: Request, res: Response) => {
 
 app.post("/api/users", (req: Request, res: Response) => {
   const currentUser = getAuthenticatedUser(req);
-  if (!currentUser || currentUser.role !== "ADMIN") {
-    return res.status(403).json({ error: "Forbidden. Only Admin can create users." });
+  if (!currentUser || (currentUser.role !== "ADMIN" && currentUser.role !== "MANAGER")) {
+    return res.status(403).json({ error: "Forbidden. Admin or Manager permissions required to add users." });
   }
 
   const { fullName, username, password, confirmPassword, role, email, phone, employeeId, status } = req.body;
 
-  if (!fullName || !username || !password || !confirmPassword || !role) {
-    return res.status(400).json({ error: "Full Name, Username, Password, Confirm Password, and Role are required." });
+  if (!fullName || !username || !password || !confirmPassword) {
+    return res.status(400).json({ error: "Full Name, Username, Password, and Confirm Password are required." });
   }
 
   // Password confirmation check
@@ -344,6 +359,9 @@ app.post("/api/users", (req: Request, res: Response) => {
     }
   }
 
+  // Managers can only create standard USER accounts; Admins can choose
+  const userRole = currentUser.role === "MANAGER" ? "USER" : (role === "MANAGER" ? "MANAGER" : "USER");
+
   const newUser: StoredUser = {
     id: `usr_${Math.random().toString(36).substring(2, 9)}`,
     username: cleanUsername,
@@ -351,7 +369,7 @@ app.post("/api/users", (req: Request, res: Response) => {
     email: email ? String(email).trim() : undefined,
     phone: phone ? String(phone).trim() : undefined,
     employeeId: employeeId ? String(employeeId).trim() : `EMP-${Math.floor(100 + Math.random() * 900)}`,
-    role: role === "MANAGER" ? "MANAGER" : "USER",
+    role: userRole,
     status: status === "DISABLED" ? "DISABLED" : "ACTIVE",
     createdAt: new Date().toISOString(),
     passwordHash: bcrypt.hashSync(password, SALT_ROUNDS),
@@ -491,7 +509,7 @@ app.post("/api/files/upload", async (req: Request, res: Response) => {
     return res.status(401).json({ error: "Unauthorized." });
   }
 
-  const { fileType, fileName, mimeType, base64Data, textContent } = req.body;
+  const { fileType, fileName, mimeType, base64Data, textContent, period } = req.body;
 
   if (!fileType || !fileName || (!base64Data && !textContent)) {
     return res.status(400).json({ error: "File type, file name, and file content are required." });
@@ -623,19 +641,13 @@ Return a clean structured JSON object matching this schema:
     mimeType: mimeType || "application/octet-stream",
     size: base64Data ? Math.round((base64Data.length * 3) / 4) : (textContent?.length || 1024),
     uploadedAt,
+    period: period || "Q3 2026",
     isAiProcessed,
     extractedText,
     extractedData,
     summary,
     fileUrl,
   };
-
-  // Replace existing file of same type for user if present
-  for (const [id, existing] of filesStore.entries()) {
-    if (existing.userId === currentUser.id && existing.fileType === fileType) {
-      filesStore.delete(id);
-    }
-  }
 
   filesStore.set(fileId, newFile);
 
@@ -788,6 +800,31 @@ app.post("/api/notifications/:id/reply", (req: Request, res: Response) => {
   notificationsStore.set(id, notif);
 
   return res.status(201).json({ reply, notification: notif, message: "Reply sent successfully." });
+});
+
+app.delete("/api/notifications/:id", (req: Request, res: Response) => {
+  const currentUser = getAuthenticatedUser(req);
+  if (!currentUser) {
+    return res.status(401).json({ error: "Unauthorized." });
+  }
+
+  const { id } = req.params;
+  const notif = notificationsStore.get(id);
+  if (!notif) {
+    return res.status(404).json({ error: "Notification not found." });
+  }
+
+  // Admins can delete any notification; users can dismiss notifications addressed to them
+  if (
+    currentUser.role !== "ADMIN" &&
+    notif.targetUserId !== "ALL" &&
+    notif.targetUserId !== currentUser.id
+  ) {
+    return res.status(403).json({ error: "Forbidden." });
+  }
+
+  notificationsStore.delete(id);
+  return res.json({ success: true, message: "Notification deleted/dismissed." });
 });
 
 // START SERVER / VITE MIDDLEWARE

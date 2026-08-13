@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, AppNotification } from '../../types';
 import { api } from '../../lib/api';
-import { Bell, Send, Reply, Shield, MessageSquare, Check, Sparkles } from 'lucide-react';
+import { Bell, Send, Reply, Shield, MessageSquare, Sparkles, Trash2 } from 'lucide-react';
 
 interface Props {
   currentUser: User;
@@ -60,6 +60,15 @@ export const NotificationsTab: React.FC<Props> = ({ currentUser }) => {
       alert(`Reply error: ${err.message || 'Could not send reply.'}`);
     } finally {
       setSubmittingReplyId(null);
+    }
+  };
+
+  const handleDeleteNotification = async (notifId: string) => {
+    try {
+      await api.deleteNotification(notifId);
+      await loadNotifications();
+    } catch (err: any) {
+      alert(`Delete error: ${err.message || 'Could not delete notification.'}`);
     }
   };
 
@@ -208,9 +217,20 @@ export const NotificationsTab: React.FC<Props> = ({ currentUser }) => {
                   </div>
                 </div>
 
-                <span className="text-[10px] font-bold text-[#8364ED] bg-[#F0EBFA] border border-[#E2D8F7] px-2.5 py-1 rounded-full">
-                  {notif.targetUserId === 'ALL' ? 'Broadcast' : 'Direct Message'}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-[#8364ED] bg-[#F0EBFA] border border-[#E2D8F7] px-2.5 py-1 rounded-full">
+                    {notif.targetUserId === 'ALL' ? 'Broadcast' : 'Direct Message'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteNotification(notif.id)}
+                    className="p-1.5 rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                    title="Dismiss / Delete notification thread"
+                    id={`btn-delete-notif-${notif.id}`}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               {/* MAIN MESSAGE BODY */}
