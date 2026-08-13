@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+@layer utilities {
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes floatBubble {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(-12px) rotate(3deg);
+    }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.35s ease-out forwards;
+  }
+
+  .float-bubble {
+    animation: floatBubble 6s ease-in-out infinite;
+  }
+
+  .float-bubble-delayed {
+    animation: floatBubble 8s ease-in-out infinite 2s;
+  }
+
+  .animate-bounce-slow {
+    animation: floatBubble 4s ease-in-out infinite;
+  }
+
+  .animate-shake {
+    animation: shake 0.4s ease-in-out;
+  }
+}
+
+/* Custom subtle scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #F4F0FC;
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #D4C5F9;
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #8364ED;
+}
