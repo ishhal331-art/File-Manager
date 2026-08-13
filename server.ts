@@ -14,17 +14,80 @@ const PORT = 3000;
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// In-Memory Database initialized with default pre-seeded users
+const DATA_DIR = path.join(process.cwd(), "data");
+const DB_FILE = path.join(DATA_DIR, "db.json");
+
+// Ensure data directory exists
+if (!fs.existsSync(DATA_DIR)) {
+  try {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  } catch (e) {
+    console.error("Error creating data directory:", e);
+  }
+}
+
 const SALT_ROUNDS = 10;
 
 interface StoredUser extends User {
   passwordHash: string;
 }
 
-// Initial pre-seeded users
+// Stores
 const usersStore: Map<string, StoredUser> = new Map();
+const sessions: Map<string, { userId: string; expiresAt: number }> = new Map();
+const loginAttempts: Map<string, { attempts: number; lockUntil: number }> = new Map();
+const filesStore: Map<string, UploadedFile> = new Map();
+const notificationsStore: Map<string, AppNotification> = new Map();
 
-// Helper to seed default accounts safely
+// Save state to disk synchronously to avoid data loss on refresh/restart
+function saveDatabaseToDisk() {
+  try {
+    const data = {
+      users: Array.from(usersStore.values()),
+      files: Array.from(filesStore.values()),
+      notifications: Array.from(notificationsStore.values()),
+      sessions: Array.from(sessions.entries()).map(([token, session]) => ({ token, ...session })),
+    };
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Failed to save database to disk:", err);
+  }
+}
+
+// Load state from disk or initialize with seed data
+function loadDatabaseFromDisk() {
+  if (fs.existsSync(DB_FILE)) {
+    try {
+      const raw = fs.readFileSync(DB_FILE, "utf-8");
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed.users)) {
+        parsed.users.forEach((u: StoredUser) => usersStore.set(u.id, u));
+      }
+      if (Array.isArray(parsed.files)) {
+        parsed.files.forEach((f: UploadedFile) => filesStore.set(f.id, f));
+      }
+      if (Array.isArray(parsed.notifications)) {
+        parsed.notifications.forEach((n: AppNotification) => notificationsStore.set(n.id, n));
+      }
+      if (Array.isArray(parsed.sessions)) {
+        parsed.sessions.forEach((s: any) => {
+          if (s.token && s.userId && s.expiresAt) {
+            sessions.set(s.token, { userId: s.userId, expiresAt: s.expiresAt });
+          }
+        });
+      }
+      console.log(`Database loaded from disk: ${usersStore.size} users, ${filesStore.size} files, ${notificationsStore.size} notifications.`);
+      return;
+    } catch (e) {
+      console.error("Error reading db.json, falling back to seed accounts:", e);
+    }
+  }
+
+  // Fallback: seed default accounts if no existing database
+  seedDefaultAccounts();
+  saveDatabaseToDisk();
+}
+
 function seedDefaultAccounts() {
   const adminPasswordHash = bcrypt.hashSync("AdminPassword123!", SALT_ROUNDS);
   const managerPasswordHash = bcrypt.hashSync("ManagerPass123!", SALT_ROUNDS);
@@ -87,44 +150,32 @@ function seedDefaultAccounts() {
   usersStore.set(managerUser.id, managerUser);
   usersStore.set(client1User.id, client1User);
   usersStore.set(user1User.id, user1User);
+
+  // Seed initial system notification
+  const initialNotifId = "notif_welcome_001";
+  notificationsStore.set(initialNotifId, {
+    id: initialNotifId,
+    title: "Welcome to Files Manager Portal",
+    message: "Please complete uploading your Sales File, Purchase File, and Bank Statement to ensure full quarterly compliance.",
+    senderId: "usr_admin_001",
+    senderName: "System Administrator",
+    targetUserId: "ALL",
+    timestamp: new Date().toISOString(),
+    readBy: [],
+    replies: [
+      {
+        id: "reply_001",
+        senderId: "usr_admin_001",
+        senderName: "System Administrator",
+        senderRole: "ADMIN",
+        message: "If you have any questions regarding file formats, feel free to reply directly here.",
+        timestamp: new Date().toISOString(),
+      },
+    ],
+  });
 }
 
-seedDefaultAccounts();
-
-// Session token store: token -> userId
-const sessions: Map<string, { userId: string; expiresAt: number }> = new Map();
-
-// Login rate limiting store: username -> { attempts: number, lastAttempt: number }
-const loginAttempts: Map<string, { attempts: number; lockUntil: number }> = new Map();
-
-// Uploaded files store: fileId -> UploadedFile
-const filesStore: Map<string, UploadedFile> = new Map();
-
-// Notifications store: notifId -> AppNotification
-const notificationsStore: Map<string, AppNotification> = new Map();
-
-// Seed initial system notification
-const initialNotifId = "notif_welcome_001";
-notificationsStore.set(initialNotifId, {
-  id: initialNotifId,
-  title: "Welcome to Files Manager Portal",
-  message: "Please complete uploading your Sales File, Purchase File, and Bank Statement to ensure full quarterly compliance.",
-  senderId: "usr_admin_001",
-  senderName: "System Administrator",
-  targetUserId: "ALL",
-  timestamp: new Date().toISOString(),
-  readBy: [],
-  replies: [
-    {
-      id: "reply_001",
-      senderId: "usr_admin_001",
-      senderName: "System Administrator",
-      senderRole: "ADMIN",
-      message: "If you have any questions regarding file formats, feel free to reply directly here.",
-      timestamp: new Date().toISOString(),
-    },
-  ],
-});
+loadDatabaseFromDisk();
 
 // Helper: Auth middleware with resilient token recovery across server restarts
 function getAuthenticatedUser(req: Request): StoredUser | null {
@@ -310,6 +361,7 @@ app.post("/api/auth/change-password", (req: Request, res: Response) => {
   // Update password hash securely
   currentUser.passwordHash = bcrypt.hashSync(newPassword, SALT_ROUNDS);
   usersStore.set(currentUser.id, currentUser);
+  saveDatabaseToDisk();
 
   return res.json({ success: true, message: "Password changed successfully." });
 });
@@ -333,6 +385,7 @@ app.put("/api/auth/profile", (req: Request, res: Response) => {
   if (employeeId !== undefined) user.employeeId = String(employeeId).trim();
 
   usersStore.set(user.id, user);
+  saveDatabaseToDisk();
 
   const { passwordHash, ...updatedProfile } = user;
   return res.json({ user: updatedProfile, message: "Personal profile updated successfully." });
@@ -402,6 +455,7 @@ app.post("/api/users", (req: Request, res: Response) => {
   };
 
   usersStore.set(newUser.id, newUser);
+  saveDatabaseToDisk();
 
   const { passwordHash, ...userProfile } = newUser;
   return res.status(201).json({ user: userProfile, message: "User account created successfully." });
@@ -427,6 +481,7 @@ app.patch("/api/users/:id/status", (req: Request, res: Response) => {
 
   target.status = status === "DISABLED" ? "DISABLED" : "ACTIVE";
   usersStore.set(target.id, target);
+  saveDatabaseToDisk();
 
   const { passwordHash, ...userProfile } = target;
   return res.json({ user: userProfile, message: `User status updated to ${target.status}.` });
@@ -460,6 +515,7 @@ app.post("/api/users/:id/reset-password", (req: Request, res: Response) => {
 
   target.passwordHash = bcrypt.hashSync(newPassword, SALT_ROUNDS);
   usersStore.set(target.id, target);
+  saveDatabaseToDisk();
 
   return res.json({ success: true, message: `Password for ${target.username} has been updated.` });
 });
@@ -676,6 +732,7 @@ Return a clean structured JSON object matching this schema:
   };
 
   filesStore.set(fileId, newFile);
+  saveDatabaseToDisk();
 
   return res.status(201).json({
     file: newFile,
@@ -705,6 +762,7 @@ app.put("/api/files/:id/data", (req: Request, res: Response) => {
   if (extractedText) file.extractedText = extractedText;
 
   filesStore.set(id, file);
+  saveDatabaseToDisk();
 
   return res.json({ file, message: "File contents updated successfully." });
 });
@@ -726,6 +784,7 @@ app.delete("/api/files/:id", (req: Request, res: Response) => {
   }
 
   filesStore.delete(id);
+  saveDatabaseToDisk();
   return res.json({ success: true, message: "File deleted." });
 });
 
@@ -751,7 +810,58 @@ app.get("/api/notifications", (req: Request, res: Response) => {
   // Sort descending by timestamp
   list.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
-  return res.json({ notifications: list });
+  const unreadCount = list.filter(
+    (n) => !n.readBy || !n.readBy.includes(currentUser.id)
+  ).length;
+
+  return res.json({ notifications: list, unreadCount });
+});
+
+app.post("/api/notifications/mark-read", (req: Request, res: Response) => {
+  const currentUser = getAuthenticatedUser(req);
+  if (!currentUser) {
+    return res.status(401).json({ error: "Unauthorized." });
+  }
+
+  let updated = false;
+  for (const notif of notificationsStore.values()) {
+    if (
+      currentUser.role === "ADMIN" ||
+      notif.targetUserId === "ALL" ||
+      notif.targetUserId === currentUser.id
+    ) {
+      if (!notif.readBy) notif.readBy = [];
+      if (!notif.readBy.includes(currentUser.id)) {
+        notif.readBy.push(currentUser.id);
+        updated = true;
+      }
+    }
+  }
+
+  if (updated) {
+    saveDatabaseToDisk();
+  }
+
+  return res.json({ success: true, message: "Notifications marked as read." });
+});
+
+app.post("/api/notifications/:id/mark-read", (req: Request, res: Response) => {
+  const currentUser = getAuthenticatedUser(req);
+  if (!currentUser) {
+    return res.status(401).json({ error: "Unauthorized." });
+  }
+
+  const { id } = req.params;
+  const notif = notificationsStore.get(id);
+  if (notif) {
+    if (!notif.readBy) notif.readBy = [];
+    if (!notif.readBy.includes(currentUser.id)) {
+      notif.readBy.push(currentUser.id);
+      saveDatabaseToDisk();
+    }
+  }
+
+  return res.json({ success: true });
 });
 
 app.post("/api/notifications", (req: Request, res: Response) => {
@@ -782,6 +892,7 @@ app.post("/api/notifications", (req: Request, res: Response) => {
   };
 
   notificationsStore.set(notifId, newNotif);
+  saveDatabaseToDisk();
 
   return res.status(201).json({ notification: newNotif, message: "Notification sent successfully." });
 });
@@ -824,6 +935,7 @@ app.post("/api/notifications/:id/reply", (req: Request, res: Response) => {
 
   notif.replies.push(reply);
   notificationsStore.set(id, notif);
+  saveDatabaseToDisk();
 
   return res.status(201).json({ reply, notification: notif, message: "Reply sent successfully." });
 });
@@ -850,6 +962,7 @@ app.delete("/api/notifications/:id", (req: Request, res: Response) => {
   }
 
   notificationsStore.delete(id);
+  saveDatabaseToDisk();
   return res.json({ success: true, message: "Notification deleted/dismissed." });
 });
 

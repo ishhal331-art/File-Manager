@@ -165,8 +165,20 @@ export const api = {
   },
 
   // Notifications
-  getNotifications: async (): Promise<{ notifications: AppNotification[] }> => {
+  getNotifications: async (): Promise<{ notifications: AppNotification[]; unreadCount?: number }> => {
     return request('/api/notifications');
+  },
+
+  markNotificationsRead: async (): Promise<{ success: boolean }> => {
+    return request('/api/notifications/mark-read', {
+      method: 'POST',
+    });
+  },
+
+  markSingleNotificationRead: async (notificationId: string): Promise<{ success: boolean }> => {
+    return request(`/api/notifications/${notificationId}/mark-read`, {
+      method: 'POST',
+    });
   },
 
   createNotification: async (title: string, message: string, targetUserId: string = 'ALL') => {

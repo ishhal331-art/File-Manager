@@ -5,9 +5,10 @@ import { Bell, Send, Reply, Shield, MessageSquare, Sparkles, Trash2 } from 'luci
 
 interface Props {
   currentUser: User;
+  onNotificationsViewed?: () => void;
 }
 
-export const NotificationsTab: React.FC<Props> = ({ currentUser }) => {
+export const NotificationsTab: React.FC<Props> = ({ currentUser, onNotificationsViewed }) => {
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [replyMessageMap, setReplyMessageMap] = useState<Record<string, string>>({});
@@ -31,6 +32,12 @@ export const NotificationsTab: React.FC<Props> = ({ currentUser }) => {
     try {
       const res = await api.getNotifications();
       setNotifications(res.notifications);
+      
+      // Automatically mark as read on viewing notifications tab
+      await api.markNotificationsRead();
+      if (onNotificationsViewed) {
+        onNotificationsViewed();
+      }
     } catch (err) {
       console.error('Failed to load notifications:', err);
     } finally {

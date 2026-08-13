@@ -80,16 +80,24 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
       const [usersRes, progressRes, notifsRes] = await Promise.all([
         api.getUsers(),
         api.getUserProgress(),
-        api.getNotifications().catch(() => ({ notifications: [] })),
+        api.getNotifications().catch(() => ({ notifications: [], unreadCount: 0 })),
       ]);
       setAllUsers(usersRes.users);
       setUserProgressList(progressRes.userProgress);
-      setNotifCount(notifsRes.notifications ? notifsRes.notifications.length : 0);
+      const unread = notifsRes.unreadCount !== undefined
+        ? notifsRes.unreadCount
+        : (notifsRes.notifications || []).filter((n: any) => !n.readBy || !n.readBy.includes(currentUser.id)).length;
+      setNotifCount(unread);
     } catch (err) {
       console.error('Failed to load manager data:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOpenNotifications = () => {
+    setActiveTab('notifications');
+    setNotifCount(0);
   };
 
   const handleReviewUser = async (user: User) => {
@@ -251,13 +259,16 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
             </button>
 
             <button
-              onClick={() => setActiveTab('notifications')}
-              className="px-3 py-1.5 rounded-2xl bg-[#F0EBFA] hover:bg-[#E2D6FA] text-[#8364ED] text-xs font-extrabold flex items-center gap-1.5 border border-[#E2D8F7] transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
+              onClick={handleOpenNotifications}
+              className="px-3 py-1.5 rounded-2xl bg-[#F0EBFA] hover:bg-[#E2D6FA] text-[#8364ED] text-xs font-extrabold flex items-center gap-1.5 border border-[#E2D8F7] transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95 relative"
               id="btn-manager-header-messages"
               title="Click to view Messages and Notifications"
             >
               <Bell className="w-3.5 h-3.5 text-[#8364ED]" />
               <span>{notifCount} Messages</span>
+              {notifCount > 0 && (
+                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping absolute -top-0.5 -right-0.5" />
+              )}
             </button>
 
             <button
@@ -467,7 +478,12 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
           </div>
         )}
 
-        {activeTab === 'notifications' && <NotificationsTab currentUser={currentUser} />}
+        {activeTab === 'notifications' && (
+          <NotificationsTab 
+            currentUser={currentUser} 
+            onNotificationsViewed={() => setNotifCount(0)} 
+          />
+        )}
 
         {activeTab === 'profile' && <ProfileTab currentUser={currentUser} />}
       </main>
@@ -838,8 +854,8 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
           </button>
 
           <button
-            onClick={() => setActiveTab('notifications')}
-            className={`flex-1 min-w-0 py-2 px-1.5 sm:px-3 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
+            onClick={handleOpenNotifications}
+            className={`flex-1 min-w-0 py-2 px-1.5 sm:px-3 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer relative ${
               activeTab === 'notifications'
                 ? 'bg-gradient-to-r from-[#8364ED] to-[#7150EA] text-white shadow-[0_4px_14px_rgba(131,100,237,0.35)] scale-[1.02]'
                 : 'text-slate-600 hover:text-[#8364ED] hover:bg-white/60'
@@ -848,6 +864,9 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
           >
             <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             <span className="truncate">Notifications</span>
+            {notifCount > 0 && activeTab !== 'notifications' && (
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping absolute top-1 right-2" />
+            )}
           </button>
 
           <button

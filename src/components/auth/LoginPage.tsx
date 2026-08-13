@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { api } from '../../lib/api';
-import { User as UserIcon, Lock, Eye, EyeOff, Heart, AlertCircle, Sparkles, Shield, ChevronRight, Folder } from 'lucide-react';
+import { User as UserIcon, Lock, Eye, EyeOff, Cloud, AlertCircle, Sparkles, Shield, ChevronRight, Folder, Database, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 
 interface Props {
@@ -53,6 +53,48 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
       className="min-h-screen w-full bg-gradient-to-br from-[#E8E2F7] via-[#DFD7F5] to-[#D5CAFA] flex flex-col items-center justify-center p-4 sm:p-6 md:p-10 relative overflow-hidden font-sans selection:bg-[#8364ED]/20 selection:text-[#8364ED]"
       id="login-container"
     >
+      {/* LEFT SIDE FLOATERS */}
+      <div className="absolute top-12 left-6 lg:left-12 hidden md:flex items-center gap-3 p-3.5 bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-[0_8px_24px_rgba(110,85,190,0.12)] float-bubble z-0">
+        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#8364ED] to-[#A58DF5] text-white flex items-center justify-center shadow-md">
+          <Cloud className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <p className="text-xs font-black text-slate-800">Cloud Storage</p>
+          <p className="text-[10px] font-semibold text-slate-500">Persistent Disk & Supabase Vault</p>
+        </div>
+      </div>
+
+      <div className="absolute bottom-16 left-8 lg:left-16 hidden md:flex items-center gap-3 p-3.5 bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-[0_8px_24px_rgba(110,85,190,0.12)] float-bubble-delayed z-0">
+        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-400 text-white flex items-center justify-center shadow-md">
+          <Sparkles className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <p className="text-xs font-black text-slate-800">AI OCR Engine</p>
+          <p className="text-[10px] font-semibold text-slate-500">Automated Financial Ingestion</p>
+        </div>
+      </div>
+
+      {/* RIGHT SIDE FLOATERS */}
+      <div className="absolute top-16 right-6 lg:right-12 hidden md:flex items-center gap-3 p-3.5 bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-[0_8px_24px_rgba(110,85,190,0.12)] float-bubble-delayed z-0">
+        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-md">
+          <CheckCircle2 className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <p className="text-xs font-black text-slate-800">Verified Compliance</p>
+          <p className="text-[10px] font-semibold text-slate-500">Real-Time Ledger Reconciliation</p>
+        </div>
+      </div>
+
+      <div className="absolute bottom-20 right-8 lg:right-16 hidden md:flex items-center gap-3 p-3.5 bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-[0_8px_24px_rgba(110,85,190,0.12)] float-bubble z-0">
+        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md">
+          <Shield className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <p className="text-xs font-black text-slate-800">Multi-Role Security</p>
+          <p className="text-[10px] font-semibold text-slate-500">Protected Client & Admin Portals</p>
+        </div>
+      </div>
+
       {/* PORTAL TITLE BRANDING BAR */}
       <div className="mb-4 sm:mb-6 z-20 flex items-center gap-2.5 bg-white/60 backdrop-blur-md px-5 py-2 rounded-full border border-white/80 shadow-[0_8px_20px_rgba(110,85,190,0.08)]">
         <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-[#8364ED] to-[#A58DF5] text-white flex items-center justify-center shadow-xs">
@@ -66,31 +108,22 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
         </span>
       </div>
 
-      {/* BACKGROUND DECORATIVE CLAY ELEMENTS */}
-      <div className="absolute top-10 left-8 hidden lg:flex items-center gap-3 p-3 bg-white/40 backdrop-blur-md rounded-2xl border border-white/60 shadow-sm float-bubble">
-        <div className="w-8 h-8 rounded-xl bg-[#8364ED] text-white flex items-center justify-center font-bold text-xs">
-          ☁️
-        </div>
-        <span className="text-xs font-bold text-slate-700">Cloud Storage Ready</span>
-      </div>
-
-      <div className="absolute top-16 right-12 hidden lg:flex items-center gap-2 px-3 py-1.5 bg-white/50 backdrop-blur-md rounded-full border border-white/70 shadow-xs float-bubble-delayed">
-        <Sparkles className="w-3.5 h-3.5 text-[#8364ED]" />
-        <span className="text-xs font-bold text-slate-700">Files Manager v2.4</span>
-      </div>
-
       {/* CENTRAL RESPONSIVE CLAY CARD CONTAINER */}
       <div 
         className="w-full max-w-md bg-[#FCFBF8] rounded-[38px] p-6 sm:p-8 shadow-[0_25px_60px_rgba(110,85,190,0.22),0_10px_20px_rgba(110,85,190,0.08),inset_0_2px_3px_rgba(255,255,255,0.9)] border border-[#F0ECE1] relative z-10 my-auto transition-all duration-300"
         id="login-card"
       >
-        {/* TOP OF CARD: Decorative 3D Clay Heart */}
+        {/* TOP OF CARD: Cute Decorative 3D Clay Cloud Storage Icon */}
         <div className="flex flex-col items-center text-center">
           <div 
-            className="w-11 h-11 rounded-2xl bg-[#FAD2E1]/60 border border-[#F5B8D1] flex items-center justify-center text-[#E65C8A] shadow-[inset_0_2px_4px_rgba(255,255,255,0.8),0_6px_12px_rgba(230,92,138,0.15)] mb-3 transform hover:scale-105 transition-transform"
-            id="clay-heart-container"
+            className="w-13 h-13 rounded-3xl bg-gradient-to-tr from-[#E6E1FA] to-[#D5CAFA] border-2 border-white/90 flex items-center justify-center text-[#8364ED] shadow-[inset_0_2px_4px_rgba(255,255,255,0.9),0_8px_16px_rgba(131,100,237,0.22)] mb-3 transform hover:scale-110 hover:rotate-3 transition-transform duration-300 relative group cursor-pointer"
+            id="clay-cloud-container"
+            title="Cloud Storage Storage Vault"
           >
-            <Heart className="w-5.5 h-5.5 fill-[#E65C8A] text-[#E65C8A]" />
+            <Cloud className="w-7 h-7 text-[#8364ED] fill-[#8364ED]/20 stroke-[2.2]" />
+            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-400 border border-white text-[9px] font-black text-white flex items-center justify-center shadow-xs animate-pulse">
+              ✨
+            </div>
           </div>
 
           {/* WELCOME BACK HEADING WITH YELLOW CLAY RAY ACCENTS */}

@@ -28,9 +28,22 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
   const loadNotifCount = async () => {
     try {
       const res = await api.getNotifications();
-      setNotifCount(res.notifications.length);
+      const unread = res.unreadCount !== undefined
+        ? res.unreadCount
+        : res.notifications.filter((n) => !n.readBy || !n.readBy.includes(currentUser.id)).length;
+      setNotifCount(unread);
     } catch (err) {
       console.error('Failed to load notification count:', err);
+    }
+  };
+
+  const handleOpenNotifications = async () => {
+    setActiveTab('notifications');
+    setNotifCount(0);
+    try {
+      await api.markNotificationsRead();
+    } catch (err) {
+      console.error('Failed to mark notifications read:', err);
     }
   };
 
@@ -115,13 +128,16 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
           {/* USER BADGE, MESSAGES BUTTON & LOGOUT */}
           <div className="flex items-center gap-2 shrink-0">
             <button
-              onClick={() => setActiveTab('notifications')}
-              className="px-3 py-1.5 rounded-2xl bg-[#F0EBFA] hover:bg-[#E2D6FA] text-[#8364ED] text-xs font-extrabold flex items-center gap-1.5 border border-[#E2D8F7] transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
+              onClick={handleOpenNotifications}
+              className="px-3 py-1.5 rounded-2xl bg-[#F0EBFA] hover:bg-[#E2D6FA] text-[#8364ED] text-xs font-extrabold flex items-center gap-1.5 border border-[#E2D8F7] transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95 relative"
               title="Click to view Messages and Notifications"
               id="btn-client-header-messages"
             >
               <Bell className="w-3.5 h-3.5 text-[#8364ED]" />
               <span>{notifCount} Messages</span>
+              {notifCount > 0 && (
+                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping absolute top-1 right-1" />
+              )}
             </button>
 
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-[#F0EBFA] border border-[#E2D8F7]">
@@ -229,79 +245,97 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {files.map((file) => (
-                    <div
-                      key={file.id}
-                      className="p-3.5 sm:p-4 rounded-2xl bg-[#F8F6EF] hover:bg-[#F2ECE0] border border-[#EAE5D7] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-                    >
-                      <div className="flex items-start sm:items-center gap-3 min-w-0">
-                        <div className="p-2.5 rounded-xl bg-white border border-[#E0DBCF] text-[#8364ED] shrink-0 shadow-2xs">
-                          <FileSpreadsheet className="w-5 h-5" />
-                        </div>
+                  {files.map((file) => {
+                    const functionLabel =
+                      file.fileType === 'SALES'
+                        ? 'Function 1: Sales Ledger & Invoicing'
+                        : file.fileType === 'PURCHASE'
+                        ? 'Function 2: Purchase Bills & Expenses'
+                        : 'Function 3: Bank Statements & Reconciliation';
 
-                        <div className="min-w-0 space-y-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-[10px] font-black text-[#8364ED] bg-white border border-[#E2D8F7] px-2 py-0.5 rounded-md">
-                              {file.fileType}
-                            </span>
-                            <span className="text-[10px] font-bold text-slate-700 bg-[#EAE4D6] px-2 py-0.5 rounded-md flex items-center gap-1">
-                              <Calendar className="w-3 h-3 text-[#8364ED]" />
-                              <span>{file.period || 'Q3 2026'}</span>
-                            </span>
+                    const functionColor =
+                      file.fileType === 'SALES'
+                        ? 'bg-purple-100 text-purple-700 border-purple-200'
+                        : file.fileType === 'PURCHASE'
+                        ? 'bg-amber-100 text-amber-700 border-amber-200'
+                        : 'bg-emerald-100 text-emerald-700 border-emerald-200';
+
+                    return (
+                      <div
+                        key={file.id}
+                        className="p-3.5 sm:p-4 rounded-2xl bg-[#F8F6EF] hover:bg-[#F2ECE0] border border-[#EAE5D7] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                      >
+                        <div className="flex items-start sm:items-center gap-3 min-w-0">
+                          <div className="p-2.5 rounded-xl bg-white border border-[#E0DBCF] text-[#8364ED] shrink-0 shadow-2xs">
+                            <FileSpreadsheet className="w-5 h-5" />
                           </div>
 
-                          <p className="text-xs font-extrabold text-slate-800 truncate" title={file.originalName}>
-                            {file.originalName}
-                          </p>
+                          <div className="min-w-0 space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className={`text-[10px] font-black border px-2.5 py-0.5 rounded-md ${functionColor}`}>
+                                {functionLabel}
+                              </span>
+                              <span className="text-[10px] font-bold text-slate-700 bg-[#EAE4D6] px-2 py-0.5 rounded-md flex items-center gap-1">
+                                <Calendar className="w-3 h-3 text-[#8364ED]" />
+                                <span>{file.period || 'Q3 2026'}</span>
+                              </span>
+                            </div>
 
-                          <p className="text-[10px] font-semibold text-slate-400 flex items-center gap-2">
-                            <span>Uploaded: {new Date(file.uploadedAt).toLocaleString()}</span>
-                            <span>•</span>
-                            <span>{(file.size / 1024).toFixed(1)} KB</span>
-                          </p>
+                            <p className="text-xs font-extrabold text-slate-800 truncate" title={file.originalName}>
+                              {file.originalName}
+                            </p>
+
+                            <p className="text-[10px] font-semibold text-slate-400 flex items-center gap-2">
+                              <span>Uploaded: {new Date(file.uploadedAt).toLocaleString()}</span>
+                              <span>•</span>
+                              <span>{(file.size / 1024).toFixed(1)} KB</span>
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* ACTIONS */}
+                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedFileForViewer(file)}
+                            className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-[#E2DDD0] shadow-2xs flex items-center gap-1 cursor-pointer"
+                            title="Inspect or edit extracted file rows"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-[#8364ED]" />
+                            <span>Inspect Data</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadFile(file)}
+                            className="px-3 py-1.5 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white font-bold text-xs flex items-center gap-1 cursor-pointer shadow-2xs"
+                            title="Download original file"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Download</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteFile(file.id)}
+                            className="p-1.5 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-transparent hover:border-rose-200 transition-colors cursor-pointer"
+                            title="Delete file"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
                         </div>
                       </div>
-
-                      {/* ACTIONS */}
-                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedFileForViewer(file)}
-                          className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-[#E2DDD0] shadow-2xs flex items-center gap-1 cursor-pointer"
-                          title="Inspect or edit extracted file rows"
-                        >
-                          <Eye className="w-3.5 h-3.5 text-[#8364ED]" />
-                          <span>Inspect Data</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleDownloadFile(file)}
-                          className="px-3 py-1.5 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white font-bold text-xs flex items-center gap-1 cursor-pointer shadow-2xs"
-                          title="Download original file"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          <span>Download</span>
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteFile(file.id)}
-                          className="p-1.5 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-transparent hover:border-rose-200 transition-colors cursor-pointer"
-                          title="Delete file"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
           </div>
         )}
 
-        {activeTab === 'notifications' && <NotificationsTab currentUser={currentUser} />}
+        {activeTab === 'notifications' && (
+          <NotificationsTab currentUser={currentUser} onNotificationsViewed={() => setNotifCount(0)} />
+        )}
 
         {activeTab === 'profile' && <ProfileTab currentUser={currentUser} />}
       </main>
@@ -333,8 +367,8 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
           </button>
 
           <button
-            onClick={() => setActiveTab('notifications')}
-            className={`flex-1 min-w-0 py-2 px-1.5 sm:px-3 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
+            onClick={handleOpenNotifications}
+            className={`flex-1 min-w-0 py-2 px-1.5 sm:px-3 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer relative ${
               activeTab === 'notifications'
                 ? 'bg-gradient-to-r from-[#8364ED] to-[#7150EA] text-white shadow-[0_4px_14px_rgba(131,100,237,0.35)] scale-[1.02]'
                 : 'text-slate-600 hover:text-[#8364ED] hover:bg-white/60'
@@ -343,6 +377,11 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
           >
             <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
             <span className="truncate">Notifications</span>
+            {notifCount > 0 && (
+              <span className="px-1.5 py-0.2 text-[9px] font-black bg-rose-500 text-white rounded-full ml-0.5">
+                {notifCount}
+              </span>
+            )}
           </button>
 
           <button
