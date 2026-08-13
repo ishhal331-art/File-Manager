@@ -20,6 +20,7 @@ export type FileType = 'SALES' | 'PURCHASE' | 'BANK_STATEMENT';
 export interface UploadedFile {
   id: string;
   userId: string;
+  userName?: string;
   fileType: FileType;
   originalName: string;
   mimeType: string;
@@ -39,6 +40,7 @@ export interface UploadedFile {
   }>;
   summary?: string;
   fileUrl?: string; // base64 or stored link
+  localFilePath?: string;
 }
 
 export interface NotificationReply {
@@ -68,6 +70,10 @@ export interface UserUploadProgress {
   salesUploaded: boolean;
   purchaseUploaded: boolean;
   bankUploaded: boolean;
+  salesCount?: number;
+  purchaseCount?: number;
+  bankCount?: number;
+  totalFiles?: number;
   percentage: number; // 0, 33, 67, 100
   lastUploadTime?: string;
 }

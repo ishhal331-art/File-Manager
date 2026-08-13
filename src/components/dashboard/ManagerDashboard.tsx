@@ -15,6 +15,8 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
   const [activeTab, setActiveTab] = useState<'users' | 'directory' | 'notifications' | 'profile'>('users');
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [userProgressList, setUserProgressList] = useState<UserUploadProgress[]>([]);
+  const [allUploadedFiles, setAllUploadedFiles] = useState<UploadedFile[]>([]);
+  const [fileFilterType, setFileFilterType] = useState<string>('ALL');
   const [loading, setLoading] = useState(true);
   const [notifCount, setNotifCount] = useState<number>(0);
   const [searchQuery, setSearchQuery] = useState('');
@@ -77,13 +79,15 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [usersRes, progressRes, notifsRes] = await Promise.all([
+      const [usersRes, progressRes, filesRes, notifsRes] = await Promise.all([
         api.getUsers(),
         api.getUserProgress(),
+        api.getFiles(),
         api.getNotifications().catch(() => ({ notifications: [], unreadCount: 0 })),
       ]);
       setAllUsers(usersRes.users);
       setUserProgressList(progressRes.userProgress);
+      setAllUploadedFiles(filesRes.files || []);
       const unread = notifsRes.unreadCount !== undefined
         ? notifsRes.unreadCount
         : (notifsRes.notifications || []).filter((n: any) => !n.readBy || !n.readBy.includes(currentUser.id)).length;
@@ -387,6 +391,147 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
                   })
                 )}
               </div>
+            </div>
+
+            {/* ALL INGESTED DOCUMENTS (MANAGER GLOBAL LEDGER) */}
+            <div className="bg-[#FCFBF8] rounded-2xl sm:rounded-[32px] p-4 sm:p-6 shadow-sm border border-[#F0ECE1] space-y-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-[#F2ECE0]">
+                <div className="flex items-center gap-2">
+                  <FileSpreadsheet className="w-5 h-5 text-[#8364ED]" />
+                  <div>
+                    <h3 className="text-base font-extrabold text-slate-800 tracking-tight">
+                      All Uploaded Files & Financial Ingestion Ledger
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      All documents uploaded across assigned users in real-time.
+                    </p>
+                  </div>
+                </div>
+
+                {/* CATEGORY FILTER BUTTONS */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {(['ALL', 'SALES', 'PURCHASE', 'BANK_STATEMENT'] as const).map((cat) => (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setFileFilterType(cat)}
+                      className={`px-3 py-1 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                        fileFilterType === cat
+                          ? 'bg-[#8364ED] text-white shadow-xs'
+                          : 'bg-[#F2EDE2] text-slate-600 hover:bg-[#EAE4D6]'
+                      }`}
+                    >
+                      {cat === 'ALL'
+                        ? 'All'
+                        : cat === 'SALES'
+                        ? 'Sales'
+                        : cat === 'PURCHASE'
+                        ? 'Purchase'
+                        : 'Bank'}
+                    </button>
+                  ))}
+                  <span className="text-xs font-bold text-[#8364ED] bg-[#F0EBFA] px-3 py-1 rounded-full border border-[#E2D8F7] shrink-0 ml-1">
+                    {allUploadedFiles.length} Total
+                  </span>
+                </div>
+              </div>
+
+              {allUploadedFiles.length === 0 ? (
+                <div className="p-8 text-center text-slate-400 text-xs font-medium bg-[#F8F6EF] rounded-2xl border border-dashed border-[#E0DBCF]">
+                  No files have been uploaded yet. User uploads will immediately appear here.
+                </div>
+              ) : (
+                <div className="space-y-2.5 max-h-[460px] overflow-y-auto pr-1">
+                  {allUploadedFiles
+                    .filter((f) => {
+                      const matchesCategory = fileFilterType === 'ALL' || f.fileType === fileFilterType;
+                      const q = searchQuery.toLowerCase();
+                      const matchesSearch =
+                        !searchQuery ||
+                        f.originalName.toLowerCase().includes(q) ||
+                        (f.userName && f.userName.toLowerCase().includes(q)) ||
+                        (f.period && f.period.toLowerCase().includes(q));
+                      return matchesCategory && matchesSearch;
+                    })
+                    .map((file) => {
+                      const functionLabel =
+                        file.fileType === 'SALES'
+                          ? 'Sales File'
+                          : file.fileType === 'PURCHASE'
+                          ? 'Purchase File'
+                          : 'Bank Statement';
+
+                      const functionColor =
+                        file.fileType === 'SALES'
+                          ? 'bg-purple-100 text-purple-700 border-purple-200'
+                          : file.fileType === 'PURCHASE'
+                          ? 'bg-amber-100 text-amber-700 border-amber-200'
+                          : 'bg-emerald-100 text-emerald-700 border-emerald-200';
+
+                      return (
+                        <div
+                          key={file.id}
+                          className="p-3 sm:p-4 rounded-2xl bg-[#F8F6EF] hover:bg-[#F2ECE0] border border-[#EAE5D7] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                        >
+                          <div className="flex items-start sm:items-center gap-3 min-w-0">
+                            <div className="p-2.5 rounded-xl bg-white border border-[#E0DBCF] text-[#8364ED] shrink-0 shadow-2xs">
+                              <FileSpreadsheet className="w-5 h-5" />
+                            </div>
+
+                            <div className="min-w-0 space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className={`text-[10px] font-black border px-2.5 py-0.5 rounded-md ${functionColor}`}>
+                                  {functionLabel}
+                                </span>
+                                <span className="text-[10px] font-bold text-slate-800 bg-[#EAE4D6] px-2.5 py-0.5 rounded-md">
+                                  User: {file.userName || file.userId}
+                                </span>
+                                <span className="text-[10px] font-bold text-slate-700 bg-[#EAE4D6] px-2 py-0.5 rounded-md flex items-center gap-1">
+                                  <Calendar className="w-3 h-3 text-[#8364ED]" />
+                                  <span>{file.period || 'Q3 2026'}</span>
+                                </span>
+                              </div>
+
+                              <p className="text-xs font-extrabold text-slate-800 truncate" title={file.originalName}>
+                                {file.originalName}
+                              </p>
+
+                              <p className="text-[10px] font-semibold text-slate-400 flex items-center gap-2">
+                                <span>Uploaded: {new Date(file.uploadedAt).toLocaleString()}</span>
+                                <span>•</span>
+                                <span>{(file.size / 1024).toFixed(1)} KB</span>
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* ACTIONS */}
+                          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedFileForViewer(file)}
+                              className="px-3 py-1.5 rounded-xl bg-white hover:bg-[#8364ED] text-slate-700 hover:text-white border border-[#E2DDD0] hover:border-[#8364ED] text-xs font-bold flex items-center gap-1 transition-all shadow-2xs cursor-pointer"
+                              title="Inspect File OCR Extracted Data"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                              <span>Inspect</span>
+                            </button>
+
+                            {file.fileUrl && (
+                              <a
+                                href={file.fileUrl}
+                                download={file.originalName}
+                                className="p-2 rounded-xl bg-white hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 border border-[#E2DDD0] hover:border-emerald-200 transition-all shadow-2xs"
+                                title="Download File"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
             </div>
           </div>
         )}

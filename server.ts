@@ -15,16 +15,19 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 const DATA_DIR = path.join(process.cwd(), "data");
+const UPLOADS_DIR = path.join(DATA_DIR, "uploads");
 const DB_FILE = path.join(DATA_DIR, "db.json");
 
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  try {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  } catch (e) {
-    console.error("Error creating data directory:", e);
+// Ensure data & upload directories exist
+[DATA_DIR, UPLOADS_DIR].forEach((dir) => {
+  if (!fs.existsSync(dir)) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+    } catch (e) {
+      console.error(`Error creating directory ${dir}:`, e);
+    }
   }
-}
+});
 
 const SALT_ROUNDS = 10;
 
@@ -54,7 +57,7 @@ function saveDatabaseToDisk() {
   }
 }
 
-// Load state from disk or initialize with seed data
+// Load state from disk and ensure seed accounts exist
 function loadDatabaseFromDisk() {
   if (fs.existsSync(DB_FILE)) {
     try {
@@ -77,127 +80,163 @@ function loadDatabaseFromDisk() {
         });
       }
       console.log(`Database loaded from disk: ${usersStore.size} users, ${filesStore.size} files, ${notificationsStore.size} notifications.`);
-      return;
     } catch (e) {
-      console.error("Error reading db.json, falling back to seed accounts:", e);
+      console.error("Error reading db.json, continuing with seed check:", e);
     }
   }
 
-  // Fallback: seed default accounts if no existing database
-  seedDefaultAccounts();
+  // Ensure standard default accounts always exist in usersStore without wiping existing files
+  ensureSeedAccounts();
   saveDatabaseToDisk();
 }
 
-function seedDefaultAccounts() {
+function ensureSeedAccounts() {
   const adminPasswordHash = bcrypt.hashSync("AdminPassword123!", SALT_ROUNDS);
   const managerPasswordHash = bcrypt.hashSync("ManagerPass123!", SALT_ROUNDS);
   const client1PasswordHash = bcrypt.hashSync("ClientPass123!", SALT_ROUNDS);
   const user1PasswordHash = bcrypt.hashSync("UserPass123!", SALT_ROUNDS);
 
-  const adminUser: StoredUser = {
-    id: "usr_admin_001",
-    username: "admin",
-    fullName: "System Administrator",
-    email: "admin@filesmanager.com",
-    phone: "+1 (555) 019-2831",
-    employeeId: "EMP-001",
-    role: "ADMIN",
-    status: "ACTIVE",
-    createdAt: new Date().toISOString(),
-    passwordHash: adminPasswordHash,
-  };
+  const defaultUsers: StoredUser[] = [
+    {
+      id: "usr_admin_001",
+      username: "admin",
+      fullName: "System Administrator",
+      email: "admin@filesmanager.com",
+      phone: "+1 (555) 019-2831",
+      employeeId: "EMP-001",
+      role: "ADMIN",
+      status: "ACTIVE",
+      createdAt: new Date().toISOString(),
+      passwordHash: adminPasswordHash,
+    },
+    {
+      id: "usr_mgr_002",
+      username: "manager1",
+      fullName: "Sarah Jenkins",
+      email: "sarah.j@filesmanager.com",
+      phone: "+1 (555) 019-4421",
+      employeeId: "EMP-002",
+      role: "MANAGER",
+      status: "ACTIVE",
+      createdAt: new Date().toISOString(),
+      passwordHash: managerPasswordHash,
+    },
+    {
+      id: "usr_cli_101",
+      username: "client1",
+      fullName: "Alex Rivera",
+      email: "alex.r@clientcorp.com",
+      phone: "+1 (555) 019-8832",
+      employeeId: "EMP-101",
+      role: "USER",
+      status: "ACTIVE",
+      createdAt: new Date().toISOString(),
+      passwordHash: client1PasswordHash,
+    },
+    {
+      id: "usr_usr_102",
+      username: "user1",
+      fullName: "John Doe (Standard User)",
+      email: "john.doe@example.com",
+      phone: "+1 (555) 019-9943",
+      employeeId: "EMP-102",
+      role: "USER",
+      status: "ACTIVE",
+      createdAt: new Date().toISOString(),
+      passwordHash: user1PasswordHash,
+    },
+  ];
 
-  const managerUser: StoredUser = {
-    id: "usr_mgr_002",
-    username: "manager1",
-    fullName: "Sarah Jenkins",
-    email: "sarah.j@filesmanager.com",
-    phone: "+1 (555) 019-4421",
-    employeeId: "EMP-002",
-    role: "MANAGER",
-    status: "ACTIVE",
-    createdAt: new Date().toISOString(),
-    passwordHash: managerPasswordHash,
-  };
+  for (const defUser of defaultUsers) {
+    if (!usersStore.has(defUser.id)) {
+      // Also check by username
+      const existingByUsername = Array.from(usersStore.values()).find(
+        (u) => u.username.toLowerCase() === defUser.username.toLowerCase()
+      );
+      if (!existingByUsername) {
+        usersStore.set(defUser.id, defUser);
+      }
+    }
+  }
 
-  const client1User: StoredUser = {
-    id: "usr_cli_101",
-    username: "client1",
-    fullName: "Alex Rivera",
-    email: "alex.r@clientcorp.com",
-    phone: "+1 (555) 019-8832",
-    employeeId: "EMP-101",
-    role: "USER",
-    status: "ACTIVE",
-    createdAt: new Date().toISOString(),
-    passwordHash: client1PasswordHash,
-  };
-
-  const user1User: StoredUser = {
-    id: "usr_usr_102",
-    username: "user1",
-    fullName: "John Doe (Standard User)",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 019-9943",
-    employeeId: "EMP-102",
-    role: "USER",
-    status: "ACTIVE",
-    createdAt: new Date().toISOString(),
-    passwordHash: user1PasswordHash,
-  };
-
-  usersStore.set(adminUser.id, adminUser);
-  usersStore.set(managerUser.id, managerUser);
-  usersStore.set(client1User.id, client1User);
-  usersStore.set(user1User.id, user1User);
-
-  // Seed initial system notification
-  const initialNotifId = "notif_welcome_001";
-  notificationsStore.set(initialNotifId, {
-    id: initialNotifId,
-    title: "Welcome to Files Manager Portal",
-    message: "Please complete uploading your Sales File, Purchase File, and Bank Statement to ensure full quarterly compliance.",
-    senderId: "usr_admin_001",
-    senderName: "System Administrator",
-    targetUserId: "ALL",
-    timestamp: new Date().toISOString(),
-    readBy: [],
-    replies: [
-      {
-        id: "reply_001",
-        senderId: "usr_admin_001",
-        senderName: "System Administrator",
-        senderRole: "ADMIN",
-        message: "If you have any questions regarding file formats, feel free to reply directly here.",
-        timestamp: new Date().toISOString(),
-      },
-    ],
-  });
+  // Seed initial system notification if none exist
+  if (notificationsStore.size === 0) {
+    const initialNotifId = "notif_welcome_001";
+    notificationsStore.set(initialNotifId, {
+      id: initialNotifId,
+      title: "Welcome to Files Manager Portal",
+      message: "Please complete uploading your Sales File, Purchase File, and Bank Statement to ensure full quarterly compliance.",
+      senderId: "usr_admin_001",
+      senderName: "System Administrator",
+      targetUserId: "ALL",
+      timestamp: new Date().toISOString(),
+      readBy: [],
+      replies: [
+        {
+          id: "reply_001",
+          senderId: "usr_admin_001",
+          senderName: "System Administrator",
+          senderRole: "ADMIN",
+          message: "If you have any questions regarding file formats, feel free to reply directly here.",
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    });
+  }
 }
 
 loadDatabaseFromDisk();
+
+// Helper: Token generation & decode
+function generateAuthToken(userId: string): string {
+  const payload = Buffer.from(JSON.stringify({ userId, iat: Date.now() })).toString("base64url");
+  const rand = Math.random().toString(36).substring(2, 10);
+  return `token_${payload}_${rand}`;
+}
 
 // Helper: Auth middleware with resilient token recovery across server restarts
 function getAuthenticatedUser(req: Request): StoredUser | null {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) return null;
   const token = authHeader.substring(7);
+
+  // 1. Direct memory lookup
   const session = sessions.get(token);
   if (session && Date.now() <= session.expiresAt) {
-    return usersStore.get(session.userId) || null;
+    const user = usersStore.get(session.userId);
+    if (user && user.status === "ACTIVE") {
+      return user;
+    }
   }
 
-  // Fallback if session memory cleared on server restart or hot-reload:
-  // Recover user from token pattern `token_usr_xxx_yyy_zzz`
-  if (token.startsWith("token_usr_")) {
+  // 2. Base64url embedded token decode (resilient across server restarts/reloads)
+  if (token.startsWith("token_")) {
     const parts = token.split("_");
-    if (parts.length >= 4) {
-      const targetUserId = `${parts[1]}_${parts[2]}_${parts[3]}`;
-      const user = usersStore.get(targetUserId);
-      if (user && user.status === "ACTIVE") {
-        // Automatically restore session map
-        sessions.set(token, { userId: user.id, expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000 });
-        return user;
+    if (parts.length >= 2) {
+      try {
+        const payloadStr = Buffer.from(parts[1], "base64url").toString("utf-8");
+        const parsed = JSON.parse(payloadStr);
+        if (parsed && parsed.userId) {
+          const user = usersStore.get(parsed.userId);
+          if (user && user.status === "ACTIVE") {
+            // Re-establish session in memory
+            sessions.set(token, { userId: user.id, expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 });
+            return user;
+          }
+        }
+      } catch (e) {
+        // Fallback for legacy format token_usr_xxx_yyy_zzz
+      }
+    }
+
+    // 3. Fallback for legacy raw userId tokens
+    const withoutPrefix = token.substring(6); // remove 'token_'
+    for (const [id, user] of usersStore.entries()) {
+      if (withoutPrefix.startsWith(id)) {
+        if (user && user.status === "ACTIVE") {
+          sessions.set(token, { userId: user.id, expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 });
+          return user;
+        }
       }
     }
   }
@@ -280,10 +319,11 @@ app.post("/api/auth/login", (req: Request, res: Response) => {
   // Clear failed attempts on successful login
   loginAttempts.delete(cleanUsername);
 
-  // Generate session token embedded with userId for persistent session recovery
-  const token = `token_${foundUser.id}_${Math.random().toString(36).substring(2)}_${Date.now()}`;
-  const expiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+  // Generate resilient session token embedded with userId
+  const token = generateAuthToken(foundUser.id);
+  const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
   sessions.set(token, { userId: foundUser.id, expiresAt });
+  saveDatabaseToDisk();
 
   const { passwordHash, ...userProfile } = foundUser;
 
@@ -531,16 +571,25 @@ app.get("/api/files", (req: Request, res: Response) => {
 
   const results: UploadedFile[] = [];
   for (const file of filesStore.values()) {
+    const owner = usersStore.get(file.userId);
+    const enriched: UploadedFile = {
+      ...file,
+      userName: owner?.fullName || owner?.username || "Portal User",
+    };
+
     if (currentUser.role === "ADMIN" || currentUser.role === "MANAGER") {
       if (!targetUserId || file.userId === targetUserId) {
-        results.push(file);
+        results.push(enriched);
       }
     } else {
       if (file.userId === currentUser.id) {
-        results.push(file);
+        results.push(enriched);
       }
     }
   }
+
+  // Sort by upload date descending
+  results.sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime());
 
   return res.json({ files: results });
 });
@@ -553,12 +602,16 @@ app.get("/api/files/user-progress", (req: Request, res: Response) => {
 
   // Calculate completion percentage for all non-admin users
   const progressList = Array.from(usersStore.values())
-    .filter((u) => u.role === "USER")
+    .filter((u) => u.role.toUpperCase() === "USER" || u.role.toUpperCase() === "MANAGER")
     .map((u) => {
       const userFiles = Array.from(filesStore.values()).filter((f) => f.userId === u.id);
-      const salesUploaded = userFiles.some((f) => f.fileType === "SALES");
-      const purchaseUploaded = userFiles.some((f) => f.fileType === "PURCHASE");
-      const bankUploaded = userFiles.some((f) => f.fileType === "BANK_STATEMENT");
+      const salesFiles = userFiles.filter((f) => f.fileType === "SALES");
+      const purchaseFiles = userFiles.filter((f) => f.fileType === "PURCHASE");
+      const bankFiles = userFiles.filter((f) => f.fileType === "BANK_STATEMENT");
+
+      const salesUploaded = salesFiles.length > 0;
+      const purchaseUploaded = purchaseFiles.length > 0;
+      const bankUploaded = bankFiles.length > 0;
 
       let count = 0;
       if (salesUploaded) count++;
@@ -573,10 +626,16 @@ app.get("/api/files/user-progress", (req: Request, res: Response) => {
 
       return {
         userId: u.id,
-        userName: u.fullName,
+        userName: u.fullName || u.username,
+        userRole: u.role,
+        userStatus: u.status,
         salesUploaded,
         purchaseUploaded,
         bankUploaded,
+        salesCount: salesFiles.length,
+        purchaseCount: purchaseFiles.length,
+        bankCount: bankFiles.length,
+        totalFiles: userFiles.length,
         percentage,
         lastUploadTime: sortedFiles[0]?.uploadedAt,
       };
@@ -602,7 +661,7 @@ app.post("/api/files/upload", async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Invalid file type. Must be SALES, PURCHASE, or BANK_STATEMENT." });
   }
 
-  const fileId = `file_${Math.random().toString(36).substring(2, 9)}`;
+  const fileId = `file_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const uploadedAt = new Date().toISOString();
 
   let extractedText: string | undefined = undefined;
@@ -642,7 +701,7 @@ Return a clean structured JSON object matching this schema:
 }`;
 
         const response = await ai.models.generateContent({
-          model: "gemini-3.6-flash",
+          model: "gemini-2.5-flash",
           contents: { parts: [imagePart, { text: prompt }] },
           config: {
             responseMimeType: "application/json",
@@ -679,7 +738,7 @@ Return a clean structured JSON object matching this schema:
     extractedData = [
       {
         date: new Date().toISOString().split("T")[0],
-        description: `Ingested ${fileType.toLowerCase()} entry`,
+        description: `Ingested ${fileType.toLowerCase()} entry: ${fileName}`,
         amount: 2450.0,
         vendor: "Verified Transaction",
         referenceNo: `DOC-${Math.floor(10000 + Math.random() * 90000)}`,
@@ -687,7 +746,27 @@ Return a clean structured JSON object matching this schema:
     ];
   }
 
-  let fileUrl = base64Data ? base64Data : `data:text/plain;base64,${Buffer.from(textContent || "").toString("base64")}`;
+  // Persist local file to disk in data/uploads
+  const safeOriginalName = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+  const localFileName = `${fileId}_${safeOriginalName}`;
+  const localFilePath = path.join(UPLOADS_DIR, localFileName);
+  let fileSize = 1024;
+
+  try {
+    if (base64Data) {
+      const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, "");
+      const buffer = Buffer.from(cleanBase64, "base64");
+      fs.writeFileSync(localFilePath, buffer);
+      fileSize = buffer.length;
+    } else if (textContent) {
+      fs.writeFileSync(localFilePath, textContent, "utf-8");
+      fileSize = Buffer.byteLength(textContent, "utf-8");
+    }
+  } catch (fsErr) {
+    console.error("Failed to write uploaded file to disk:", fsErr);
+  }
+
+  let fileUrl = base64Data ? base64Data : `/api/files/${fileId}/download`;
 
   // Upload to Supabase Storage Bucket 'compliance-files' if configured
   if (isSupabaseConfigured()) {
@@ -700,7 +779,7 @@ Return a clean structured JSON object matching this schema:
         buffer = Buffer.from(textContent || "");
       }
 
-      const storagePath = `${currentUser.id}/${fileType.toLowerCase()}_${Date.now()}_${fileName}`;
+      const storagePath = `${currentUser.id}/${fileType.toLowerCase()}_${Date.now()}_${safeOriginalName}`;
       const publicUrl = await uploadFileToSupabaseBucket(
         storagePath,
         buffer,
@@ -718,10 +797,11 @@ Return a clean structured JSON object matching this schema:
   const newFile: UploadedFile = {
     id: fileId,
     userId: currentUser.id,
+    userName: currentUser.fullName || currentUser.username,
     fileType,
     originalName: fileName,
     mimeType: mimeType || "application/octet-stream",
-    size: base64Data ? Math.round((base64Data.length * 3) / 4) : (textContent?.length || 1024),
+    size: fileSize,
     uploadedAt,
     period: period || "Q3 2026",
     isAiProcessed,
@@ -729,6 +809,7 @@ Return a clean structured JSON object matching this schema:
     extractedData,
     summary,
     fileUrl,
+    localFilePath: localFileName,
   };
 
   filesStore.set(fileId, newFile);
@@ -738,6 +819,82 @@ Return a clean structured JSON object matching this schema:
     file: newFile,
     message: `${fileType} uploaded successfully.`,
   });
+});
+
+// Download endpoint
+app.get("/api/files/:id/download", (req: Request, res: Response) => {
+  const currentUser = getAuthenticatedUser(req);
+  if (!currentUser) {
+    return res.status(401).json({ error: "Unauthorized." });
+  }
+
+  const { id } = req.params;
+  const file = filesStore.get(id);
+  if (!file) {
+    return res.status(404).json({ error: "File not found." });
+  }
+
+  if (file.userId !== currentUser.id && currentUser.role !== "ADMIN" && currentUser.role !== "MANAGER") {
+    return res.status(403).json({ error: "Forbidden." });
+  }
+
+  if (file.localFilePath) {
+    const fullPath = path.join(UPLOADS_DIR, file.localFilePath);
+    if (fs.existsSync(fullPath)) {
+      res.setHeader("Content-Disposition", `attachment; filename="${file.originalName}"`);
+      res.setHeader("Content-Type", file.mimeType || "application/octet-stream");
+      return res.sendFile(fullPath);
+    }
+  }
+
+  if (file.fileUrl && file.fileUrl.startsWith("data:")) {
+    const parts = file.fileUrl.split(",");
+    if (parts.length === 2) {
+      const buffer = Buffer.from(parts[1], "base64");
+      res.setHeader("Content-Disposition", `attachment; filename="${file.originalName}"`);
+      res.setHeader("Content-Type", file.mimeType || "application/octet-stream");
+      return res.send(buffer);
+    }
+  }
+
+  return res.status(404).json({ error: "File content unavailable." });
+});
+
+// View / Stream endpoint
+app.get("/api/files/:id/view", (req: Request, res: Response) => {
+  const currentUser = getAuthenticatedUser(req);
+  if (!currentUser) {
+    return res.status(401).json({ error: "Unauthorized." });
+  }
+
+  const { id } = req.params;
+  const file = filesStore.get(id);
+  if (!file) {
+    return res.status(404).json({ error: "File not found." });
+  }
+
+  if (file.userId !== currentUser.id && currentUser.role !== "ADMIN" && currentUser.role !== "MANAGER") {
+    return res.status(403).json({ error: "Forbidden." });
+  }
+
+  if (file.localFilePath) {
+    const fullPath = path.join(UPLOADS_DIR, file.localFilePath);
+    if (fs.existsSync(fullPath)) {
+      res.setHeader("Content-Type", file.mimeType || "application/octet-stream");
+      return res.sendFile(fullPath);
+    }
+  }
+
+  if (file.fileUrl && file.fileUrl.startsWith("data:")) {
+    const parts = file.fileUrl.split(",");
+    if (parts.length === 2) {
+      const buffer = Buffer.from(parts[1], "base64");
+      res.setHeader("Content-Type", file.mimeType || "application/octet-stream");
+      return res.send(buffer);
+    }
+  }
+
+  return res.status(404).json({ error: "File content unavailable." });
 });
 
 app.put("/api/files/:id/data", (req: Request, res: Response) => {
@@ -781,6 +938,17 @@ app.delete("/api/files/:id", (req: Request, res: Response) => {
 
   if (file.userId !== currentUser.id && currentUser.role !== "ADMIN") {
     return res.status(403).json({ error: "Forbidden." });
+  }
+
+  if (file.localFilePath) {
+    const fullPath = path.join(UPLOADS_DIR, file.localFilePath);
+    if (fs.existsSync(fullPath)) {
+      try {
+        fs.unlinkSync(fullPath);
+      } catch (err) {
+        console.error("Error removing local file:", err);
+      }
+    }
   }
 
   filesStore.delete(id);
