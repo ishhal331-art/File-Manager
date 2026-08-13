@@ -209,31 +209,38 @@ export const UploadCard: React.FC<Props> = ({
           <div className="p-3.5 rounded-2xl bg-[#F8F6EF] border border-[#EAE5D7] space-y-3">
             {selectedFileId === 'ALL' ? (
               /* ALL FILES VIEW */
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <div className="flex items-center justify-between text-xs font-bold text-slate-700 pb-1 border-b border-[#EAE4D6]">
-                  <span>Showing {categoryFiles.length} file(s)</span>
-                  <span className="text-[10px] text-[#8364ED]">Lifetime Uploads</span>
+                  <span>Files in Section ({categoryFiles.length})</span>
+                  <span className="text-[10px] font-extrabold text-[#8364ED]">Stored Dossier</span>
                 </div>
-                <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1">
+                <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
                   {categoryFiles.map((f) => (
-                    <div key={f.id} className="p-2 bg-white rounded-xl border border-[#E2DDD0] flex items-center justify-between gap-2 text-xs">
-                      <div className="min-w-0">
-                        <p className="font-bold text-slate-800 truncate" title={f.originalName}>{f.originalName}</p>
-                        <p className="text-[9px] text-slate-400">{(f.size / 1024).toFixed(1)} KB • {new Date(f.uploadedAt).toLocaleTimeString()}</p>
+                    <div key={f.id} className="p-2.5 bg-white rounded-xl border border-[#E2DDD0] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                      <div className="min-w-0 flex-1 space-y-0.5">
+                        <p className="font-extrabold text-slate-800 break-words line-clamp-1" title={f.originalName}>
+                          {f.originalName}
+                        </p>
+                        <p className="text-[10px] text-slate-400 flex items-center gap-1.5 flex-wrap">
+                          <span className="whitespace-nowrap">{(f.size / 1024).toFixed(1)} KB</span>
+                          <span>•</span>
+                          <span className="whitespace-nowrap">{new Date(f.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                        </p>
                       </div>
-                      <div className="flex items-center gap-1 shrink-0">
+                      <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
                         <button
                           type="button"
                           onClick={() => onViewFile(f)}
-                          className="p-1 text-slate-600 hover:text-[#8364ED] hover:bg-[#F0EBFA] rounded-lg"
+                          className="px-2.5 py-1 text-slate-700 hover:text-[#8364ED] hover:bg-[#F0EBFA] border border-[#E0DBCF] rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
                           title="Inspect Data"
                         >
-                          <Eye className="w-3.5 h-3.5" />
+                          <Eye className="w-3.5 h-3.5 text-[#8364ED]" />
+                          <span>Inspect</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => handleDownloadSingle(f)}
-                          className="p-1 text-slate-600 hover:text-[#8364ED] hover:bg-[#F0EBFA] rounded-lg"
+                          className="p-1.5 text-white bg-[#8364ED] hover:bg-[#7150EA] rounded-lg cursor-pointer transition-colors"
                           title="Download"
                         >
                           <Download className="w-3.5 h-3.5" />
@@ -241,7 +248,7 @@ export const UploadCard: React.FC<Props> = ({
                         <button
                           type="button"
                           onClick={() => onDeleteFile(f.id)}
-                          className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg"
+                          className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 rounded-lg cursor-pointer transition-colors"
                           title="Delete file"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -251,11 +258,11 @@ export const UploadCard: React.FC<Props> = ({
                   ))}
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                   <button
                     type="button"
                     onClick={handleDownloadAll}
-                    className="w-full py-2 px-2.5 rounded-xl bg-white hover:bg-[#F3EFE6] text-slate-700 border border-[#E0DBCF] text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer"
+                    className="w-full py-2.5 px-3 rounded-xl bg-white hover:bg-[#F3EFE6] text-slate-700 border border-[#E0DBCF] text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5 text-[#8364ED]" />
                     <span>Download All</span>
@@ -266,7 +273,7 @@ export const UploadCard: React.FC<Props> = ({
                     onClick={() => {
                       if (fileInputRef.current) fileInputRef.current.click();
                     }}
-                    className="w-full py-2 px-2.5 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white border border-[#7150EA] text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer"
+                    className="w-full py-2.5 px-3 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white border border-[#7150EA] text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
                   >
                     <Upload className="w-3.5 h-3.5" />
                     <span>+ Upload New</span>
@@ -276,25 +283,27 @@ export const UploadCard: React.FC<Props> = ({
             ) : activeSelectedFile ? (
               /* SINGLE SELECTED FILE VIEW */
               <div className="space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="p-2 rounded-xl bg-white border border-[#E2DDD0] text-[#8364ED] shadow-xs shrink-0">
+                <div className="flex items-start justify-between gap-2.5">
+                  <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                    <div className="p-2 rounded-xl bg-white border border-[#E2DDD0] text-[#8364ED] shadow-xs shrink-0 mt-0.5">
                       <FileSpreadsheet className="w-4 h-4" />
                     </div>
-                    <div className="truncate">
-                      <p className="text-xs font-bold text-slate-800 truncate" title={activeSelectedFile.originalName}>
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <p className="text-xs font-extrabold text-slate-800 break-words line-clamp-2" title={activeSelectedFile.originalName}>
                         {activeSelectedFile.originalName}
                       </p>
-                      <p className="text-[10px] text-slate-400">
-                        {(activeSelectedFile.size / 1024).toFixed(1)} KB • {new Date(activeSelectedFile.uploadedAt).toLocaleString()}
-                      </p>
+                      <div className="text-[10px] text-slate-400 flex items-center gap-1.5 flex-wrap">
+                        <span className="whitespace-nowrap">{(activeSelectedFile.size / 1024).toFixed(1)} KB</span>
+                        <span>•</span>
+                        <span className="whitespace-nowrap">{new Date(activeSelectedFile.uploadedAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</span>
+                      </div>
                     </div>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => onDeleteFile(activeSelectedFile.id)}
-                    className="p-1.5 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer shrink-0"
+                    className="p-2 rounded-xl bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-[#E2DDD0] hover:border-rose-200 transition-colors cursor-pointer shrink-0"
                     title="Delete file"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -306,7 +315,7 @@ export const UploadCard: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => onViewFile(activeSelectedFile)}
-                    className="w-full py-2 px-2 rounded-xl bg-white hover:bg-[#F3EFE6] text-slate-700 border border-[#E0DBCF] text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer"
+                    className="w-full py-2.5 px-2 rounded-xl bg-white hover:bg-[#F3EFE6] text-slate-700 border border-[#E0DBCF] text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs cursor-pointer"
                   >
                     <Eye className="w-3.5 h-3.5 text-[#8364ED]" />
                     <span>Inspect</span>
@@ -315,7 +324,7 @@ export const UploadCard: React.FC<Props> = ({
                   <button
                     type="button"
                     onClick={() => handleDownloadSingle(activeSelectedFile)}
-                    className="w-full py-2 px-2 rounded-xl bg-[#F0EBFA] hover:bg-[#E2D6FA] text-[#8364ED] border border-[#E2D8F7] text-xs font-bold flex items-center justify-center gap-1 transition-all cursor-pointer"
+                    className="w-full py-2.5 px-2 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white border border-[#7150EA] text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Download</span>
@@ -327,7 +336,7 @@ export const UploadCard: React.FC<Props> = ({
                   onClick={() => {
                     if (fileInputRef.current) fileInputRef.current.click();
                   }}
-                  className="w-full py-2 px-2.5 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white border border-[#7150EA] text-xs font-bold flex items-center justify-center gap-1 transition-all shadow-xs cursor-pointer"
+                  className="w-full py-2.5 px-3 rounded-xl bg-[#F0EBFA] hover:bg-[#E4DCF7] text-[#8364ED] border border-[#E2D8F7] text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
                   <Upload className="w-3.5 h-3.5" />
                   <span>+ Upload Another File</span>

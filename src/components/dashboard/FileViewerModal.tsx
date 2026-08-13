@@ -83,21 +83,21 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
         id="file-viewer-card"
       >
         {/* HEADER */}
-        <div className="flex items-center justify-between pb-4 border-b border-[#F0ECE1] shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-[#F0EBFA] text-[#8364ED] flex items-center justify-center shadow-inner">
+        <div className="flex items-center justify-between pb-4 border-b border-[#F0ECE1] shrink-0 gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-2xl bg-[#F0EBFA] text-[#8364ED] flex items-center justify-center shadow-inner shrink-0">
               <FileText className="w-5 h-5" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-extrabold text-slate-800 tracking-tight" id="viewer-file-title">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-base sm:text-lg font-extrabold text-slate-800 tracking-tight truncate max-w-[200px] sm:max-w-md" id="viewer-file-title" title={file.originalName}>
                   {file.originalName}
                 </h3>
-                <span className="text-[10px] font-bold text-[#8364ED] bg-[#F0EBFA] px-2.5 py-0.5 rounded-md border border-[#E2D8F7]">
+                <span className="text-[10px] font-bold text-[#8364ED] bg-[#F0EBFA] px-2.5 py-0.5 rounded-md border border-[#E2D8F7] shrink-0">
                   {file.fileType}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 truncate">
                 Uploaded {new Date(file.uploadedAt).toLocaleString()} • AI OCR Extracted & Editable
               </p>
             </div>
@@ -105,7 +105,7 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-[#F3EFE6] transition-all"
+            className="p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-[#F3EFE6] transition-all shrink-0 cursor-pointer"
             id="btn-close-viewer"
           >
             <X className="w-5 h-5" />
@@ -240,18 +240,18 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
         </div>
 
         {/* FOOTER ACTIONS */}
-        <div className="pt-4 border-t border-[#F0ECE1] flex items-center justify-between shrink-0">
+        <div className="pt-4 border-t border-[#F0ECE1] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
           <button
             type="button"
             onClick={handleDownloadOriginal}
-            className="px-4 py-2.5 rounded-full bg-[#F2ECE0] hover:bg-[#E8E2D4] text-slate-700 text-xs font-bold flex items-center gap-2 transition-all cursor-pointer"
+            className="px-4 py-2.5 rounded-full bg-[#F2ECE0] hover:bg-[#E8E2D4] text-slate-700 text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer order-2 sm:order-1"
             id="btn-download-raw"
           >
             <Download className="w-4 h-4" />
             <span>Download Raw File</span>
           </button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-end gap-3 order-1 sm:order-2">
             {savedSuccess && (
               <span className="text-xs font-bold text-emerald-600 flex items-center gap-1">
                 <CheckCircle2 className="w-4 h-4" /> Saved Changes
@@ -261,7 +261,7 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#8364ED] to-[#7150EA] text-white text-xs font-bold flex items-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-gradient-to-r from-[#8364ED] to-[#7150EA] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50"
               id="btn-save-file-data"
             >
               <Save className="w-4 h-4" />

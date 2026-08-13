@@ -605,77 +605,81 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                       return (
                         <div
                           key={file.id}
-                          className="p-3 sm:p-4 rounded-2xl bg-[#F8F6EF] hover:bg-[#F2ECE0] border border-[#EAE5D7] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                          className="p-3.5 sm:p-4 rounded-2xl bg-[#F8F6EF] hover:bg-[#F2ECE0] border border-[#EAE5D7] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3.5"
                         >
-                          <div className="flex items-start sm:items-center gap-3 min-w-0">
+                          <div className="flex items-start gap-3 min-w-0 flex-1">
                             <div className="p-2.5 rounded-xl bg-white border border-[#E0DBCF] text-[#8364ED] shrink-0 shadow-2xs">
                               <FileSpreadsheet className="w-5 h-5" />
                             </div>
 
-                            <div className="min-w-0 space-y-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <span className={`text-[10px] font-black border px-2.5 py-0.5 rounded-md ${functionColor}`}>
+                            <div className="min-w-0 flex-1 space-y-1">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className={`text-[10px] font-black border px-2 py-0.5 rounded-md whitespace-nowrap ${functionColor}`}>
                                   {functionLabel}
                                 </span>
-                                <span className="text-[10px] font-bold text-slate-800 bg-[#EAE4D6] px-2.5 py-0.5 rounded-md">
+                                <span className="text-[10px] font-bold text-slate-800 bg-[#EAE4D6] px-2 py-0.5 rounded-md whitespace-nowrap">
                                   User: {file.userName || file.userId}
                                 </span>
-                                <span className="text-[10px] font-bold text-slate-700 bg-[#EAE4D6] px-2 py-0.5 rounded-md flex items-center gap-1">
+                                <span className="text-[10px] font-bold text-slate-700 bg-[#EAE4D6] px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0 whitespace-nowrap">
                                   <Calendar className="w-3 h-3 text-[#8364ED]" />
                                   <span>{file.period || 'Q3 2026'}</span>
                                 </span>
                               </div>
 
-                              <p className="text-xs font-extrabold text-slate-800 truncate" title={file.originalName}>
+                              <p className="text-xs sm:text-sm font-extrabold text-slate-800 break-words line-clamp-2" title={file.originalName}>
                                 {file.originalName}
                               </p>
 
-                              <p className="text-[10px] font-semibold text-slate-400 flex items-center gap-2">
-                                <span>Uploaded: {new Date(file.uploadedAt).toLocaleString()}</span>
+                              <div className="text-[11px] font-semibold text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                                <span className="flex items-center gap-1 whitespace-nowrap">
+                                  <Clock className="w-3 h-3 text-slate-400" />
+                                  {new Date(file.uploadedAt).toLocaleString()}
+                                </span>
                                 <span>•</span>
-                                <span>{(file.size / 1024).toFixed(1)} KB</span>
+                                <span className="whitespace-nowrap">{(file.size / 1024).toFixed(1)} KB</span>
                                 {file.isAiProcessed && (
                                   <>
                                     <span>•</span>
-                                    <span className="text-purple-600 font-bold flex items-center gap-1">
+                                    <span className="text-purple-600 font-bold flex items-center gap-1 whitespace-nowrap">
                                       <Sparkles className="w-3 h-3" /> AI OCR Ready
                                     </span>
                                   </>
                                 )}
-                              </p>
+                              </div>
                             </div>
                           </div>
 
                           {/* ACTIONS */}
-                          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                          <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#ECE6D8] w-full sm:w-auto justify-end">
                             <button
                               type="button"
                               onClick={() => setSelectedFileForViewer(file)}
-                              className="px-3 py-1.5 rounded-xl bg-white hover:bg-[#8364ED] text-slate-700 hover:text-white border border-[#E2DDD0] hover:border-[#8364ED] text-xs font-bold flex items-center gap-1 transition-all shadow-2xs cursor-pointer"
+                              className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-[#E2DDD0] shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
                               title="Inspect File OCR Extracted Data"
                             >
-                              <Eye className="w-3.5 h-3.5" />
-                              <span>Inspect</span>
+                              <Eye className="w-3.5 h-3.5 text-[#8364ED]" />
+                              <span>Inspect Data</span>
                             </button>
 
                             {file.fileUrl && (
                               <a
                                 href={file.fileUrl}
                                 download={file.originalName}
-                                className="p-2 rounded-xl bg-white hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 border border-[#E2DDD0] hover:border-emerald-200 transition-all shadow-2xs"
+                                className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs whitespace-nowrap"
                                 title="Download File"
                               >
                                 <Download className="w-3.5 h-3.5" />
+                                <span>Download</span>
                               </a>
                             )}
 
                             <button
                               type="button"
                               onClick={() => handleDeleteFileInAdmin(file.id)}
-                              className="p-2 rounded-xl bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-[#E2DDD0] hover:border-rose-200 transition-all shadow-2xs cursor-pointer"
+                              className="p-2 rounded-xl bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-[#E2DDD0] hover:border-rose-200 transition-all shadow-2xs cursor-pointer shrink-0"
                               title="Delete File"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                         </div>
@@ -791,30 +795,30 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
 
       {/* USER FILES REVIEW & DOWNLOAD MODAL */}
       {selectedUserForReview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-3xl max-h-[90vh] bg-[#FCFBF8] rounded-[32px] p-6 sm:p-8 shadow-[0_25px_60px_rgba(110,85,190,0.25)] border border-[#F0EBE0] flex flex-col relative overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-900/40 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-3xl max-h-[90vh] bg-[#FCFBF8] rounded-[32px] p-4 sm:p-7 shadow-[0_25px_60px_rgba(110,85,190,0.25)] border border-[#F0EBE0] flex flex-col relative overflow-hidden">
             <div className="flex items-center justify-between pb-4 border-b border-[#F0ECE1] shrink-0">
-              <div>
-                <h3 className="text-lg font-extrabold text-slate-800 tracking-tight">
+              <div className="min-w-0 pr-2">
+                <h3 className="text-base sm:text-lg font-extrabold text-slate-800 tracking-tight truncate">
                   Review Files for {selectedUserForReview.fullName} (@{selectedUserForReview.username})
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Select 1, 2, or all 3 files to download as a batch.
+                  Select files to download as a batch or inspect AI OCR data
                 </p>
               </div>
               <button
                 onClick={() => setSelectedUserForReview(null)}
-                className="p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-[#F3EFE6]"
+                className="p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-[#F3EFE6] shrink-0 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto py-5 space-y-4 pr-1">
+            <div className="flex-1 overflow-y-auto py-4 space-y-3 pr-1">
               {loadingSelectedUserFiles ? (
-                <p className="text-center text-xs text-slate-400">Loading files...</p>
+                <p className="text-center text-xs text-slate-400 py-8">Loading files...</p>
               ) : selectedUserFiles.length === 0 ? (
-                <div className="p-8 text-center text-slate-400 text-xs font-medium">
+                <div className="p-8 text-center text-slate-400 text-xs font-medium bg-[#F8F6EF] rounded-2xl border border-dashed border-[#E0DBCF]">
                   This user has not uploaded any files yet.
                 </div>
               ) : (
@@ -823,46 +827,49 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                   return (
                     <div
                       key={file.id}
-                      className={`p-4 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
+                      className={`p-3.5 sm:p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 ${
                         isChecked
-                          ? 'bg-[#F4EFFF] border-[#8364ED] ring-2 ring-[#8364ED]/20'
-                          : 'bg-[#F8F6EF] border-[#EAE5D7]'
+                          ? 'bg-[#F4EFFF] border-[#8364ED] ring-2 ring-[#8364ED]/20 shadow-xs'
+                          : 'bg-[#F8F6EF] border-[#EAE5D7] hover:border-[#DED8C6]'
                       }`}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-start gap-3 min-w-0 flex-1">
                         <input
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => handleToggleFileSelection(file.id)}
-                          className="w-4 h-4 text-[#8364ED] rounded focus:ring-0 cursor-pointer"
+                          className="mt-1 w-4 h-4 text-[#8364ED] rounded focus:ring-0 cursor-pointer shrink-0"
                         />
-                        <div className="space-y-1">
+                        <div className="space-y-1 min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] font-black text-[#8364ED] bg-white px-2 py-0.5 rounded-md border border-[#E2D8F7]">
+                            <span className="text-[10px] font-black text-[#8364ED] bg-white px-2 py-0.5 rounded-md border border-[#E2D8F7] whitespace-nowrap">
                               {file.fileType}
                             </span>
-                            <span className="text-[10px] font-bold text-slate-700 bg-[#EAE4D6] px-2 py-0.5 rounded-md flex items-center gap-1">
+                            <span className="text-[10px] font-bold text-slate-700 bg-[#EAE4D6] px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0 whitespace-nowrap">
                               <Calendar className="w-3 h-3 text-[#8364ED]" />
                               <span>{file.period || 'Q3 2026'}</span>
                             </span>
                           </div>
-                          <p className="text-xs font-bold text-slate-800">{file.originalName}</p>
-                          <p className="text-[10px] text-slate-400 flex items-center gap-2">
-                            <span className="flex items-center gap-1">
+                          <p className="text-xs sm:text-sm font-extrabold text-slate-800 break-words line-clamp-2" title={file.originalName}>
+                            {file.originalName}
+                          </p>
+                          <div className="text-[11px] font-semibold text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                            <span className="flex items-center gap-1 whitespace-nowrap">
                               <Clock className="w-3 h-3 text-slate-400" />
-                              Timestamp: {new Date(file.uploadedAt).toLocaleString()}
+                              {new Date(file.uploadedAt).toLocaleString()}
                             </span>
                             <span>•</span>
-                            <span>{(file.size / 1024).toFixed(1)} KB</span>
-                          </p>
+                            <span className="whitespace-nowrap">{(file.size / 1024).toFixed(1)} KB</span>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 shrink-0">
+                      {/* ACTION BUTTONS */}
+                      <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#ECE6D8] w-full sm:w-auto justify-end">
                         <button
                           type="button"
                           onClick={() => setSelectedFileForViewer(file)}
-                          className="px-3 py-1.5 rounded-xl bg-white text-slate-700 border border-[#E0DBCF] text-xs font-bold flex items-center gap-1 hover:bg-[#F0EBFA] cursor-pointer"
+                          className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-[#E0DBCF] shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
                         >
                           <Eye className="w-3.5 h-3.5 text-[#8364ED]" />
                           <span>Inspect Data</span>
@@ -879,7 +886,7 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                             a.click();
                             document.body.removeChild(a);
                           }}
-                          className="px-3 py-1.5 rounded-xl bg-[#8364ED] text-white text-xs font-bold flex items-center gap-1 hover:bg-[#7150EA] shadow-2xs cursor-pointer"
+                          className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer whitespace-nowrap"
                         >
                           <Download className="w-3.5 h-3.5" />
                           <span>Download</span>
@@ -888,7 +895,7 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                         <button
                           type="button"
                           onClick={() => handleDeleteFileInAdmin(file.id)}
-                          className="p-1.5 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors cursor-pointer"
+                          className="p-2 rounded-xl bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-[#E0DBCF] hover:border-rose-200 transition-colors cursor-pointer shrink-0"
                           title="Delete file"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -900,8 +907,8 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
               )}
             </div>
 
-            <div className="pt-4 border-t border-[#F0ECE1] flex items-center justify-between shrink-0">
-              <span className="text-xs font-semibold text-slate-600">
+            <div className="pt-4 border-t border-[#F0ECE1] flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
+              <span className="text-xs font-semibold text-slate-600 self-start sm:self-auto">
                 Selected: <strong>{selectedFileIdsForDownload.length}</strong> of {selectedUserFiles.length} Files
               </span>
 
@@ -909,7 +916,7 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                 type="button"
                 onClick={handleDownloadSelectedFiles}
                 disabled={selectedFileIdsForDownload.length === 0}
-                className="px-6 py-2.5 rounded-full bg-gradient-to-r from-[#8364ED] to-[#7150EA] text-white text-xs font-bold flex items-center gap-2 shadow-md hover:shadow-lg disabled:opacity-40 cursor-pointer"
+                className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-gradient-to-r from-[#8364ED] to-[#7150EA] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg disabled:opacity-40 cursor-pointer"
                 id="btn-download-selected-user-files"
               >
                 <Download className="w-4 h-4" />

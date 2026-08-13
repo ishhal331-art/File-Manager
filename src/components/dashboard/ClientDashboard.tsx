@@ -227,14 +227,14 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
 
             {/* UPLOADED DOCUMENTS & MONTHLY/QUARTERLY FILING HISTORY */}
             <div className="bg-[#FCFBF8] rounded-2xl sm:rounded-[32px] p-4 sm:p-6 shadow-sm border border-[#F0ECE1] space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-[#F2ECE0]">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-[#8364ED]" />
-                  <h3 className="text-base font-extrabold text-slate-800">
-                    Uploaded Documents & Monthly/Quarterly Filings
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-[#F2ECE0]">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Clock className="w-5 h-5 text-[#8364ED] shrink-0" />
+                  <h3 className="text-base font-extrabold text-slate-800 tracking-tight">
+                    Uploaded Documents & Filings
                   </h3>
                 </div>
-                <span className="text-xs font-extrabold text-[#8364ED] bg-[#F0EBFA] px-3 py-1 rounded-full border border-[#E2D8F7]">
+                <span className="self-start sm:self-auto text-xs font-extrabold text-[#8364ED] bg-[#F0EBFA] px-3 py-1 rounded-full border border-[#E2D8F7] shrink-0 whitespace-nowrap">
                   {files.length} Document{files.length === 1 ? '' : 's'} Stored
                 </span>
               </div>
@@ -263,42 +263,45 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                     return (
                       <div
                         key={file.id}
-                        className="p-3.5 sm:p-4 rounded-2xl bg-[#F8F6EF] hover:bg-[#F2ECE0] border border-[#EAE5D7] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                        className="p-3.5 sm:p-4 rounded-2xl bg-[#F8F6EF] hover:bg-[#F2ECE0] border border-[#EAE5D7] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3.5"
                       >
-                        <div className="flex items-start sm:items-center gap-3 min-w-0">
+                        <div className="flex items-start gap-3 min-w-0 flex-1">
                           <div className="p-2.5 rounded-xl bg-white border border-[#E0DBCF] text-[#8364ED] shrink-0 shadow-2xs">
                             <FileSpreadsheet className="w-5 h-5" />
                           </div>
 
-                          <div className="min-w-0 space-y-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className={`text-[10px] font-black border px-2.5 py-0.5 rounded-md ${functionColor}`}>
+                          <div className="min-w-0 flex-1 space-y-1">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className={`text-[10px] font-black border px-2 py-0.5 rounded-md whitespace-nowrap ${functionColor}`}>
                                 {functionLabel}
                               </span>
-                              <span className="text-[10px] font-bold text-slate-700 bg-[#EAE4D6] px-2 py-0.5 rounded-md flex items-center gap-1">
+                              <span className="text-[10px] font-bold text-slate-700 bg-[#EAE4D6] px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0 whitespace-nowrap">
                                 <Calendar className="w-3 h-3 text-[#8364ED]" />
                                 <span>{file.period || 'Q3 2026'}</span>
                               </span>
                             </div>
 
-                            <p className="text-xs font-extrabold text-slate-800 truncate" title={file.originalName}>
+                            <p className="text-xs sm:text-sm font-extrabold text-slate-800 break-words line-clamp-2" title={file.originalName}>
                               {file.originalName}
                             </p>
 
-                            <p className="text-[10px] font-semibold text-slate-400 flex items-center gap-2">
-                              <span>Uploaded: {new Date(file.uploadedAt).toLocaleString()}</span>
+                            <div className="text-[11px] font-semibold text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                              <span className="flex items-center gap-1 whitespace-nowrap">
+                                <Clock className="w-3 h-3 text-slate-400" />
+                                {new Date(file.uploadedAt).toLocaleString()}
+                              </span>
                               <span>•</span>
-                              <span>{(file.size / 1024).toFixed(1)} KB</span>
-                            </p>
+                              <span className="whitespace-nowrap">{(file.size / 1024).toFixed(1)} KB</span>
+                            </div>
                           </div>
                         </div>
 
-                        {/* ACTIONS */}
-                        <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        {/* ACTIONS: Inspect, Download, Delete - Responsive, No slider, Clean layout */}
+                        <div className="flex items-center gap-2 shrink-0 pt-2.5 sm:pt-0 border-t sm:border-t-0 border-[#ECE6D8] w-full sm:w-auto justify-end">
                           <button
                             type="button"
                             onClick={() => setSelectedFileForViewer(file)}
-                            className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-[#E2DDD0] shadow-2xs flex items-center gap-1 cursor-pointer"
+                            className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-[#E2DDD0] shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
                             title="Inspect or edit extracted file rows"
                           >
                             <Eye className="w-3.5 h-3.5 text-[#8364ED]" />
@@ -308,7 +311,7 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                           <button
                             type="button"
                             onClick={() => handleDownloadFile(file)}
-                            className="px-3 py-1.5 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white font-bold text-xs flex items-center gap-1 cursor-pointer shadow-2xs"
+                            className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap"
                             title="Download original file"
                           >
                             <Download className="w-3.5 h-3.5" />
@@ -318,7 +321,7 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                           <button
                             type="button"
                             onClick={() => handleDeleteFile(file.id)}
-                            className="p-1.5 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-transparent hover:border-rose-200 transition-colors cursor-pointer"
+                            className="p-2 rounded-xl bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-[#E2DDD0] hover:border-rose-200 transition-colors cursor-pointer shrink-0"
                             title="Delete file"
                           >
                             <Trash2 className="w-4 h-4" />
