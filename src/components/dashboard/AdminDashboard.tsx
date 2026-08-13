@@ -76,6 +76,7 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
 
   // Search filter
   const [searchQuery, setSearchQuery] = useState('');
+  const [notifCount, setNotifCount] = useState<number>(0);
 
   useEffect(() => {
     loadUsersData();
@@ -84,12 +85,14 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
   const loadUsersData = async () => {
     setLoadingUsers(true);
     try {
-      const [usersRes, progressRes] = await Promise.all([
+      const [usersRes, progressRes, notifsRes] = await Promise.all([
         api.getUsers(),
         api.getUserProgress(),
+        api.getNotifications().catch(() => ({ notifications: [] })),
       ]);
       setUsers(usersRes.users);
       setUserProgressList(progressRes.userProgress);
+      setNotifCount(notifsRes.notifications ? notifsRes.notifications.length : 0);
     } catch (err) {
       console.error('Error loading users:', err);
     } finally {
@@ -284,6 +287,16 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
 
           <div className="flex items-center gap-2 shrink-0">
             <button
+              onClick={() => setActiveTab('notifications')}
+              className="px-3 py-2 rounded-2xl bg-[#F0EBFA] hover:bg-[#E2D6FA] text-[#8364ED] text-xs font-extrabold flex items-center gap-1.5 border border-[#E2D8F7] transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
+              id="btn-admin-header-messages"
+              title="Click to view Messages and Notifications"
+            >
+              <Bell className="w-3.5 h-3.5 text-[#8364ED]" />
+              <span>{notifCount} Messages</span>
+            </button>
+
+            <button
               onClick={() => handleOpenSendNotifModal('ALL')}
               className="px-3 py-2 rounded-2xl bg-[#F0EBFA] hover:bg-[#E2D6FA] text-[#8364ED] text-xs font-bold flex items-center gap-1.5 border border-[#E2D8F7] transition-all cursor-pointer shadow-2xs"
               id="btn-admin-header-send-notif"
@@ -315,7 +328,7 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
       </header>
 
       {/* MAIN BODY */}
-      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-32 space-y-6 sm:space-y-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-36 sm:pb-44 space-y-6 sm:space-y-8">
         {activeTab === 'users' && (
           <div className="space-y-6 sm:space-y-8 animate-fade-in" id="admin-users-view">
             {/* SEARCH & DISPATCH / ADD USER BAR */}
@@ -950,10 +963,10 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
 
       {/* FIXED FLOATING BOTTOM NAVIGATION BAR */}
       <nav 
-        className="fixed bottom-0 left-0 right-0 z-40 p-2 sm:p-4 pointer-events-none flex items-center justify-center"
+        className="fixed bottom-2 sm:bottom-4 left-0 right-0 z-40 px-3 py-1 pointer-events-none flex items-center justify-center"
         id="admin-bottom-nav-bar"
       >
-        <div className="pointer-events-auto max-w-md w-[calc(100%-0.5rem)] sm:w-full bg-[#FCFBF8]/95 backdrop-blur-md p-1 sm:p-1.5 rounded-full border border-[#EAE3D2] shadow-[0_12px_36px_rgba(110,85,190,0.2)] flex items-center justify-between gap-0.5 sm:gap-1">
+        <div className="pointer-events-auto max-w-md w-[calc(100%-1rem)] sm:w-full bg-[#FCFBF8]/95 backdrop-blur-md p-1 sm:p-1.5 rounded-full border border-[#EAE3D2] shadow-[0_12px_36px_rgba(110,85,190,0.25)] flex items-center justify-between gap-0.5 sm:gap-1">
           <button
             onClick={() => setActiveTab('users')}
             className={`flex-1 min-w-0 py-2 px-1.5 sm:px-3 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${

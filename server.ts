@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import { User, UploadedFile, AppNotification, FileType } from "./src/types.js";
+import { uploadFileToSupabaseBucket, isSupabaseConfigured } from "./src/lib/supabase.js";
 
 const app = express();
 const PORT = 3000;
@@ -586,6 +587,34 @@ Return a clean structured JSON object matching this schema:
     ];
   }
 
+  let fileUrl = base64Data ? base64Data : `data:text/plain;base64,${Buffer.from(textContent || "").toString("base64")}`;
+
+  // Upload to Supabase Storage Bucket 'compliance-files' if configured
+  if (isSupabaseConfigured()) {
+    try {
+      let buffer: Buffer;
+      if (base64Data) {
+        const cleanBase64 = base64Data.replace(/^data:[^;]+;base64,/, "");
+        buffer = Buffer.from(cleanBase64, "base64");
+      } else {
+        buffer = Buffer.from(textContent || "");
+      }
+
+      const storagePath = `${currentUser.id}/${fileType.toLowerCase()}_${Date.now()}_${fileName}`;
+      const publicUrl = await uploadFileToSupabaseBucket(
+        storagePath,
+        buffer,
+        mimeType || "application/octet-stream"
+      );
+
+      if (publicUrl) {
+        fileUrl = publicUrl;
+      }
+    } catch (sErr) {
+      console.error("Supabase Storage upload error:", sErr);
+    }
+  }
+
   const newFile: UploadedFile = {
     id: fileId,
     userId: currentUser.id,
@@ -598,7 +627,7 @@ Return a clean structured JSON object matching this schema:
     extractedText,
     extractedData,
     summary,
-    fileUrl: base64Data ? base64Data : `data:text/plain;base64,${Buffer.from(textContent || "").toString("base64")}`,
+    fileUrl,
   };
 
   // Replace existing file of same type for user if present

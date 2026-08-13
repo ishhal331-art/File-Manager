@@ -18,10 +18,21 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [loadingFiles, setLoadingFiles] = useState(true);
   const [selectedFileForViewer, setSelectedFileForViewer] = useState<UploadedFile | null>(null);
+  const [notifCount, setNotifCount] = useState<number>(0);
 
   useEffect(() => {
     loadUserFiles();
+    loadNotifCount();
   }, []);
+
+  const loadNotifCount = async () => {
+    try {
+      const res = await api.getNotifications();
+      setNotifCount(res.notifications.length);
+    } catch (err) {
+      console.error('Failed to load notification count:', err);
+    }
+  };
 
   const loadUserFiles = async () => {
     try {
@@ -68,8 +79,18 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
             </div>
           </div>
 
-          {/* USER BADGE & LOGOUT */}
+          {/* USER BADGE, MESSAGES BUTTON & LOGOUT */}
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setActiveTab('notifications')}
+              className="px-3 py-1.5 rounded-2xl bg-[#F0EBFA] hover:bg-[#E2D6FA] text-[#8364ED] text-xs font-extrabold flex items-center gap-1.5 border border-[#E2D8F7] transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
+              title="Click to view Messages and Notifications"
+              id="btn-client-header-messages"
+            >
+              <Bell className="w-3.5 h-3.5 text-[#8364ED]" />
+              <span>{notifCount} Messages</span>
+            </button>
+
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-[#F0EBFA] border border-[#E2D8F7]">
               <div className="w-6 h-6 rounded-xl bg-[#8364ED] text-white font-bold text-xs flex items-center justify-center">
                 {currentUser.fullName.charAt(0)}
@@ -93,7 +114,7 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
       </header>
 
       {/* MAIN CONTAINER CONTENT WITH BOTTOM PADDING */}
-      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-32 space-y-6 sm:space-y-8">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-36 sm:pb-44 space-y-6 sm:space-y-8">
         {activeTab === 'dashboard' && (
           <div className="space-y-6 sm:space-y-8 animate-fade-in" id="client-dashboard-tab-view">
             {/* PROGRESS WHEEL SECTION */}
@@ -168,10 +189,10 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
 
       {/* FIXED FLOATING BOTTOM NAVIGATION BAR */}
       <nav 
-        className="fixed bottom-0 left-0 right-0 z-40 p-2 sm:p-4 pointer-events-none flex items-center justify-center"
+        className="fixed bottom-2 sm:bottom-4 left-0 right-0 z-40 px-3 py-1 pointer-events-none flex items-center justify-center"
         id="client-bottom-nav-bar"
       >
-        <div className="pointer-events-auto max-w-md w-[calc(100%-0.5rem)] sm:w-full bg-[#FCFBF8]/95 backdrop-blur-md p-1 sm:p-1.5 rounded-full border border-[#EAE3D2] shadow-[0_12px_36px_rgba(110,85,190,0.2)] flex items-center justify-between gap-0.5 sm:gap-1">
+        <div className="pointer-events-auto max-w-md w-[calc(100%-1rem)] sm:w-full bg-[#FCFBF8]/95 backdrop-blur-md p-1 sm:p-1.5 rounded-full border border-[#EAE3D2] shadow-[0_12px_36px_rgba(110,85,190,0.25)] flex items-center justify-between gap-0.5 sm:gap-1">
           <button
             onClick={() => setActiveTab('dashboard')}
             className={`flex-1 min-w-0 py-2 px-1.5 sm:px-3 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
