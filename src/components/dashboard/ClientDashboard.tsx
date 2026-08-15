@@ -144,7 +144,7 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                   HELLO, {currentUser.fullName.toUpperCase()}!
                 </h1>
                 <span className="hidden sm:inline px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#E5DAD9] text-[#92798B] border border-white/80">
-                  HRA Portal
+                  HRA Accountant
                 </span>
               </div>
               <p className="text-xs text-[#5A463B] font-semibold truncate">
@@ -154,12 +154,12 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
           </div>
 
           {/* SEARCH BAR & QUICK ACTIONS */}
-          <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
             <div className="relative flex-1 sm:w-60">
               <Search className="w-4 h-4 text-[#92798B] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
-                placeholder="Search file name or period..."
+                placeholder="Search file name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 text-xs font-bold text-[#302112] bg-[#E5DAD9] border border-white/80 rounded-full focus:outline-none focus:border-[#92798B] focus:bg-white placeholder:text-[#5A463B]/60 transition-all shadow-inner"
@@ -176,27 +176,11 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
               )}
             </div>
 
-            {/* GOOGLE TASKS SHORTCUT */}
-            <button
-              type="button"
-              onClick={() => setActiveTab('tasks')}
-              className={`p-2.5 sm:px-3.5 sm:py-2 min-h-[44px] min-w-[44px] rounded-2xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
-                activeTab === 'tasks'
-                  ? 'bg-[#92798B] text-[#FAF6F0] border-[#92798B]'
-                  : 'bg-[#E5DAD9] text-[#302112] border-white/80 hover:bg-white'
-              }`}
-              title="Open Google Tasks & Notes"
-              id="btn-header-tasks"
-            >
-              <CheckSquare className="w-4 h-4 text-[#FAF6F0] p-0.5 rounded-md bg-[#92798B]" />
-              <span className="hidden sm:inline">Tasks</span>
-            </button>
-
             {/* MESSAGES / NOTIFICATIONS */}
             <button
               type="button"
               onClick={() => setActiveTab('notifications')}
-              className={`p-2.5 sm:px-3.5 sm:py-2 min-h-[44px] min-w-[44px] rounded-2xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs relative ${
+              className={`p-2.5 sm:px-3 sm:py-2 min-h-[44px] min-w-[44px] rounded-2xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs relative active:scale-95 shrink-0 ${
                 activeTab === 'notifications'
                   ? 'bg-[#92798B] text-[#FAF6F0] border-[#92798B]'
                   : 'bg-[#E5DAD9] text-[#302112] border-white/80 hover:bg-white'
@@ -205,7 +189,7 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
               id="btn-header-notifications"
             >
               <Bell className="w-4 h-4 text-[#FAF6F0] p-0.5 rounded-md bg-[#92798B]" />
-              <span className="hidden sm:inline">Messages</span>
+              <span className="hidden md:inline">Messages</span>
               {notifCount > 0 && (
                 <span className="px-1.5 py-0.2 text-[9px] font-black bg-rose-600 text-white rounded-full">
                   {notifCount}
@@ -217,7 +201,7 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
             <button
               type="button"
               onClick={onLogout}
-              className="lg:hidden p-2.5 min-h-[44px] min-w-[44px] rounded-2xl bg-[#E5DAD9] hover:bg-rose-50 text-rose-700 border border-white/80 transition-all cursor-pointer shadow-2xs flex items-center justify-center"
+              className="lg:hidden p-2.5 min-h-[44px] min-w-[44px] rounded-2xl bg-[#E5DAD9] hover:bg-rose-50 text-rose-700 border border-white/80 transition-all cursor-pointer shadow-2xs flex items-center justify-center active:scale-95 shrink-0"
               title="Log out"
               id="btn-header-logout"
             >

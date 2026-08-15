@@ -5,10 +5,12 @@ import { LoginPage } from './components/auth/LoginPage';
 import { ClientDashboard } from './components/dashboard/ClientDashboard';
 import { AdminDashboard } from './components/dashboard/AdminDashboard';
 import { ManagerDashboard } from './components/dashboard/ManagerDashboard';
+import { WelcomeModal } from './components/common/WelcomeModal';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [initializing, setInitializing] = useState(true);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   useEffect(() => {
     checkSession();
@@ -21,6 +23,9 @@ export default function App() {
     }
 
     const handlePopState = () => {
+      // If welcome modal is open, close it first
+      setShowWelcomeModal(false);
+
       // Dispatch custom backbutton event so open modals or sub-views close smoothly
       const backEvt = new CustomEvent('app:backbutton', { cancelable: true });
       window.dispatchEvent(backEvt);
@@ -41,6 +46,10 @@ export default function App() {
     try {
       const res = await api.getCurrentUser();
       setCurrentUser(res.user);
+      if (res.user && !sessionStorage.getItem('hra_welcome_seen')) {
+        setShowWelcomeModal(true);
+        sessionStorage.setItem('hra_welcome_seen', 'true');
+      }
     } catch (err) {
       console.log('No active session found or token expired.');
       setCurrentUser(null);
@@ -51,11 +60,19 @@ export default function App() {
 
   const handleLoginSuccess = (user: User) => {
     setCurrentUser(user);
+    setShowWelcomeModal(true);
+    sessionStorage.setItem('hra_welcome_seen', 'true');
   };
 
   const handleLogout = async () => {
+    try {
+      sessionStorage.removeItem('hra_welcome_seen');
+    } catch (err) {
+      // ignore
+    }
     await api.logout();
     setCurrentUser(null);
+    setShowWelcomeModal(false);
   };
 
   if (initializing) {
@@ -63,7 +80,7 @@ export default function App() {
       <div className="min-h-screen w-full bg-gradient-to-br from-[#ECE7FA] via-[#E2DCF7] to-[#D5CBF5] flex flex-col items-center justify-center p-4">
         <div className="w-12 h-12 border-4 border-[#8364ED]/20 border-t-[#8364ED] rounded-full animate-spin mb-3" />
         <p className="text-xs font-bold text-slate-700 tracking-wide animate-pulse">
-          Initializing Files Manager Portal...
+          Initializing HRA Accountant Portal...
         </p>
       </div>
     );
@@ -73,15 +90,27 @@ export default function App() {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />;
   }
 
-  // Role-Based Navigation & Rendering
-  if (currentUser.role === 'ADMIN') {
-    return <AdminDashboard currentUser={currentUser} onLogout={handleLogout} />;
-  }
+  return (
+    <>
+      {/* Role-Based Navigation & Rendering */}
+      {currentUser.role === 'ADMIN' && (
+        <AdminDashboard currentUser={currentUser} onLogout={handleLogout} />
+      )}
 
-  if (currentUser.role === 'MANAGER') {
-    return <ManagerDashboard currentUser={currentUser} onLogout={handleLogout} />;
-  }
+      {currentUser.role === 'MANAGER' && (
+        <ManagerDashboard currentUser={currentUser} onLogout={handleLogout} />
+      )}
 
-  // CLIENT / USER
-  return <ClientDashboard currentUser={currentUser} onLogout={handleLogout} />;
+      {currentUser.role === 'USER' && (
+        <ClientDashboard currentUser={currentUser} onLogout={handleLogout} />
+      )}
+
+      {/* FANCY WELCOME MODAL POPUP UPON LOGIN */}
+      <WelcomeModal
+        user={currentUser}
+        isOpen={showWelcomeModal}
+        onClose={() => setShowWelcomeModal(false)}
+      />
+    </>
+  );
 }

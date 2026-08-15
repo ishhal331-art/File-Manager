@@ -86,7 +86,7 @@ export const SidebarNav: React.FC<Props> = ({
           </div>
           <div className="flex items-center gap-2 mt-1.5">
             <span className="text-[10px] font-black text-[#92798B] uppercase tracking-wider bg-[#E5DAD9] px-2.5 py-0.5 rounded-full border border-white/70 shadow-2xs">
-              Enterprise
+              Accountant
             </span>
             <span className="text-[10px] font-bold text-[#5A463B]">Files Portal</span>
           </div>

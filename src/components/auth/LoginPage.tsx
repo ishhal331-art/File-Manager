@@ -105,29 +105,22 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
         className="w-full max-w-5xl bg-[#F3EAE2]/75 backdrop-blur-2xl rounded-[36px] sm:rounded-[44px] p-5 sm:p-7 md:p-9 shadow-[0_30px_80px_rgba(48,33,18,0.14),0_10px_25px_rgba(90,70,59,0.06),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-2px_3px_rgba(90,70,59,0.05)] border border-white/80 relative z-10 my-auto transition-all duration-300"
         id="liquid-glass-portal-window"
       >
-        {/* TOP GLASS NAVIGATION HEADER */}
-        <header className="flex flex-col sm:flex-row items-center justify-between gap-3 pb-5 border-b border-white/60 mb-6">
-          {/* LOGO & BRAND */}
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-auto flex items-center">
-              <HRALogo className="h-9 w-auto" variant="dark" />
-            </div>
-            <div className="h-6 w-px bg-[#B19CAD]/40 hidden sm:block" />
-            <div className="hidden sm:flex items-center gap-1.5 bg-[#E5DAD9]/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/70 shadow-2xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
-              <span className="text-[11px] font-black text-[#302112] tracking-tight">HRA Enterprise Portal</span>
-            </div>
+        {/* TOP GLASS NAVIGATION HEADER - CENTERED LOGO & NAV */}
+        <header className="flex flex-col items-center justify-center gap-3 pb-5 border-b border-white/60 mb-6 text-center">
+          {/* CENTERED LOGO ONLY */}
+          <div className="h-12 w-auto flex items-center justify-center">
+            <HRALogo className="h-11 sm:h-12 w-auto" variant="dark" />
           </div>
 
           {/* TOP NAV PILL BUTTONS */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2.5">
             <button
               type="button"
               onClick={() => {
                 setMode('signin');
                 handleRoleSwitch('user');
               }}
-              className={`px-4 py-2 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+              className={`px-5 py-2 min-h-[40px] rounded-full text-xs font-extrabold transition-all cursor-pointer ${
                 mode === 'signin'
                   ? 'bg-[#302112] text-[#F3EAE2] shadow-[0_4px_14px_rgba(48,33,18,0.25)] scale-105'
                   : 'bg-[#E5DAD9]/80 hover:bg-[#E5DAD9] text-[#5A463B] border border-white/80'
@@ -139,7 +132,7 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
             <button
               type="button"
               onClick={() => setMode('signup')}
-              className={`px-4 py-2 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+              className={`px-5 py-2 min-h-[40px] rounded-full text-xs font-extrabold transition-all cursor-pointer ${
                 mode === 'signup'
                   ? 'bg-[#302112] text-[#F3EAE2] shadow-[0_4px_14px_rgba(48,33,18,0.25)] scale-105'
                   : 'bg-[#E5DAD9]/80 hover:bg-[#E5DAD9] text-[#5A463B] border border-white/80'
@@ -154,7 +147,7 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
         {/* BREADCRUMB / SUB-NAV ROW (MATCHING REFERENCE PICTURE SUB-BAR) */}
         <div className="flex items-center justify-between gap-2 p-2.5 sm:px-4 bg-[#E5DAD9]/70 backdrop-blur-md rounded-2xl border border-white/70 text-[11px] font-bold text-[#5A463B] mb-6 shadow-2xs overflow-x-auto">
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[#302112] font-black">HRA Portal</span>
+            <span className="text-[#302112] font-black">HRA Accountant Portal</span>
             <span>›</span>
             <span>Fiscal Dossiers</span>
             <span>›</span>
@@ -181,14 +174,14 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
           >
             <div>
               {/* HEADING */}
-              <div className="mb-4">
-                <div className="flex items-center gap-1.5 mb-1">
+              <div className="mb-4 text-center flex flex-col items-center">
+                <div className="flex items-center justify-center gap-1.5 mb-1 text-center">
                   <span className="text-[#CBAF87] font-black text-base select-none">≡</span>
-                  <h2 className="text-xl sm:text-2xl font-black text-[#302112] tracking-tight" id="login-title">
-                    {mode === 'signin' ? 'Welcome to HRA' : 'Create HRA Account'}
+                  <h2 className="text-xl sm:text-2xl font-black text-[#302112] tracking-tight text-center" id="login-title">
+                    {mode === 'signin' ? 'Welcome to HRA Accountant' : 'Create HRA Accountant Account'}
                   </h2>
                 </div>
-                <p className="text-xs font-semibold text-[#5A463B]">
+                <p className="text-xs font-semibold text-[#5A463B] text-center">
                   {mode === 'signin'
                     ? 'Enter your credentials to access your financial dossier'
                     : 'Register as a new client to submit compliance files'}
@@ -491,7 +484,7 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
         {/* BOTTOM LIQUID GLASS FOOTER */}
         <footer className="mt-6 pt-4 border-t border-white/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-semibold text-[#5A463B]">
           <div className="flex items-center gap-2">
-            <span>© 2026 HRA Enterprise</span>
+            <span>© 2026 HRA Accountant</span>
             <span>•</span>
             <span>Financial Ingestion & Intelligence System</span>
           </div>

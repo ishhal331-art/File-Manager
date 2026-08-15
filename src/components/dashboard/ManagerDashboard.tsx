@@ -469,12 +469,13 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
               </div>
             </div>
 
-            {/* HEADER ACTIONS */}
-            <div className="flex items-center gap-2 shrink-0">
+            {/* HEADER ACTIONS: STREAMLINED FOR ALL SCREENS */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setShowAddUserModal(true)}
-                className="px-3.5 py-2 min-h-[44px] rounded-2xl bg-[#92798B] hover:bg-[#5A463B] text-[#FAF6F0] text-xs font-black flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                className="px-3 sm:px-3.5 py-2 min-h-[44px] rounded-2xl bg-[#92798B] hover:bg-[#5A463B] text-[#FAF6F0] text-xs font-black flex items-center gap-1.5 transition-all shadow-xs cursor-pointer active:scale-95"
+                title="Add New User Account"
                 id="btn-manager-quick-add-user"
               >
                 <UserPlus className="w-4 h-4 text-[#FAF6F0]" />
@@ -483,53 +484,8 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
 
               <button
                 type="button"
-                onClick={() => setActiveTab('analytics')}
-                className={`p-2.5 sm:px-3.5 sm:py-2 min-h-[44px] min-w-[44px] rounded-2xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
-                  activeTab === 'analytics'
-                    ? 'bg-[#92798B] text-[#FAF6F0] border-[#92798B]'
-                    : 'bg-[#E5DAD9] text-[#302112] border-white/80 hover:bg-white'
-                }`}
-                title="View Fiscal Graphs & Analytics"
-                id="btn-manager-header-analytics"
-              >
-                <BarChart3 className="w-4 h-4 text-[#FAF6F0] p-0.5 rounded-md bg-[#92798B]" />
-                <span className="hidden md:inline">Analytics</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('ai')}
-                className={`p-2.5 sm:px-3.5 sm:py-2 min-h-[44px] min-w-[44px] rounded-2xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
-                  activeTab === 'ai'
-                    ? 'bg-[#92798B] text-[#FAF6F0] border-[#92798B]'
-                    : 'bg-[#E5DAD9] text-[#302112] border-white/80 hover:bg-white'
-                }`}
-                title="Open AI Fiscal & Compliance Advisor"
-                id="btn-manager-header-ai"
-              >
-                <Sparkles className="w-4 h-4 text-[#FAF6F0] p-0.5 rounded-md bg-[#92798B]" />
-                <span className="hidden md:inline">AI Advisor</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveTab('tasks')}
-                className={`p-2.5 sm:px-3.5 sm:py-2 min-h-[44px] min-w-[44px] rounded-2xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
-                  activeTab === 'tasks'
-                    ? 'bg-[#92798B] text-[#FAF6F0] border-[#92798B]'
-                    : 'bg-[#E5DAD9] text-[#302112] border-white/80 hover:bg-white'
-                }`}
-                title="Open Google Tasks & Notes"
-                id="btn-manager-header-tasks"
-              >
-                <CheckSquare className="w-4 h-4 text-[#FAF6F0] p-0.5 rounded-md bg-[#92798B]" />
-                <span className="hidden sm:inline">Tasks</span>
-              </button>
-
-              <button
-                type="button"
                 onClick={() => setActiveTab('notifications')}
-                className={`p-2.5 sm:px-3.5 sm:py-2 min-h-[44px] min-w-[44px] rounded-2xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs relative ${
+                className={`p-2.5 sm:px-3 sm:py-2 min-h-[44px] min-w-[44px] rounded-2xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs relative active:scale-95 ${
                   activeTab === 'notifications'
                     ? 'bg-[#92798B] text-[#FAF6F0] border-[#92798B]'
                     : 'bg-[#E5DAD9] text-[#302112] border-white/80 hover:bg-white'
@@ -538,7 +494,7 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
                 id="btn-manager-header-notifications"
               >
                 <Bell className="w-4 h-4 text-[#FAF6F0] p-0.5 rounded-md bg-[#92798B]" />
-                <span className="hidden sm:inline">Messages</span>
+                <span className="hidden md:inline">Messages</span>
                 {notifCount > 0 && (
                   <span className="px-1.5 py-0.2 text-[9px] font-black bg-rose-600 text-[#FAF6F0] rounded-full">
                     {notifCount}
@@ -549,7 +505,7 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
               <button
                 type="button"
                 onClick={onLogout}
-                className="lg:hidden p-2.5 min-h-[44px] min-w-[44px] rounded-2xl bg-[#E5DAD9] hover:bg-rose-50 text-rose-700 border border-white/80 transition-all cursor-pointer shadow-2xs flex items-center justify-center"
+                className="lg:hidden p-2.5 min-h-[44px] min-w-[44px] rounded-2xl bg-[#E5DAD9] hover:bg-rose-50 text-rose-700 border border-white/80 transition-all cursor-pointer shadow-2xs flex items-center justify-center active:scale-95"
                 title="Log out"
                 id="btn-manager-header-logout"
               >
