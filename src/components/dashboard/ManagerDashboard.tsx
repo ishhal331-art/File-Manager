@@ -1156,6 +1156,7 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
       {selectedUserForReview && (
         <AdminUserDetailDrawer
           user={selectedUserForReview}
+          initialFiles={allUploadedFiles.filter((f) => f.userId === selectedUserForReview.id)}
           onClose={() => setSelectedUserForReview(null)}
           onInspectFile={(file) => setSelectedFileForViewer(file)}
           onSendMessage={(targetUserId) => {

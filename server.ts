@@ -553,8 +553,8 @@ app.post("/api/users", (req: Request, res: Response) => {
 
 app.patch("/api/users/:id/status", (req: Request, res: Response) => {
   const currentUser = getAuthenticatedUser(req);
-  if (!currentUser || currentUser.role !== "ADMIN") {
-    return res.status(403).json({ error: "Forbidden. Only Admin can change status." });
+  if (!currentUser || (currentUser.role !== "ADMIN" && currentUser.role !== "MANAGER")) {
+    return res.status(403).json({ error: "Forbidden. Only Admin or Manager can change user status." });
   }
 
   const { id } = req.params;
@@ -566,7 +566,11 @@ app.patch("/api/users/:id/status", (req: Request, res: Response) => {
   }
 
   if (target.id === currentUser.id) {
-    return res.status(400).json({ error: "Admin cannot disable their own account." });
+    return res.status(400).json({ error: "Cannot disable your own account." });
+  }
+
+  if (currentUser.role === "MANAGER" && target.role !== "USER") {
+    return res.status(403).json({ error: "Managers can only change status for standard client users." });
   }
 
   target.status = status === "DISABLED" ? "DISABLED" : "ACTIVE";
@@ -577,10 +581,40 @@ app.patch("/api/users/:id/status", (req: Request, res: Response) => {
   return res.json({ user: userProfile, message: `User status updated to ${target.status}.` });
 });
 
+app.patch("/api/users/:id", (req: Request, res: Response) => {
+  const currentUser = getAuthenticatedUser(req);
+  if (!currentUser || (currentUser.role !== "ADMIN" && currentUser.role !== "MANAGER")) {
+    return res.status(403).json({ error: "Forbidden. Only Admin or Manager can edit user details." });
+  }
+
+  const { id } = req.params;
+  const { fullName, email, phone, employeeId } = req.body;
+
+  const target = usersStore.get(id);
+  if (!target) {
+    return res.status(404).json({ error: "User not found." });
+  }
+
+  if (currentUser.role === "MANAGER" && target.role !== "USER" && target.id !== currentUser.id) {
+    return res.status(403).json({ error: "Managers can only update details for standard client users." });
+  }
+
+  if (fullName !== undefined) target.fullName = String(fullName).trim();
+  if (email !== undefined) target.email = String(email).trim();
+  if (phone !== undefined) target.phone = String(phone).trim();
+  if (employeeId !== undefined) target.employeeId = String(employeeId).trim();
+
+  usersStore.set(target.id, target);
+  saveDatabaseToDisk();
+
+  const { passwordHash, ...userProfile } = target;
+  return res.json({ user: userProfile, message: "User details updated successfully." });
+});
+
 app.post("/api/users/:id/reset-password", (req: Request, res: Response) => {
   const currentUser = getAuthenticatedUser(req);
-  if (!currentUser || currentUser.role !== "ADMIN") {
-    return res.status(403).json({ error: "Forbidden. Only Admin can reset user passwords." });
+  if (!currentUser || (currentUser.role !== "ADMIN" && currentUser.role !== "MANAGER")) {
+    return res.status(403).json({ error: "Forbidden. Only Admin or Manager can reset user passwords." });
   }
 
   const { id } = req.params;
@@ -601,6 +635,10 @@ app.post("/api/users/:id/reset-password", (req: Request, res: Response) => {
   const target = usersStore.get(id);
   if (!target) {
     return res.status(404).json({ error: "User not found." });
+  }
+
+  if (currentUser.role === "MANAGER" && target.role !== "USER") {
+    return res.status(403).json({ error: "Managers can only reset passwords for standard client users." });
   }
 
   target.passwordHash = bcrypt.hashSync(newPassword, SALT_ROUNDS);

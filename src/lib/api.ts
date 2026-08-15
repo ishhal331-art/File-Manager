@@ -58,18 +58,33 @@ async function request(endpoint: string, options: RequestInit = {}) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(endpoint, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await fetch(endpoint, {
+      ...options,
+      headers,
+    });
 
-  const data = await response.json();
+    const contentType = response.headers.get('content-type');
+    let data: any = {};
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json().catch(() => ({}));
+    } else {
+      const text = await response.text().catch(() => '');
+      data = { message: text };
+    }
 
-  if (!response.ok) {
-    throw new Error(data.error || 'An unexpected server error occurred.');
+    if (!response.ok) {
+      throw new Error(data.error || data.message || `Request failed with status ${response.status}`);
+    }
+
+    return data;
+  } catch (err: any) {
+    if (err.message && err.message !== 'Failed to fetch') {
+      throw err;
+    }
+    console.warn(`Network request to ${endpoint} failed:`, err?.message || err);
+    throw new Error(err?.message || 'Network connection unavailable.');
   }
-
-  return data;
 }
 
 export const api = {
@@ -170,6 +185,13 @@ export const api = {
     });
   },
 
+  updateUserDetails: async (userId: string, details: { fullName?: string; email?: string; phone?: string; employeeId?: string }) => {
+    return request(`/api/users/${userId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(details),
+    });
+  },
+
   adminResetPassword: async (userId: string, newPassword: string, confirmPassword: string) => {
     return request(`/api/users/${userId}/reset-password`, {
       method: 'POST',
@@ -180,11 +202,23 @@ export const api = {
   // Files & Progress
   getFiles: async (targetUserId?: string): Promise<{ files: UploadedFile[] }> => {
     const query = targetUserId ? `?userId=${encodeURIComponent(targetUserId)}` : '';
-    return request(`/api/files${query}`);
+    try {
+      const data = await request(`/api/files${query}`);
+      return { files: Array.isArray(data?.files) ? data.files : [] };
+    } catch (err: any) {
+      console.warn('api.getFiles error, returning empty files array:', err?.message || err);
+      return { files: [] };
+    }
   },
 
   getUserProgress: async (): Promise<{ userProgress: any[] }> => {
-    return request('/api/files/user-progress');
+    try {
+      const data = await request('/api/files/user-progress');
+      return { userProgress: Array.isArray(data?.userProgress) ? data.userProgress : [] };
+    } catch (err: any) {
+      console.warn('api.getUserProgress error, returning empty list:', err?.message || err);
+      return { userProgress: [] };
+    }
   },
 
   uploadFile: async (fileData: {
