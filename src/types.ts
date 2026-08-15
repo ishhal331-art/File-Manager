@@ -15,7 +15,7 @@ export interface User {
   createdAt: string;
 }
 
-export type FileType = 'SALES' | 'PURCHASE' | 'BANK_STATEMENT';
+export type FileType = 'SALES' | 'PURCHASE' | 'BANK_STATEMENT' | 'ADDITIONAL';
 
 export interface UploadedFile {
   id: string;
@@ -70,10 +70,12 @@ export interface UserUploadProgress {
   salesUploaded: boolean;
   purchaseUploaded: boolean;
   bankUploaded: boolean;
+  additionalUploaded?: boolean;
   salesCount?: number;
   purchaseCount?: number;
   bankCount?: number;
+  additionalCount?: number;
   totalFiles?: number;
-  percentage: number; // 0, 33, 67, 100
+  percentage: number; // 0, 33, 67, 100 based on 3 required files
   lastUploadTime?: string;
 }

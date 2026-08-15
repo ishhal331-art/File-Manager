@@ -1,6 +1,6 @@
 {
   "name": "Files Manager",
-  "description": "A premium secure authentication and multi-role file management portal with AI-driven file ingestion, real-time notifications, and admin user management.",
+  "description": "HRA Enterprise Files Manager and Secure Portal with AI OCR extraction, Google Tasks, user management, and multi-format document ingestion.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

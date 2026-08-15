@@ -1,12 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { User, UploadedFile } from '../../types';
 import { api } from '../../lib/api';
-import { ProgressWheel } from './ProgressWheel';
+import {
+  Bell,
+  Search,
+  CheckSquare,
+  Sparkles,
+  LogOut,
+  X,
+  UploadCloud,
+  LayoutDashboard,
+  Clock,
+  User as UserIcon,
+  ShieldCheck,
+  Building2,
+  FolderOpen,
+} from 'lucide-react';
+import { SidebarNav, NavTab } from './SidebarNav';
 import { UploadCard } from './UploadCard';
+import { UploadIntelligenceOverview } from './UploadIntelligenceOverview';
+import { SmartStatusCard } from './SmartStatusCard';
+import { CentralUploadZone } from './CentralUploadZone';
+import { AIDocumentIntelligenceCard } from './AIDocumentIntelligenceCard';
+import { RecentActivityTimeline } from './RecentActivityTimeline';
 import { FileViewerModal } from './FileViewerModal';
 import { NotificationsTab } from './NotificationsTab';
 import { ProfileTab } from './ProfileTab';
-import { LayoutDashboard, Bell, User as UserIcon, LogOut, Sparkles, Download, Trash2, Eye, FileSpreadsheet, Clock, Calendar } from 'lucide-react';
+import { GoogleTasksTab } from './GoogleTasksTab';
+import { AnalyticsAndGraphsView } from './AnalyticsAndGraphsView';
+import { AIAdvisorHub } from './AIAdvisorHub';
+import { InteractiveDashboardHub } from './InteractiveDashboardHub';
+import { HRALogo } from '../HRALogo';
+import { BarChart3 } from 'lucide-react';
 
 interface Props {
   currentUser: User;
@@ -14,55 +39,46 @@ interface Props {
 }
 
 export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'notifications' | 'profile'>('dashboard');
+  const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [files, setFiles] = useState<UploadedFile[]>([]);
-  const [loadingFiles, setLoadingFiles] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [notifCount, setNotifCount] = useState(0);
   const [selectedFileForViewer, setSelectedFileForViewer] = useState<UploadedFile | null>(null);
-  const [notifCount, setNotifCount] = useState<number>(0);
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'COMPLETED' | 'PENDING' | 'PROCESSING'>('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
 
+  // Fetch initial user data
   useEffect(() => {
-    loadUserFiles();
-    loadNotifCount();
+    let mounted = true;
+    async function loadData() {
+      try {
+        const [filesRes, notifRes] = await Promise.all([
+          api.getFiles(),
+          api.getNotifications(),
+        ]);
+        if (mounted) {
+          setFiles(filesRes.files || []);
+          const unread = (notifRes.notifications || []).filter((n: any) => !n.isRead).length;
+          setNotifCount(unread);
+        }
+      } catch (err) {
+        console.error('Error loading dashboard data:', err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    loadData();
+    return () => {
+      mounted = false;
+    };
   }, []);
-
-  const loadNotifCount = async () => {
-    try {
-      const res = await api.getNotifications();
-      const unread = res.unreadCount !== undefined
-        ? res.unreadCount
-        : res.notifications.filter((n) => !n.readBy || !n.readBy.includes(currentUser.id)).length;
-      setNotifCount(unread);
-    } catch (err) {
-      console.error('Failed to load notification count:', err);
-    }
-  };
-
-  const handleOpenNotifications = async () => {
-    setActiveTab('notifications');
-    setNotifCount(0);
-    try {
-      await api.markNotificationsRead();
-    } catch (err) {
-      console.error('Failed to mark notifications read:', err);
-    }
-  };
-
-  const loadUserFiles = async () => {
-    try {
-      const res = await api.getFiles();
-      setFiles(res.files);
-    } catch (err) {
-      console.error('Failed to load user files:', err);
-    } finally {
-      setLoadingFiles(false);
-    }
-  };
 
   const salesFiles = files.filter((f) => f.fileType === 'SALES');
   const purchaseFiles = files.filter((f) => f.fileType === 'PURCHASE');
   const bankFiles = files.filter((f) => f.fileType === 'BANK_STATEMENT');
+  const additionalFiles = files.filter((f) => f.fileType === 'ADDITIONAL');
 
-  // Handle browser back button within ClientDashboard so pressing Back doesn't leave the app
+  // Handle browser back button
   useEffect(() => {
     const handleBackButton = (e: Event) => {
       if (selectedFileForViewer) {
@@ -83,7 +99,7 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
   };
 
   const handleDeleteFile = async (fileId: string) => {
-    if (!confirm('Are you sure you want to remove this uploaded file from your history?')) return;
+    if (!confirm('Are you sure you want to remove this uploaded file from your dossier?')) return;
     try {
       await api.deleteFile(fileId);
       setFiles((prev) => prev.filter((f) => f.id !== fileId));
@@ -92,106 +108,188 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
     }
   };
 
-  const handleDownloadFile = (file: UploadedFile) => {
-    if (!file.fileUrl) return;
-    const a = document.createElement('a');
-    a.href = file.fileUrl;
-    a.download = `${file.fileType}_${file.period || 'Period'}_${file.originalName}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
-
   const handleSavedFile = (updated: UploadedFile) => {
     setFiles((prev) => prev.map((f) => (f.id === updated.id ? updated : f)));
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F0FC] text-slate-800 font-sans selection:bg-[#8364ED]/20 selection:text-[#8364ED] overflow-x-hidden">
-      {/* TOP CLAY HEADER */}
-      <header className="sticky top-0 z-30 bg-[#FCFBF8]/95 backdrop-blur-md border-b border-[#F0ECE1] shadow-[0_10px_25px_rgba(110,85,190,0.05)] py-3 px-3 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
-          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-[#8364ED] to-[#A58DF5] text-white flex items-center justify-center font-extrabold text-lg shadow-md shrink-0">
-              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+    <div 
+      className="min-h-screen bg-[#D0BEC7] text-[#302112] font-sans selection:bg-[#92798B]/30 selection:text-[#302112] p-3 sm:p-5 lg:p-6 flex gap-6"
+      id="client-portal-root"
+    >
+      {/* DESKTOP SIDEBAR NAVIGATION (NO DOCS TAB, REFINED PALETTE) */}
+      <SidebarNav
+        currentUser={currentUser}
+        activeTab={activeTab}
+        onTabChange={(tab) => setActiveTab(tab)}
+        onLogout={onLogout}
+        notifCount={notifCount}
+      />
+
+      {/* MAIN CONTENT AREA */}
+      <div className="flex-1 min-w-0 flex flex-col space-y-5 pb-32 sm:pb-36">
+        {/* TOP LIQUID GLASS HEADER */}
+        <header
+          className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col md:flex-row md:items-center justify-between gap-4"
+          id="top-portal-header"
+        >
+          {/* HELLO GREETING & HRA BRANDING */}
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#92798B] to-[#5A463B] text-[#F3EAE2] flex items-center justify-center font-black text-lg shadow-xs shrink-0">
+              <Sparkles className="w-5 h-5 text-[#CBAF87]" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-base sm:text-lg font-extrabold text-slate-800 tracking-tight truncate" id="portal-title">
-                Files Manager
-              </h1>
-              <p className="text-[10px] sm:text-[11px] font-semibold text-slate-400 truncate">
-                AI Ingestion & Compliance Engine
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-black text-[#302112] tracking-tight leading-tight truncate">
+                  HELLO, {currentUser.fullName.toUpperCase()}!
+                </h1>
+                <span className="hidden sm:inline px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#E5DAD9] text-[#92798B] border border-white/80">
+                  HRA Portal
+                </span>
+              </div>
+              <p className="text-xs text-[#5A463B] font-semibold truncate">
+                Fiscal Ingestion, AI OCR Compliance & Dossier Manager
               </p>
             </div>
           </div>
 
-          {/* USER BADGE, MESSAGES BUTTON & LOGOUT */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* SEARCH BAR & QUICK ACTIONS */}
+          <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+            <div className="relative flex-1 sm:w-60">
+              <Search className="w-4 h-4 text-[#92798B] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search file name or period..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 text-xs font-bold text-[#302112] bg-[#E5DAD9] border border-white/80 rounded-full focus:outline-none focus:border-[#92798B] focus:bg-white placeholder:text-[#5A463B]/60 transition-all shadow-inner"
+                id="header-search-input"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5A463B] hover:text-[#302112]"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* GOOGLE TASKS SHORTCUT */}
             <button
-              onClick={handleOpenNotifications}
-              className="px-3 py-1.5 rounded-2xl bg-[#F0EBFA] hover:bg-[#E2D6FA] text-[#8364ED] text-xs font-extrabold flex items-center gap-1.5 border border-[#E2D8F7] transition-all cursor-pointer shadow-2xs hover:scale-105 active:scale-95 relative"
-              title="Click to view Messages and Notifications"
-              id="btn-client-header-messages"
+              type="button"
+              onClick={() => setActiveTab('tasks')}
+              className={`p-2.5 sm:px-3.5 sm:py-2 min-h-[44px] min-w-[44px] rounded-2xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs ${
+                activeTab === 'tasks'
+                  ? 'bg-[#92798B] text-[#FAF6F0] border-[#92798B]'
+                  : 'bg-[#E5DAD9] text-[#302112] border-white/80 hover:bg-white'
+              }`}
+              title="Open Google Tasks & Notes"
+              id="btn-header-tasks"
             >
-              <Bell className="w-3.5 h-3.5 text-[#8364ED]" />
-              <span>{notifCount} Messages</span>
+              <CheckSquare className="w-4 h-4 text-[#FAF6F0] p-0.5 rounded-md bg-[#92798B]" />
+              <span className="hidden sm:inline">Tasks</span>
+            </button>
+
+            {/* MESSAGES / NOTIFICATIONS */}
+            <button
+              type="button"
+              onClick={() => setActiveTab('notifications')}
+              className={`p-2.5 sm:px-3.5 sm:py-2 min-h-[44px] min-w-[44px] rounded-2xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs relative ${
+                activeTab === 'notifications'
+                  ? 'bg-[#92798B] text-[#FAF6F0] border-[#92798B]'
+                  : 'bg-[#E5DAD9] text-[#302112] border-white/80 hover:bg-white'
+              }`}
+              title="Notifications & Messages"
+              id="btn-header-notifications"
+            >
+              <Bell className="w-4 h-4 text-[#FAF6F0] p-0.5 rounded-md bg-[#92798B]" />
+              <span className="hidden sm:inline">Messages</span>
               {notifCount > 0 && (
-                <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping absolute top-1 right-1" />
+                <span className="px-1.5 py-0.2 text-[9px] font-black bg-rose-600 text-white rounded-full">
+                  {notifCount}
+                </span>
               )}
             </button>
 
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-[#F0EBFA] border border-[#E2D8F7]">
-              <div className="w-6 h-6 rounded-xl bg-[#8364ED] text-white font-bold text-xs flex items-center justify-center">
-                {currentUser.fullName.charAt(0)}
-              </div>
-              <div className="text-left">
-                <p className="text-xs font-bold text-slate-800 leading-tight">{currentUser.fullName}</p>
-                <p className="text-[10px] font-semibold text-[#8364ED]">{currentUser.role}</p>
-              </div>
-            </div>
-
+            {/* LOGOUT BUTTON FOR MOBILE / TABLET */}
             <button
+              type="button"
               onClick={onLogout}
-              className="p-2 sm:p-2.5 rounded-2xl bg-[#F5F0E6] hover:bg-rose-50 hover:text-rose-600 text-slate-600 transition-all border border-[#EAE4D6] hover:border-rose-200 cursor-pointer shadow-2xs"
-              title="Sign Out"
-              id="btn-client-logout"
+              className="lg:hidden p-2.5 min-h-[44px] min-w-[44px] rounded-2xl bg-[#E5DAD9] hover:bg-rose-50 text-rose-700 border border-white/80 transition-all cursor-pointer shadow-2xs flex items-center justify-center"
+              title="Log out"
+              id="btn-header-logout"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-4 h-4 text-[#FAF6F0] p-0.5 rounded-md bg-[#92798B]" />
             </button>
           </div>
-        </div>
-      </header>
+        </header>
 
-      {/* MAIN CONTAINER CONTENT WITH BOTTOM PADDING */}
-      <main className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 pb-36 sm:pb-44 space-y-6 sm:space-y-8">
+        {/* TAB 1: INTERACTIVE DASHBOARD HUB (CLEANED UP - UPLOADS MOVED TO DEDICATED TAB) */}
         {activeTab === 'dashboard' && (
-          <div className="space-y-6 sm:space-y-8 animate-fade-in" id="client-dashboard-tab-view">
-            {/* PROGRESS WHEEL SECTION */}
-            <ProgressWheel
+          <InteractiveDashboardHub
+            currentUser={currentUser}
+            files={files}
+            onNavigateTab={(tab) => setActiveTab(tab as NavTab)}
+            onInspectFile={(file) => setSelectedFileForViewer(file)}
+          />
+        )}
+
+        {/* TAB 2: CENTRAL UPLOAD CENTER (SALES, PURCHASE, BANK, OPTIONAL ADDITIONAL) */}
+        {activeTab === 'upload' && (
+          <div className="space-y-6 animate-fade-in" id="upload-center-tab-view">
+            {/* 1. UPLOAD INTELLIGENCE OVERVIEW */}
+            <UploadIntelligenceOverview
               salesUploaded={salesFiles.length > 0}
               purchaseUploaded={purchaseFiles.length > 0}
               bankUploaded={bankFiles.length > 0}
+              totalFilesCount={files.length}
+              activeFilter={statusFilter}
+              onFilterClick={(type) => setStatusFilter(type)}
             />
 
-            {/* THREE FILE UPLOAD CARDS */}
-            <div>
-              <div className="mb-4 flex items-center justify-between">
+            {/* 2. CENTRAL INGESTION ZONE + SMART STATUS SPLIT */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <CentralUploadZone
+                  onUploadSuccess={handleUploadSuccess}
+                  onInspectFile={(file) => setSelectedFileForViewer(file)}
+                />
+              </div>
+              <div className="lg:col-span-1">
+                <SmartStatusCard
+                  salesUploaded={salesFiles.length > 0}
+                  purchaseUploaded={purchaseFiles.length > 0}
+                  bankUploaded={bankFiles.length > 0}
+                  additionalUploaded={additionalFiles.length > 0}
+                  additionalCount={additionalFiles.length}
+                />
+              </div>
+            </div>
+
+            {/* 3. FOUR UPLOAD CARDS GRID */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg sm:text-xl font-extrabold text-slate-800 tracking-tight">
-                    Required Financial Ingestion
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Upload documents in Excel, Word, PDF, or JPG/Picture format. AI OCR will parse image formats into editable data.
+                  <h3 className="text-base font-black text-[#302112] tracking-tight flex items-center gap-2">
+                    <span>Target Dossier Vaults</span>
+                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#E5DAD9] text-[#92798B] border border-white/80">
+                      3 Required + 1 Optional
+                    </span>
+                  </h3>
+                  <p className="text-xs text-[#5A463B] font-semibold">
+                    Upload documents directly into specific dossier vaults or manage existing uploads.
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-                {/* 1. SALES FILE */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" id="upload-cards-grid">
+                {/* 1. SALES FILE (REQUIRED) */}
                 <UploadCard
                   fileType="SALES"
                   title="1. Sales File"
-                  description="Upload revenue invoices, sales ledger, or customer transaction lists."
+                  description="Upload revenue invoices, sales ledgers, customer receipts, or trade invoices."
                   badgeNumber="01"
                   categoryFiles={salesFiles}
                   onUploadSuccess={handleUploadSuccess}
@@ -199,11 +297,11 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                   onDeleteFile={handleDeleteFile}
                 />
 
-                {/* 2. PURCHASE FILE */}
+                {/* 2. PURCHASE FILE (REQUIRED) */}
                 <UploadCard
                   fileType="PURCHASE"
                   title="2. Purchase File"
-                  description="Upload vendor bills, supplier accounts, or operating expense receipts."
+                  description="Upload vendor bills, supplier accounts, operational expenses, or purchase orders."
                   badgeNumber="02"
                   categoryFiles={purchaseFiles}
                   onUploadSuccess={handleUploadSuccess}
@@ -211,196 +309,193 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                   onDeleteFile={handleDeleteFile}
                 />
 
-                {/* 3. BANK STATEMENT */}
+                {/* 3. BANK STATEMENT (REQUIRED) */}
                 <UploadCard
                   fileType="BANK_STATEMENT"
                   title="3. Bank Statement"
-                  description="Upload official monthly bank statements, credit logs, or deposit records."
+                  description="Upload official monthly bank statements, credit logs, account balances, or deposit records."
                   badgeNumber="03"
                   categoryFiles={bankFiles}
                   onUploadSuccess={handleUploadSuccess}
                   onViewFile={(file) => setSelectedFileForViewer(file)}
                   onDeleteFile={handleDeleteFile}
                 />
+
+                {/* 4. ADDITIONAL FILES (OPTIONAL) */}
+                <UploadCard
+                  fileType="ADDITIONAL"
+                  title="4. Additional Files (Optional)"
+                  description="Upload supporting records: VAT certificates, trade licenses, contracts, payroll, or misc."
+                  badgeNumber="04"
+                  categoryFiles={additionalFiles}
+                  onUploadSuccess={handleUploadSuccess}
+                  onViewFile={(file) => setSelectedFileForViewer(file)}
+                  onDeleteFile={handleDeleteFile}
+                />
               </div>
-            </div>
-
-            {/* UPLOADED DOCUMENTS & MONTHLY/QUARTERLY FILING HISTORY */}
-            <div className="bg-[#FCFBF8] rounded-2xl sm:rounded-[32px] p-4 sm:p-6 shadow-sm border border-[#F0ECE1] space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 border-b border-[#F2ECE0]">
-                <div className="flex items-center gap-2 min-w-0">
-                  <Clock className="w-5 h-5 text-[#8364ED] shrink-0" />
-                  <h3 className="text-base font-extrabold text-slate-800 tracking-tight">
-                    Uploaded Documents & Filings
-                  </h3>
-                </div>
-                <span className="self-start sm:self-auto text-xs font-extrabold text-[#8364ED] bg-[#F0EBFA] px-3 py-1 rounded-full border border-[#E2D8F7] shrink-0 whitespace-nowrap">
-                  {files.length} Document{files.length === 1 ? '' : 's'} Stored
-                </span>
-              </div>
-
-              {files.length === 0 ? (
-                <div className="p-8 text-center text-slate-400 text-xs font-medium bg-[#F8F6EF] rounded-2xl border border-dashed border-[#E0DBCF]">
-                  No monthly or quarterly documents uploaded yet. Select a category above to submit your first document.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {files.map((file) => {
-                    const functionLabel =
-                      file.fileType === 'SALES'
-                        ? 'Function 1: Sales Ledger & Invoicing'
-                        : file.fileType === 'PURCHASE'
-                        ? 'Function 2: Purchase Bills & Expenses'
-                        : 'Function 3: Bank Statements & Reconciliation';
-
-                    const functionColor =
-                      file.fileType === 'SALES'
-                        ? 'bg-purple-100 text-purple-700 border-purple-200'
-                        : file.fileType === 'PURCHASE'
-                        ? 'bg-amber-100 text-amber-700 border-amber-200'
-                        : 'bg-emerald-100 text-emerald-700 border-emerald-200';
-
-                    return (
-                      <div
-                        key={file.id}
-                        className="p-3.5 sm:p-4 rounded-2xl bg-[#F8F6EF] hover:bg-[#F2ECE0] border border-[#EAE5D7] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3.5"
-                      >
-                        <div className="flex items-start gap-3 min-w-0 flex-1">
-                          <div className="p-2.5 rounded-xl bg-white border border-[#E0DBCF] text-[#8364ED] shrink-0 shadow-2xs">
-                            <FileSpreadsheet className="w-5 h-5" />
-                          </div>
-
-                          <div className="min-w-0 flex-1 space-y-1">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className={`text-[10px] font-black border px-2 py-0.5 rounded-md whitespace-nowrap ${functionColor}`}>
-                                {functionLabel}
-                              </span>
-                              <span className="text-[10px] font-bold text-slate-700 bg-[#EAE4D6] px-2 py-0.5 rounded-md flex items-center gap-1 shrink-0 whitespace-nowrap">
-                                <Calendar className="w-3 h-3 text-[#8364ED]" />
-                                <span>{file.period || 'Q3 2026'}</span>
-                              </span>
-                            </div>
-
-                            <p className="text-xs sm:text-sm font-extrabold text-slate-800 break-words line-clamp-2" title={file.originalName}>
-                              {file.originalName}
-                            </p>
-
-                            <div className="text-[11px] font-semibold text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                              <span className="flex items-center gap-1 whitespace-nowrap">
-                                <Clock className="w-3 h-3 text-slate-400" />
-                                {new Date(file.uploadedAt).toLocaleString()}
-                              </span>
-                              <span>•</span>
-                              <span className="whitespace-nowrap">{(file.size / 1024).toFixed(1)} KB</span>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* ACTIONS: Inspect, Download, Delete - Responsive, No slider, Clean layout */}
-                        <div className="flex items-center gap-2 shrink-0 pt-2.5 sm:pt-0 border-t sm:border-t-0 border-[#ECE6D8] w-full sm:w-auto justify-end">
-                          <button
-                            type="button"
-                            onClick={() => setSelectedFileForViewer(file)}
-                            className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-[#E2DDD0] shadow-2xs flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
-                            title="Inspect or edit extracted file rows"
-                          >
-                            <Eye className="w-3.5 h-3.5 text-[#8364ED]" />
-                            <span>Inspect Data</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDownloadFile(file)}
-                            className="flex-1 sm:flex-none px-3.5 py-2 rounded-xl bg-[#8364ED] hover:bg-[#7150EA] text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs whitespace-nowrap"
-                            title="Download original file"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                            <span>Download</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteFile(file.id)}
-                            className="p-2 rounded-xl bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-[#E2DDD0] hover:border-rose-200 transition-colors cursor-pointer shrink-0"
-                            title="Delete file"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           </div>
         )}
 
-        {activeTab === 'notifications' && (
-          <NotificationsTab currentUser={currentUser} onNotificationsViewed={() => setNotifCount(0)} />
+        {/* TAB 3: GRAPHS & VISUAL ANALYTICS */}
+        {activeTab === 'analytics' && (
+          <div className="space-y-6 animate-fade-in" id="analytics-tab-view">
+            <AnalyticsAndGraphsView
+              currentUser={currentUser}
+              users={[currentUser]}
+              userProgressList={[]}
+              files={files}
+              onInspectFile={(file) => setSelectedFileForViewer(file)}
+            />
+          </div>
         )}
 
-        {activeTab === 'profile' && <ProfileTab currentUser={currentUser} />}
-      </main>
+        {/* TAB 4: AI OCR & FISCAL ADVISOR */}
+        {activeTab === 'ai' && (
+          <div className="space-y-8 animate-fade-in" id="ai-insights-tab-view">
+            <AIAdvisorHub
+              currentUser={currentUser}
+              users={[currentUser]}
+              files={files}
+              onReviewFile={(file) => setSelectedFileForViewer(file)}
+            />
+            <AIDocumentIntelligenceCard
+              files={files}
+              onReviewExtractedData={(file) => setSelectedFileForViewer(file)}
+            />
+          </div>
+        )}
 
-      {/* FILE VIEWER & AI OCR DATA EDIT MODAL */}
-      <FileViewerModal
-        file={selectedFileForViewer}
-        onClose={() => setSelectedFileForViewer(null)}
-        onSaved={handleSavedFile}
-      />
+        {/* TAB 4: GOOGLE TASKS & PERSONAL NOTES */}
+        {activeTab === 'tasks' && (
+          <div className="animate-fade-in" id="tasks-tab-view">
+            <GoogleTasksTab currentUser={currentUser} />
+          </div>
+        )}
 
-      {/* FIXED FLOATING BOTTOM NAVIGATION BAR */}
-      <nav 
-        className="fixed bottom-2 sm:bottom-4 left-0 right-0 z-40 px-3 py-1 pointer-events-none flex items-center justify-center"
-        id="client-bottom-nav-bar"
+        {/* TAB 5: NOTIFICATIONS & MESSAGES */}
+        {activeTab === 'notifications' && (
+          <div className="animate-fade-in" id="notifications-tab-view">
+            <NotificationsTab
+              currentUser={currentUser}
+              onNotificationsViewed={() => {
+                api.getNotifications().then((res) => {
+                  const unread = (res.notifications || []).filter((n: any) => !n.isRead).length;
+                  setNotifCount(unread);
+                });
+              }}
+            />
+          </div>
+        )}
+
+        {/* TAB 6: ACTIVITY AUDIT LOG */}
+        {activeTab === 'activity' && (
+          <div className="animate-fade-in" id="activity-tab-view">
+            <RecentActivityTimeline
+              files={files}
+              onInspectFile={(file) => setSelectedFileForViewer(file)}
+              onOpenNotifications={() => setActiveTab('notifications')}
+            />
+          </div>
+        )}
+
+        {/* TAB 7: PROFILE SETTINGS */}
+        {activeTab === 'profile' && (
+          <div className="animate-fade-in" id="profile-tab-view">
+            <ProfileTab currentUser={currentUser} onUserUpdated={() => {}} />
+          </div>
+        )}
+      </div>
+
+      {/* MOBILE BOTTOM NAVIGATION BAR (FIXED ON SMARTPHONES & TABLETS - NO DOCS TAB) */}
+      <div 
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#F3EAE2]/95 backdrop-blur-xl border-t border-white/80 px-2 py-2 flex items-center justify-around shadow-[0_-8px_25px_rgba(48,33,18,0.12)]"
+        id="mobile-bottom-nav"
       >
-        <div className="pointer-events-auto max-w-md w-[calc(100%-1rem)] sm:w-full bg-[#FCFBF8]/95 backdrop-blur-md p-1 sm:p-1.5 rounded-full border border-[#EAE3D2] shadow-[0_12px_36px_rgba(110,85,190,0.25)] flex items-center justify-between gap-0.5 sm:gap-1">
-          <button
-            onClick={() => setActiveTab('dashboard')}
-            className={`flex-1 min-w-0 py-2 px-1.5 sm:px-3 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
-              activeTab === 'dashboard'
-                ? 'bg-gradient-to-r from-[#8364ED] to-[#7150EA] text-white shadow-[0_4px_14px_rgba(131,100,237,0.35)] scale-[1.02]'
-                : 'text-slate-600 hover:text-[#8364ED] hover:bg-white/60'
-            }`}
-            id="tab-btn-dashboard"
-          >
-            <LayoutDashboard className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-            <span className="truncate">Dashboard</span>
-          </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('dashboard')}
+          className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all cursor-pointer ${
+            activeTab === 'dashboard' ? 'text-[#302112] font-black bg-[#E5DAD9]' : 'text-[#5A463B] font-semibold'
+          }`}
+          id="mobile-nav-home"
+        >
+          <LayoutDashboard className="w-5 h-5 text-[#92798B]" />
+          <span className="text-[10px]">Home</span>
+        </button>
 
-          <button
-            onClick={handleOpenNotifications}
-            className={`flex-1 min-w-0 py-2 px-1.5 sm:px-3 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer relative ${
-              activeTab === 'notifications'
-                ? 'bg-gradient-to-r from-[#8364ED] to-[#7150EA] text-white shadow-[0_4px_14px_rgba(131,100,237,0.35)] scale-[1.02]'
-                : 'text-slate-600 hover:text-[#8364ED] hover:bg-white/60'
-            }`}
-            id="tab-btn-notifications"
-          >
-            <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-            <span className="truncate">Notifications</span>
-            {notifCount > 0 && (
-              <span className="px-1.5 py-0.2 text-[9px] font-black bg-rose-500 text-white rounded-full ml-0.5">
-                {notifCount}
-              </span>
-            )}
-          </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('upload')}
+          className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all cursor-pointer ${
+            activeTab === 'upload' ? 'text-[#302112] font-black bg-[#E5DAD9]' : 'text-[#5A463B] font-semibold'
+          }`}
+          id="mobile-nav-upload"
+        >
+          <UploadCloud className="w-5 h-5 text-[#92798B]" />
+          <span className="text-[10px]">Upload</span>
+        </button>
 
-          <button
-            onClick={() => setActiveTab('profile')}
-            className={`flex-1 min-w-0 py-2 px-1.5 sm:px-3 rounded-full text-[11px] sm:text-xs font-extrabold flex items-center justify-center gap-1 sm:gap-1.5 transition-all cursor-pointer ${
-              activeTab === 'profile'
-                ? 'bg-gradient-to-r from-[#8364ED] to-[#7150EA] text-white shadow-[0_4px_14px_rgba(131,100,237,0.35)] scale-[1.02]'
-                : 'text-slate-600 hover:text-[#8364ED] hover:bg-white/60'
-            }`}
-            id="tab-btn-profile"
-          >
-            <UserIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
-            <span className="truncate">Profile</span>
-          </button>
-        </div>
-      </nav>
+        <button
+          type="button"
+          onClick={() => setActiveTab('ai')}
+          className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all cursor-pointer ${
+            activeTab === 'ai' ? 'text-[#302112] font-black bg-[#E5DAD9]' : 'text-[#5A463B] font-semibold'
+          }`}
+          id="mobile-nav-ai"
+        >
+          <Sparkles className="w-5 h-5 text-[#CBAF87]" />
+          <span className="text-[10px]">AI OCR</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('tasks')}
+          className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all cursor-pointer ${
+            activeTab === 'tasks' ? 'text-[#302112] font-black bg-[#E5DAD9]' : 'text-[#5A463B] font-semibold'
+          }`}
+          id="mobile-nav-tasks"
+        >
+          <CheckSquare className="w-5 h-5 text-[#92798B]" />
+          <span className="text-[10px]">Tasks</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('notifications')}
+          className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all cursor-pointer relative ${
+            activeTab === 'notifications' ? 'text-[#302112] font-black bg-[#E5DAD9]' : 'text-[#5A463B] font-semibold'
+          }`}
+          id="mobile-nav-alerts"
+        >
+          <Bell className="w-5 h-5 text-[#92798B]" />
+          <span className="text-[10px]">Alerts</span>
+          {notifCount > 0 && (
+            <span className="absolute top-1 right-2 w-2 h-2 rounded-full bg-rose-600" />
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('profile')}
+          className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all cursor-pointer ${
+            activeTab === 'profile' ? 'text-[#302112] font-black bg-[#E5DAD9]' : 'text-[#5A463B] font-semibold'
+          }`}
+          id="mobile-nav-profile"
+        >
+          <UserIcon className="w-5 h-5 text-[#92798B]" />
+          <span className="text-[10px]">Profile</span>
+        </button>
+      </div>
+
+      {/* FILE INSPECTOR & AI OCR MODAL */}
+      {selectedFileForViewer && (
+        <FileViewerModal
+          file={selectedFileForViewer}
+          onClose={() => setSelectedFileForViewer(null)}
+          onSaved={handleSavedFile}
+        />
+      )}
     </div>
   );
 };

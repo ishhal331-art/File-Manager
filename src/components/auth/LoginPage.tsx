@@ -1,48 +1,90 @@
 import React, { useState } from 'react';
 import { api } from '../../lib/api';
-import { User as UserIcon, Lock, Eye, EyeOff, Cloud, AlertCircle, Sparkles, Shield, ChevronRight, Folder, Database, FileSpreadsheet, CheckCircle2 } from 'lucide-react';
+import {
+  User as UserIcon,
+  Lock,
+  Eye,
+  EyeOff,
+  Sparkles,
+  Shield,
+  ChevronRight,
+  CheckCircle2,
+  Building2,
+  FileSpreadsheet,
+  BarChart3,
+  Layers,
+  ArrowRight,
+  ShieldCheck,
+  Zap,
+  FolderLock,
+  FileCheck,
+} from 'lucide-react';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
+import { HRALogo } from '../HRALogo';
 
 interface Props {
   onLoginSuccess: (user: any) => void;
 }
 
 export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
-  const [activeRoleOption, setActiveRoleOption] = useState<'user' | 'admin'>('user');
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
+  const [activeRoleOption, setActiveRoleOption] = useState<'user' | 'admin' | 'manager'>('user');
   const [username, setUsername] = useState('user1');
   const [password, setPassword] = useState('UserPass123!');
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [showForgotModal, setShowForgotModal] = useState(false);
 
-  const handleRoleSwitch = (role: 'user' | 'admin') => {
+  const handleRoleSwitch = (role: 'user' | 'admin' | 'manager') => {
     setActiveRoleOption(role);
     setError(null);
     if (role === 'admin') {
       setUsername('admin');
       setPassword('AdminPassword123!');
+    } else if (role === 'manager') {
+      setUsername('manager1');
+      setPassword('ManagerPass123!');
     } else {
       setUsername('user1');
       setPassword('UserPass123!');
     }
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!username.trim() || !password) {
-      setError('Please enter both username/email and password.');
+      setError('Please enter both username and password.');
       return;
     }
 
     setLoading(true);
     setError(null);
+    setSuccessMsg(null);
 
     try {
-      const res = await api.login(username.trim(), password);
-      onLoginSuccess(res.user);
+      if (mode === 'signin') {
+        const res = await api.login(username.trim(), password);
+        onLoginSuccess(res.user);
+      } else {
+        // Register client account
+        const res = await api.register({
+          username: username.trim(),
+          password,
+          fullName: fullName.trim() || username.trim(),
+          email: email.trim() || `${username.trim()}@company.com`,
+          role: 'USER',
+        });
+        setSuccessMsg('Account registered successfully! Signing you in...');
+        setTimeout(() => {
+          onLoginSuccess(res.user);
+        }, 800);
+      }
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials. Please verify and try again.');
+      setError(err.message || 'Authentication error. Please verify your credentials.');
     } finally {
       setLoading(false);
     }
@@ -50,230 +92,418 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
 
   return (
     <div 
-      className="min-h-screen w-full bg-gradient-to-br from-[#E8E2F7] via-[#DFD7F5] to-[#D5CAFA] flex flex-col items-center justify-center p-4 sm:p-6 md:p-10 relative overflow-hidden font-sans selection:bg-[#8364ED]/20 selection:text-[#8364ED]"
-      id="login-container"
+      className="min-h-screen w-full bg-gradient-to-br from-[#D0BEC7] via-[#E0D1D4] to-[#C1ACBA] flex flex-col items-center justify-center p-3 sm:p-6 md:p-8 lg:p-10 relative overflow-hidden font-sans selection:bg-[#92798B]/30 selection:text-[#302112]"
+      id="login-liquid-canvas"
     >
-      {/* LEFT SIDE FLOATERS */}
-      <div className="absolute top-12 left-6 lg:left-12 hidden md:flex items-center gap-3 p-3.5 bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-[0_8px_24px_rgba(110,85,190,0.12)] float-bubble z-0">
-        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#8364ED] to-[#A58DF5] text-white flex items-center justify-center shadow-md">
-          <Cloud className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <p className="text-xs font-black text-slate-800">Cloud Storage</p>
-          <p className="text-[10px] font-semibold text-slate-500">Persistent Disk & Supabase Vault</p>
-        </div>
-      </div>
+      {/* AMBIENT SOFT BACKGROUND LIQUID GLOWS */}
+      <div className="absolute top-[-10%] left-[-5%] w-[480px] h-[480px] rounded-full bg-[#E0D1D4]/80 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-5%] w-[520px] h-[520px] rounded-full bg-[#C1ACBA]/60 blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-[#F3EAE2]/40 blur-3xl pointer-events-none" />
 
-      <div className="absolute bottom-16 left-8 lg:left-16 hidden md:flex items-center gap-3 p-3.5 bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-[0_8px_24px_rgba(110,85,190,0.12)] float-bubble-delayed z-0">
-        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-orange-400 text-white flex items-center justify-center shadow-md">
-          <Sparkles className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <p className="text-xs font-black text-slate-800">AI OCR Engine</p>
-          <p className="text-[10px] font-semibold text-slate-500">Automated Financial Ingestion</p>
-        </div>
-      </div>
-
-      {/* RIGHT SIDE FLOATERS */}
-      <div className="absolute top-16 right-6 lg:right-12 hidden md:flex items-center gap-3 p-3.5 bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-[0_8px_24px_rgba(110,85,190,0.12)] float-bubble-delayed z-0">
-        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-md">
-          <CheckCircle2 className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <p className="text-xs font-black text-slate-800">Verified Compliance</p>
-          <p className="text-[10px] font-semibold text-slate-500">Real-Time Ledger Reconciliation</p>
-        </div>
-      </div>
-
-      <div className="absolute bottom-20 right-8 lg:right-16 hidden md:flex items-center gap-3 p-3.5 bg-white/70 backdrop-blur-md rounded-2xl border border-white/80 shadow-[0_8px_24px_rgba(110,85,190,0.12)] float-bubble z-0">
-        <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-md">
-          <Shield className="w-5 h-5 text-white" />
-        </div>
-        <div>
-          <p className="text-xs font-black text-slate-800">Multi-Role Security</p>
-          <p className="text-[10px] font-semibold text-slate-500">Protected Client & Admin Portals</p>
-        </div>
-      </div>
-
-      {/* PORTAL TITLE BRANDING BAR */}
-      <div className="mb-4 sm:mb-6 z-20 flex items-center gap-2.5 bg-white/60 backdrop-blur-md px-5 py-2 rounded-full border border-white/80 shadow-[0_8px_20px_rgba(110,85,190,0.08)]">
-        <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-[#8364ED] to-[#A58DF5] text-white flex items-center justify-center shadow-xs">
-          <Folder className="w-4 h-4 text-white" />
-        </div>
-        <span className="text-sm font-extrabold text-slate-800 tracking-tight" id="login-portal-name">
-          Files Manager
-        </span>
-        <span className="text-[10px] font-bold text-[#8364ED] bg-[#F0EBFA] px-2 py-0.5 rounded-full border border-[#E2D8F7]">
-          Secure Portal
-        </span>
-      </div>
-
-      {/* CENTRAL RESPONSIVE CLAY CARD CONTAINER */}
-      <div 
-        className="w-full max-w-md bg-[#FCFBF8] rounded-[38px] p-6 sm:p-8 shadow-[0_25px_60px_rgba(110,85,190,0.22),0_10px_20px_rgba(110,85,190,0.08),inset_0_2px_3px_rgba(255,255,255,0.9)] border border-[#F0ECE1] relative z-10 my-auto transition-all duration-300"
-        id="login-card"
+      {/* MAIN LIQUID DROP GLASS CONTAINER (INSPIRED BY REFERENCE DESIGN) */}
+      <div
+        className="w-full max-w-5xl bg-[#F3EAE2]/75 backdrop-blur-2xl rounded-[36px] sm:rounded-[44px] p-5 sm:p-7 md:p-9 shadow-[0_30px_80px_rgba(48,33,18,0.14),0_10px_25px_rgba(90,70,59,0.06),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-2px_3px_rgba(90,70,59,0.05)] border border-white/80 relative z-10 my-auto transition-all duration-300"
+        id="liquid-glass-portal-window"
       >
-        {/* TOP OF CARD: Cute Decorative 3D Clay Cloud Storage Icon */}
-        <div className="flex flex-col items-center text-center">
-          <div 
-            className="w-13 h-13 rounded-3xl bg-gradient-to-tr from-[#E6E1FA] to-[#D5CAFA] border-2 border-white/90 flex items-center justify-center text-[#8364ED] shadow-[inset_0_2px_4px_rgba(255,255,255,0.9),0_8px_16px_rgba(131,100,237,0.22)] mb-3 transform hover:scale-110 hover:rotate-3 transition-transform duration-300 relative group cursor-pointer"
-            id="clay-cloud-container"
-            title="Cloud Storage Storage Vault"
-          >
-            <Cloud className="w-7 h-7 text-[#8364ED] fill-[#8364ED]/20 stroke-[2.2]" />
-            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-amber-400 border border-white text-[9px] font-black text-white flex items-center justify-center shadow-xs animate-pulse">
-              ✨
+        {/* TOP GLASS NAVIGATION HEADER */}
+        <header className="flex flex-col sm:flex-row items-center justify-between gap-3 pb-5 border-b border-white/60 mb-6">
+          {/* LOGO & BRAND */}
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-auto flex items-center">
+              <HRALogo className="h-9 w-auto" variant="dark" />
+            </div>
+            <div className="h-6 w-px bg-[#B19CAD]/40 hidden sm:block" />
+            <div className="hidden sm:flex items-center gap-1.5 bg-[#E5DAD9]/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/70 shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse" />
+              <span className="text-[11px] font-black text-[#302112] tracking-tight">HRA Enterprise Portal</span>
             </div>
           </div>
 
-          {/* WELCOME BACK HEADING WITH YELLOW CLAY RAY ACCENTS */}
-          <div className="flex items-center gap-2 justify-center">
-            <span className="text-amber-400 font-extrabold text-lg select-none">≡</span>
-            <h1 className="text-2xl sm:text-3xl font-black text-[#5C45B2] tracking-tight" id="login-welcome-heading">
-              Welcome Back
-            </h1>
-            <span className="text-amber-400 font-extrabold text-lg select-none">≡</span>
-          </div>
-
-          <p className="text-xs sm:text-sm font-semibold text-slate-500 mt-1 mb-5" id="login-welcome-subheading">
-            Select account type to sign in
-          </p>
-        </div>
-
-        {/* TWO LOGIN OPTIONS: USER vs ADMIN ROLE SWITCHER */}
-        <div className="mb-6 p-1.5 bg-[#F5F2EA] border border-[#EAE5D8] rounded-2xl flex items-center gap-1 shadow-inner" id="role-options-switcher">
-          <button
-            type="button"
-            onClick={() => handleRoleSwitch('user')}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-              activeRoleOption === 'user'
-                ? 'bg-gradient-to-r from-[#8364ED] to-[#7150EA] text-white shadow-[0_4px_14px_rgba(131,100,237,0.35)] scale-[1.02]'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-            }`}
-            id="btn-role-user"
-          >
-            <UserIcon className="w-4 h-4" />
-            <span>User Login</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleRoleSwitch('admin')}
-            className={`flex-1 py-2.5 px-4 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-              activeRoleOption === 'admin'
-                ? 'bg-gradient-to-r from-[#8364ED] to-[#7150EA] text-white shadow-[0_4px_14px_rgba(131,100,237,0.35)] scale-[1.02]'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-            }`}
-            id="btn-role-admin"
-          >
-            <Shield className="w-4 h-4" />
-            <span>Admin Login</span>
-          </button>
-        </div>
-
-        {/* ERROR ALERT DISPLAY */}
-        {error && (
-          <div 
-            className="mb-4 p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm font-medium flex items-center gap-2.5 animate-shake shadow-xs"
-            id="login-error-alert"
-          >
-            <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {/* LOGIN FORM */}
-        <form onSubmit={handleLogin} className="space-y-4" id="login-form">
-          {/* FIELD 1: Username / Email */}
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-slate-600 pl-1 block">
-              {activeRoleOption === 'admin' ? 'Admin Username' : 'Username or Email'}
-            </label>
-            <div className="relative flex items-center">
-              <div className="absolute left-3 flex items-center justify-center w-8 h-8 rounded-full bg-[#8364ED] text-white shadow-xs z-10">
-                {activeRoleOption === 'admin' ? <Shield className="w-4 h-4 text-white" /> : <UserIcon className="w-4 h-4 text-white" />}
-              </div>
-              <input
-                id="login-username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder={activeRoleOption === 'admin' ? 'admin' : 'user1'}
-                className="w-full pl-13 pr-4 py-3.5 bg-[#F5F2EA] border border-[#E8E3D5] rounded-2xl text-sm text-slate-800 placeholder-slate-400 font-medium focus:outline-none focus:border-[#8364ED] focus:ring-4 focus:ring-[#8364ED]/15 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)]"
-                required
-                autoComplete="username"
-              />
-            </div>
-          </div>
-
-          {/* FIELD 2: Password */}
-          <div className="space-y-1">
-            <label className="text-xs font-bold text-slate-600 pl-1 block">
-              Password
-            </label>
-            <div className="relative flex items-center">
-              <div className="absolute left-3 flex items-center justify-center w-8 h-8 rounded-full bg-[#8364ED] text-white shadow-xs z-10">
-                <Lock className="w-4 h-4 text-white" />
-              </div>
-              <input
-                id="login-password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full pl-13 pr-11 py-3.5 bg-[#F5F2EA] border border-[#E8E3D5] rounded-2xl text-sm text-slate-800 placeholder-slate-400 font-medium focus:outline-none focus:border-[#8364ED] focus:ring-4 focus:ring-[#8364ED]/15 transition-all shadow-[inset_0_2px_4px_rgba(0,0,0,0.04)]"
-                required
-                autoComplete="current-password"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 text-slate-400 hover:text-slate-600 p-1 rounded-lg transition-colors focus:outline-none cursor-pointer"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                id="btn-toggle-password-visibility"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-
-            {/* FORGOT PASSWORD LINK */}
-            <div className="flex justify-end pt-1 pr-1">
-              <button
-                type="button"
-                onClick={() => setShowForgotModal(true)}
-                className="text-xs font-bold text-[#8364ED] hover:text-[#6E4CDA] transition-colors focus:outline-none cursor-pointer"
-                id="btn-forgot-password-link"
-              >
-                Forgot Password?
-              </button>
-            </div>
-          </div>
-
-          {/* PRIMARY LOGIN PILL BUTTON */}
-          <div className="pt-2">
+          {/* TOP NAV PILL BUTTONS */}
+          <div className="flex items-center gap-2">
             <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#8364ED] via-[#7959EB] to-[#6C47E8] text-white font-extrabold text-sm tracking-wide shadow-[0_12px_28px_rgba(131,100,237,0.38),inset_0_2px_2px_rgba(255,255,255,0.3)] hover:shadow-[0_15px_32px_rgba(131,100,237,0.48)] hover:from-[#7857E8] hover:to-[#613CE0] active:scale-[0.98] transition-all duration-200 disabled:opacity-60 flex items-center justify-center gap-2 group cursor-pointer"
-              id="btn-submit-login"
+              type="button"
+              onClick={() => {
+                setMode('signin');
+                handleRoleSwitch('user');
+              }}
+              className={`px-4 py-2 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+                mode === 'signin'
+                  ? 'bg-[#302112] text-[#F3EAE2] shadow-[0_4px_14px_rgba(48,33,18,0.25)] scale-105'
+                  : 'bg-[#E5DAD9]/80 hover:bg-[#E5DAD9] text-[#5A463B] border border-white/80'
+              }`}
+              id="btn-nav-signin"
             >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  <span>Signing in...</span>
-                </>
-              ) : (
-                <>
-                  <span>Sign In as {activeRoleOption === 'admin' ? 'Admin' : 'User'}</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </>
-              )}
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode('signup')}
+              className={`px-4 py-2 rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+                mode === 'signup'
+                  ? 'bg-[#302112] text-[#F3EAE2] shadow-[0_4px_14px_rgba(48,33,18,0.25)] scale-105'
+                  : 'bg-[#E5DAD9]/80 hover:bg-[#E5DAD9] text-[#5A463B] border border-white/80'
+              }`}
+              id="btn-nav-signup"
+            >
+              Register
             </button>
           </div>
-        </form>
+        </header>
+
+        {/* BREADCRUMB / SUB-NAV ROW (MATCHING REFERENCE PICTURE SUB-BAR) */}
+        <div className="flex items-center justify-between gap-2 p-2.5 sm:px-4 bg-[#E5DAD9]/70 backdrop-blur-md rounded-2xl border border-white/70 text-[11px] font-bold text-[#5A463B] mb-6 shadow-2xs overflow-x-auto">
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-[#302112] font-black">HRA Portal</span>
+            <span>›</span>
+            <span>Fiscal Dossiers</span>
+            <span>›</span>
+            <span className="text-[#92798B] font-extrabold">
+              {mode === 'signin' ? 'Secure Authentication' : 'Client Registration'}
+            </span>
+          </div>
+          <div className="hidden md:flex items-center gap-3 text-[10px] text-[#5A463B]">
+            <span className="flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#92798B]" /> 256-Bit Encrypted
+            </span>
+            <span className="flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-[#CBAF87]" /> AI OCR Powered
+            </span>
+          </div>
+        </div>
+
+        {/* SPLIT LAYOUT: AUTHENTICATION FORM + LIQUID BENTO FEATURE GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {/* LEFT: AUTHENTICATION FORM (5 COLS) */}
+          <div 
+            className="lg:col-span-5 bg-[#F3EAE2]/90 backdrop-blur-xl rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_2px_2px_rgba(255,255,255,0.9)] flex flex-col justify-between"
+            id="auth-form-card"
+          >
+            <div>
+              {/* HEADING */}
+              <div className="mb-4">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <span className="text-[#CBAF87] font-black text-base select-none">≡</span>
+                  <h2 className="text-xl sm:text-2xl font-black text-[#302112] tracking-tight" id="login-title">
+                    {mode === 'signin' ? 'Welcome to HRA' : 'Create HRA Account'}
+                  </h2>
+                </div>
+                <p className="text-xs font-semibold text-[#5A463B]">
+                  {mode === 'signin'
+                    ? 'Enter your credentials to access your financial dossier'
+                    : 'Register as a new client to submit compliance files'}
+                </p>
+              </div>
+
+              {/* ROLE SWITCHER PILLS (USER / ADMIN / MANAGER) */}
+              {mode === 'signin' && (
+                <div className="mb-4 p-1 bg-[#E5DAD9] border border-[#B19CAD]/30 rounded-2xl flex items-center gap-1 shadow-inner" id="role-pill-switch">
+                  {(['user', 'manager', 'admin'] as const).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => handleRoleSwitch(r)}
+                      className={`flex-1 py-2 px-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer capitalize ${
+                        activeRoleOption === r
+                          ? 'bg-[#92798B] text-[#F3EAE2] shadow-[0_4px_12px_rgba(146,121,139,0.35)] scale-[1.02]'
+                          : 'text-[#5A463B] hover:text-[#302112] hover:bg-white/40'
+                      }`}
+                      id={`btn-role-tab-${r}`}
+                    >
+                      {r === 'admin' ? (
+                        <Shield className="w-3.5 h-3.5" />
+                      ) : r === 'manager' ? (
+                        <Building2 className="w-3.5 h-3.5" />
+                      ) : (
+                        <UserIcon className="w-3.5 h-3.5" />
+                      )}
+                      <span>{r}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* ERROR / SUCCESS ALERTS */}
+              {error && (
+                <div className="mb-4 p-3 rounded-2xl bg-[#E0D1D4] border border-rose-300 text-rose-800 text-xs font-semibold flex items-center gap-2" id="auth-error-alert">
+                  <Shield className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {successMsg && (
+                <div className="mb-4 p-3 rounded-2xl bg-[#E5DAD9] border border-emerald-300 text-emerald-800 text-xs font-semibold flex items-center gap-2" id="auth-success-alert">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{successMsg}</span>
+                </div>
+              )}
+
+              {/* MAIN FORM */}
+              <form onSubmit={handleAuthSubmit} className="space-y-3.5" id="main-auth-form">
+                {mode === 'signup' && (
+                  <div>
+                    <label className="text-xs font-bold text-[#5A463B] pl-1 block mb-1">
+                      Full Legal Name
+                    </label>
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="e.g. John Doe (Apex Corp)"
+                      className="w-full px-4 py-3 bg-[#E5DAD9]/80 border border-[#B19CAD]/40 rounded-2xl text-xs font-bold text-[#302112] placeholder-[#92798B]/60 focus:outline-none focus:border-[#92798B] focus:bg-white transition-all shadow-inner"
+                      required
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-xs font-bold text-[#5A463B] pl-1 block mb-1">
+                    Username
+                  </label>
+                  <div className="relative flex items-center">
+                    <div className="absolute left-3 flex items-center justify-center w-7 h-7 rounded-xl bg-[#92798B] text-[#F3EAE2]">
+                      <UserIcon className="w-3.5 h-3.5" />
+                    </div>
+                    <input
+                      id="input-username"
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Username"
+                      className="w-full pl-12 pr-4 py-3 bg-[#E5DAD9]/80 border border-[#B19CAD]/40 rounded-2xl text-xs font-bold text-[#302112] placeholder-[#92798B]/60 focus:outline-none focus:border-[#92798B] focus:bg-white transition-all shadow-inner"
+                      required
+                      autoComplete="username"
+                    />
+                  </div>
+                </div>
+
+                {mode === 'signup' && (
+                  <div>
+                    <label className="text-xs font-bold text-[#5A463B] pl-1 block mb-1">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="name@company.com"
+                      className="w-full px-4 py-3 bg-[#E5DAD9]/80 border border-[#B19CAD]/40 rounded-2xl text-xs font-bold text-[#302112] placeholder-[#92798B]/60 focus:outline-none focus:border-[#92798B] focus:bg-white transition-all shadow-inner"
+                      required
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="text-xs font-bold text-[#5A463B] pl-1 block mb-1">
+                    Password
+                  </label>
+                  <div className="relative flex items-center">
+                    <div className="absolute left-3 flex items-center justify-center w-7 h-7 rounded-xl bg-[#92798B] text-[#F3EAE2]">
+                      <Lock className="w-3.5 h-3.5" />
+                    </div>
+                    <input
+                      id="input-password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full pl-12 pr-10 py-3 bg-[#E5DAD9]/80 border border-[#B19CAD]/40 rounded-2xl text-xs font-bold text-[#302112] placeholder-[#92798B]/60 focus:outline-none focus:border-[#92798B] focus:bg-white transition-all shadow-inner"
+                      required
+                      autoComplete="current-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 text-[#5A463B] hover:text-[#302112] p-1 cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+
+                  {mode === 'signin' && (
+                    <div className="flex justify-end pt-1 pr-1">
+                      <button
+                        type="button"
+                        onClick={() => setShowForgotModal(true)}
+                        className="text-[11px] font-bold text-[#92798B] hover:text-[#5A463B] transition-colors cursor-pointer"
+                        id="btn-forgot-pw"
+                      >
+                        Forgot Password?
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* SUBMIT BUTTON */}
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#92798B] via-[#5A463B] to-[#302112] text-[#F3EAE2] font-black text-xs tracking-wider uppercase shadow-[0_10px_25px_rgba(48,33,18,0.25)] hover:shadow-[0_14px_30px_rgba(48,33,18,0.35)] active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2 group cursor-pointer"
+                    id="btn-submit-auth"
+                  >
+                    {loading ? (
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <span>{mode === 'signin' ? 'Sign In to Portal' : 'Complete Registration'}</span>
+                        <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* DEMO QUICK-SWITCH FOOTER */}
+            <div className="mt-4 pt-3 border-t border-[#B19CAD]/30 flex items-center justify-between text-[11px] text-[#5A463B] font-semibold">
+              <span 
+                onClick={() => handleRoleSwitch('user')} 
+                className="hover:text-[#302112] cursor-pointer hover:underline"
+              >
+                Client: <strong className="text-[#302112]">user1</strong>
+              </span>
+              <span>•</span>
+              <span 
+                onClick={() => handleRoleSwitch('manager')} 
+                className="hover:text-[#302112] cursor-pointer hover:underline"
+              >
+                Manager: <strong className="text-[#302112]">manager1</strong>
+              </span>
+              <span>•</span>
+              <span 
+                onClick={() => handleRoleSwitch('admin')} 
+                className="hover:text-[#302112] cursor-pointer hover:underline"
+              >
+                Admin: <strong className="text-[#302112]">admin</strong>
+              </span>
+            </div>
+          </div>
+
+          {/* RIGHT: LIQUID DROP GLASS 6-BENTO CARDS (INSPIRED BY ATTACHED DESIGN) */}
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3.5" id="login-bento-features">
+            {/* TILE 1: MANAGEMENT */}
+            <div className="bg-[#E5DAD9]/80 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-white/80 shadow-[0_12px_28px_rgba(48,33,18,0.06),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-3 glass-card-hover">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 p-1 bg-white/70 rounded-2xl border border-white shadow-2xs">
+                  <div className="w-7 h-7 rounded-xl bg-[#92798B] text-[#F3EAE2] flex items-center justify-center">
+                    <Layers className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="w-7 h-7 rounded-xl bg-[#CBAF87] text-[#302112] flex items-center justify-center">
+                    <FolderLock className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+                <span className="w-2.5 h-2.5 rounded-full border border-white bg-[#CBAF87]" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-[#302112] tracking-tight">Management</h3>
+                <p className="text-[11px] font-medium text-[#5A463B] mt-1 leading-relaxed">
+                  Streamlined client ingestion dossiers for sales invoices, purchase receipts, and bank logs.
+                </p>
+              </div>
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#F3EAE2] text-[#92798B] border border-white">
+                  3 Required + 1 Opt
+                </span>
+              </div>
+            </div>
+
+            {/* TILE 2: DATA ANALYTICS */}
+            <div className="bg-[#E0D1D4]/80 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-white/80 shadow-[0_12px_28px_rgba(48,33,18,0.06),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-3 glass-card-hover">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 p-1 bg-white/70 rounded-2xl border border-white shadow-2xs">
+                  <div className="w-7 h-7 rounded-xl bg-[#302112] text-[#F3EAE2] flex items-center justify-center">
+                    <BarChart3 className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="w-7 h-7 rounded-xl bg-[#B19CAD] text-[#302112] flex items-center justify-center">
+                    <Sparkles className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+                <span className="w-2.5 h-2.5 rounded-full border border-white bg-emerald-500" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-[#302112] tracking-tight">Data Analytics</h3>
+                <p className="text-[11px] font-medium text-[#5A463B] mt-1 leading-relaxed">
+                  Real-time revenue versus expense tracking, tax estimations, and fiscal compliance scoring.
+                </p>
+              </div>
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#F3EAE2] text-[#302112] border border-white">
+                  Live KPIs
+                </span>
+              </div>
+            </div>
+
+            {/* TILE 3: OCR AUTOMATION */}
+            <div className="bg-[#C1ACBA]/70 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-white/80 shadow-[0_12px_28px_rgba(48,33,18,0.06),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-3 glass-card-hover">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 p-1 bg-white/70 rounded-2xl border border-white shadow-2xs">
+                  <div className="w-7 h-7 rounded-xl bg-[#5A463B] text-[#F3EAE2] flex items-center justify-center">
+                    <Zap className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="w-7 h-7 rounded-xl bg-[#CBAF87] text-[#302112] flex items-center justify-center">
+                    <FileCheck className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+                <span className="w-2.5 h-2.5 rounded-full border border-white bg-[#CBAF87]" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-[#302112] tracking-tight">AI OCR Engine</h3>
+                <p className="text-[11px] font-medium text-[#5A463B] mt-1 leading-relaxed">
+                  Automated OCR extracting line items, invoice numbers, tax amounts, and counterparty data.
+                </p>
+              </div>
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#F3EAE2] text-[#5A463B] border border-white">
+                  99.4% Accuracy
+                </span>
+              </div>
+            </div>
+
+            {/* TILE 4: ENTERPRISE SECURITY */}
+            <div className="bg-[#F3EAE2]/80 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-white/80 shadow-[0_12px_28px_rgba(48,33,18,0.06),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-3 glass-card-hover">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 p-1 bg-white/70 rounded-2xl border border-white shadow-2xs">
+                  <div className="w-7 h-7 rounded-xl bg-[#92798B] text-[#F3EAE2] flex items-center justify-center">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="w-7 h-7 rounded-xl bg-[#302112] text-[#F3EAE2] flex items-center justify-center">
+                    <Building2 className="w-3.5 h-3.5" />
+                  </div>
+                </div>
+                <span className="w-2.5 h-2.5 rounded-full border border-white bg-emerald-500" />
+              </div>
+              <div>
+                <h3 className="text-base font-black text-[#302112] tracking-tight">Multi-Role Security</h3>
+                <p className="text-[11px] font-medium text-[#5A463B] mt-1 leading-relaxed">
+                  Fine-grained permissions for Clients, Managers, and Admins with tamper-proof audit trails.
+                </p>
+              </div>
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#E5DAD9] text-[#302112] border border-white">
+                  Role-Gated
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* BOTTOM LIQUID GLASS FOOTER */}
+        <footer className="mt-6 pt-4 border-t border-white/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-semibold text-[#5A463B]">
+          <div className="flex items-center gap-2">
+            <span>© 2026 HRA Enterprise</span>
+            <span>•</span>
+            <span>Financial Ingestion & Intelligence System</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[#302112] font-bold">Privacy Policy</span>
+            <span>•</span>
+            <span className="text-[#302112] font-bold">Compliance Terms</span>
+          </div>
+        </footer>
       </div>
 
-      {/* Forgot Password Modal */}
+      {/* FORGOT PASSWORD MODAL */}
       <ForgotPasswordModal
         isOpen={showForgotModal}
         onClose={() => setShowForgotModal(false)}
@@ -282,5 +512,3 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
     </div>
   );
 };
-
-

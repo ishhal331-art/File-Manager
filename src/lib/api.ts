@@ -1,19 +1,50 @@
 import { User, UploadedFile, AppNotification, FileType } from '../types';
 
-let authToken: string | null = localStorage.getItem('files_manager_token') || localStorage.getItem('clay_portal_token');
+const safeStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        return window.localStorage.getItem(key);
+      }
+    } catch {
+      // Storage disabled/insecure on iOS Safari private mode
+    }
+    return null;
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(key, value);
+      }
+    } catch {
+      // ignore
+    }
+  },
+  removeItem: (key: string): void => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.removeItem(key);
+      }
+    } catch {
+      // ignore
+    }
+  },
+};
+
+let authToken: string | null = safeStorage.getItem('files_manager_token') || safeStorage.getItem('clay_portal_token');
 
 export function setAuthToken(token: string | null) {
   authToken = token;
   if (token) {
-    localStorage.setItem('files_manager_token', token);
+    safeStorage.setItem('files_manager_token', token);
   } else {
-    localStorage.removeItem('files_manager_token');
-    localStorage.removeItem('clay_portal_token');
+    safeStorage.removeItem('files_manager_token');
+    safeStorage.removeItem('clay_portal_token');
   }
 }
 
 export function getAuthToken(): string | null {
-  return authToken || localStorage.getItem('files_manager_token') || localStorage.getItem('clay_portal_token');
+  return authToken || safeStorage.getItem('files_manager_token') || safeStorage.getItem('clay_portal_token');
 }
 
 async function request(endpoint: string, options: RequestInit = {}) {
@@ -47,6 +78,25 @@ export const api = {
     const data = await request('/api/auth/login', {
       method: 'POST',
       body: JSON.stringify({ username, password }),
+    });
+    if (data.token) {
+      setAuthToken(data.token);
+    }
+    return data;
+  },
+
+  register: async (userData: {
+    username: string;
+    password: string;
+    fullName?: string;
+    email?: string;
+    phone?: string;
+    employeeId?: string;
+    role?: string;
+  }) => {
+    const data = await request('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(userData),
     });
     if (data.token) {
       setAuthToken(data.token);
@@ -198,6 +248,14 @@ export const api = {
   deleteNotification: async (notificationId: string) => {
     return request(`/api/notifications/${notificationId}`, {
       method: 'DELETE',
+    });
+  },
+
+  // AI Fiscal Intelligence & Questions
+  askAI: async (question: string, targetUserId?: string): Promise<{ answer: string; stats?: any }> => {
+    return request('/api/ai/ask', {
+      method: 'POST',
+      body: JSON.stringify({ question, targetUserId }),
     });
   },
 };
