@@ -91,21 +91,21 @@ export const CentralUploadZone: React.FC<Props> = ({ onUploadSuccess, onInspectF
 
   return (
     <div
-      className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[32px] p-6 sm:p-7 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] space-y-4"
+      className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[32px] p-6 sm:p-7 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] space-y-4"
       id="central-upload-zone"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#B19CAD]/30">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#263047]">
         <div>
-          <h3 className="text-base font-black text-[#302112] tracking-tight">
+          <h3 className="text-base font-black text-[#F0F4FF] tracking-tight">
             Central Ingestion Center
           </h3>
-          <p className="text-xs text-[#5A463B] font-semibold">
+          <p className="text-xs text-[#AEB8CC] font-medium">
             Select target dossier and drop financial records for automatic parsing.
           </p>
         </div>
 
         {/* CATEGORY SELECTOR PILLS */}
-        <div className="flex items-center flex-wrap gap-1 p-1 bg-[#E5DAD9] rounded-2xl border border-white/70 shrink-0 self-start sm:self-auto shadow-inner">
+        <div className="flex items-center flex-wrap gap-1 p-1 bg-[#0B0F18] rounded-2xl border border-[#263047] shrink-0 self-start sm:self-auto shadow-inner">
           {(['SALES', 'PURCHASE', 'BANK_STATEMENT', 'ADDITIONAL'] as const).map((cat) => {
             const label =
               cat === 'SALES'
@@ -123,8 +123,8 @@ export const CentralUploadZone: React.FC<Props> = ({ onUploadSuccess, onInspectF
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all cursor-pointer whitespace-nowrap ${
                   isSelected
-                    ? 'bg-[#92798B] text-[#F3EAE2] shadow-xs scale-102'
-                    : 'text-[#5A463B] hover:text-[#302112]'
+                    ? 'bg-[#22D39F] text-[#0E1120] shadow-md scale-102'
+                    : 'text-[#AEB8CC] hover:text-[#F0F4FF]'
                 }`}
               >
                 {label}
@@ -155,24 +155,24 @@ export const CentralUploadZone: React.FC<Props> = ({ onUploadSuccess, onInspectF
         }}
         className={`rounded-3xl border-2 border-dashed p-8 sm:p-10 text-center transition-all cursor-pointer flex flex-col items-center justify-center space-y-3 ${
           dragActive
-            ? 'border-[#92798B] bg-[#E0D1D4]/80 ring-4 ring-[#92798B]/20 scale-[1.01]'
+            ? 'border-[#22D39F] bg-[#102D30]/60 ring-4 ring-[#22D39F]/20 scale-[1.01]'
             : uploadStep !== 'IDLE'
-            ? 'border-[#92798B] bg-[#E5DAD9]/80'
-            : 'border-[#B19CAD]/60 bg-[#E5DAD9]/40 hover:bg-[#E5DAD9]/70 hover:border-[#92798B]'
+            ? 'border-[#22D39F] bg-[#0B0F18]'
+            : 'border-[#263047] bg-[#0B0F18]/60 hover:bg-[#0B0F18] hover:border-[#22D39F]'
         }`}
       >
         {uploadStep === 'IDLE' && (
           <>
-            <div className="w-14 h-14 rounded-3xl bg-[#E5DAD9] text-[#92798B] flex items-center justify-center shadow-xs group-hover:scale-110 transition-transform">
+            <div className="w-14 h-14 rounded-3xl bg-[#102D30] text-[#22D39F] flex items-center justify-center shadow-inner border border-[#22D39F]/30 group-hover:scale-110 transition-transform">
               <Upload className="w-7 h-7" />
             </div>
 
             <div className="space-y-1">
-              <p className="text-sm sm:text-base font-black text-[#302112]">
-                Drop your documents here, or <span className="text-[#92798B] underline underline-offset-2">Browse Files</span>
+              <p className="text-sm sm:text-base font-black text-[#F0F4FF]">
+                Drop your documents here, or <span className="text-[#22D39F] underline underline-offset-2">Browse Files</span>
               </p>
-              <p className="text-xs text-[#5A463B] font-bold">
-                Uploading to: <strong className="text-[#302112]">{selectedCategory === 'SALES' ? 'Sales Dossier' : selectedCategory === 'PURCHASE' ? 'Purchase Dossier' : selectedCategory === 'BANK_STATEMENT' ? 'Bank Statement' : 'Additional Documents (Optional)'}</strong>
+              <p className="text-xs text-[#AEB8CC] font-medium">
+                Target Dossier: <strong className="text-[#22D39F]">{selectedCategory === 'SALES' ? 'Sales Dossier' : selectedCategory === 'PURCHASE' ? 'Purchase Dossier' : selectedCategory === 'BANK_STATEMENT' ? 'Bank Statement' : 'Additional Documents (Optional)'}</strong>
               </p>
             </div>
 
@@ -180,7 +180,7 @@ export const CentralUploadZone: React.FC<Props> = ({ onUploadSuccess, onInspectF
               {['Excel', 'Word', 'PDF', 'JPG', 'PNG'].map((fmt) => (
                 <span
                   key={fmt}
-                  className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#E5DAD9] text-[#5A463B] border border-white/80"
+                  className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#102D30] text-[#22D39F] border border-[#22D39F]/20"
                 >
                   {fmt}
                 </span>
@@ -192,8 +192,8 @@ export const CentralUploadZone: React.FC<Props> = ({ onUploadSuccess, onInspectF
         {uploadStep !== 'IDLE' && (
           <div className="space-y-4 w-full max-w-md mx-auto py-2">
             <div className="flex items-center justify-center gap-2">
-              <RefreshCw className="w-6 h-6 text-[#92798B] animate-spin" />
-              <span className="text-sm font-black text-[#302112]">
+              <RefreshCw className="w-6 h-6 text-[#22D39F] animate-spin" />
+              <span className="text-sm font-black text-[#F0F4FF]">
                 {uploadStep === 'UPLOADING' && '1/4 Uploading binary content...'}
                 {uploadStep === 'PROCESSING' && '2/4 Ingesting into secure vault...'}
                 {uploadStep === 'AI_READING' && '3/4 AI OCR reading & structuring tables...'}
@@ -203,20 +203,20 @@ export const CentralUploadZone: React.FC<Props> = ({ onUploadSuccess, onInspectF
 
             {/* STEP PROGRESS BARS */}
             <div className="grid grid-cols-4 gap-2 pt-1">
-              <div className="h-1.5 rounded-full bg-[#92798B]" />
+              <div className="h-1.5 rounded-full bg-[#22D39F]" />
               <div
                 className={`h-1.5 rounded-full ${
                   uploadStep === 'PROCESSING' || uploadStep === 'AI_READING' || uploadStep === 'COMPLETED'
-                    ? 'bg-[#92798B]'
-                    : 'bg-[#B19CAD]/40'
+                    ? 'bg-[#22D39F]'
+                    : 'bg-[#263047]'
                 }`}
               />
               <div
                 className={`h-1.5 rounded-full ${
-                  uploadStep === 'AI_READING' || uploadStep === 'COMPLETED' ? 'bg-[#92798B]' : 'bg-[#B19CAD]/40'
+                  uploadStep === 'AI_READING' || uploadStep === 'COMPLETED' ? 'bg-[#22D39F]' : 'bg-[#263047]'
                 }`}
               />
-              <div className={`h-1.5 rounded-full ${uploadStep === 'COMPLETED' ? 'bg-emerald-600' : 'bg-[#B19CAD]/40'}`} />
+              <div className={`h-1.5 rounded-full ${uploadStep === 'COMPLETED' ? 'bg-[#22D39F]' : 'bg-[#263047]'}`} />
             </div>
 
             {uploadStep === 'COMPLETED' && lastUploaded && (
@@ -227,7 +227,7 @@ export const CentralUploadZone: React.FC<Props> = ({ onUploadSuccess, onInspectF
                     e.stopPropagation();
                     onInspectFile(lastUploaded);
                   }}
-                  className="px-4 py-2 rounded-xl bg-[#5A463B] text-[#F3EAE2] text-xs font-black shadow-sm hover:bg-[#302112] transition-all cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-[#22D39F] hover:bg-[#19C99A] text-[#0E1120] text-xs font-black shadow-md transition-all cursor-pointer"
                 >
                   Inspect Extracted Records Now
                 </button>
@@ -238,7 +238,7 @@ export const CentralUploadZone: React.FC<Props> = ({ onUploadSuccess, onInspectF
       </div>
 
       {error && (
-        <div className="p-3 rounded-xl bg-[#E0D1D4] border border-rose-300 text-rose-800 text-xs font-bold">
+        <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-800 text-rose-300 text-xs font-bold">
           {error}
         </div>
       )}

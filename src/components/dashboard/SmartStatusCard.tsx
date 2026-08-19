@@ -38,43 +38,43 @@ export const SmartStatusCard: React.FC<Props> = ({
 
   return (
     <div
-      className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[32px] p-5 sm:p-6 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-4"
+      className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[32px] p-5 sm:p-6 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] flex flex-col justify-between space-y-4"
       id="smart-portal-status-card"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-[#E5DAD9] text-[#92798B] flex items-center justify-center shadow-xs">
-            <Sparkles className="w-4 h-4 text-[#CBAF87]" />
+          <div className="w-8 h-8 rounded-xl bg-[#102D30] text-[#22D39F] flex items-center justify-center shadow-inner border border-[#22D39F]/30">
+            <Sparkles className="w-4 h-4 text-[#22D39F]" />
           </div>
-          <h3 className="text-sm font-black text-[#302112]">Compliance Status</h3>
+          <h3 className="text-sm font-black text-[#F0F4FF]">Compliance Status</h3>
         </div>
         <span
-          className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shadow-2xs ${
+          className={`text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full border shadow-inner ${
             completed === 3
-              ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-              : 'bg-[#E5DAD9] text-[#92798B] border-white/80'
+              ? 'bg-[#102D30] text-[#22D39F] border-[#22D39F]/40'
+              : 'bg-[#0B0F18] text-[#AEB8CC] border-[#263047]'
           }`}
         >
           {completed === 3 ? '100% Compliant' : `${Math.round((completed / 3) * 100)}% In Progress`}
         </span>
       </div>
 
-      <p className="text-xs sm:text-sm font-bold text-[#302112] leading-relaxed bg-[#E5DAD9]/80 backdrop-blur-md p-3.5 rounded-2xl border border-white/80 shadow-2xs">
+      <p className="text-xs sm:text-sm font-semibold text-[#F0F4FF] leading-relaxed bg-[#0B0F18] p-3.5 rounded-2xl border border-[#263047] shadow-inner">
         "{dynamicMessage}"
       </p>
 
       <div className="grid grid-cols-3 gap-2 text-center pt-1">
-        <div className="p-2.5 rounded-xl bg-[#F3EAE2] border border-white/80 shadow-2xs">
-          <span className="text-[10px] font-black text-[#5A463B] block uppercase">Required</span>
-          <span className="text-base font-black text-emerald-700">{completed}/3</span>
+        <div className="p-2.5 rounded-xl bg-[#0B0F18] border border-[#263047] shadow-inner">
+          <span className="text-[10px] font-black text-[#7F8BA3] block uppercase">Required</span>
+          <span className="text-base font-black text-[#22D39F]">{completed}/3</span>
         </div>
-        <div className="p-2.5 rounded-xl bg-[#F3EAE2] border border-white/80 shadow-2xs">
-          <span className="text-[10px] font-black text-[#5A463B] block uppercase">Pending</span>
-          <span className="text-base font-black text-amber-700">{pending}</span>
+        <div className="p-2.5 rounded-xl bg-[#0B0F18] border border-[#263047] shadow-inner">
+          <span className="text-[10px] font-black text-[#7F8BA3] block uppercase">Pending</span>
+          <span className="text-base font-black text-amber-400">{pending}</span>
         </div>
-        <div className="p-2.5 rounded-xl bg-[#F3EAE2] border border-white/80 shadow-2xs">
-          <span className="text-[10px] font-black text-[#5A463B] block uppercase">Optional</span>
-          <span className="text-base font-black text-[#92798B]">{additionalCount}</span>
+        <div className="p-2.5 rounded-xl bg-[#0B0F18] border border-[#263047] shadow-inner">
+          <span className="text-[10px] font-black text-[#7F8BA3] block uppercase">Optional</span>
+          <span className="text-base font-black text-[#AEB8CC]">{additionalCount}</span>
         </div>
       </div>
     </div>

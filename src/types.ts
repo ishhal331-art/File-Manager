@@ -22,6 +22,7 @@ export interface UploadedFile {
   userId: string;
   userName?: string;
   fileType: FileType;
+  type?: string; // category alias for backward compatibility
   originalName: string;
   mimeType: string;
   size: number;
@@ -43,6 +44,15 @@ export interface UploadedFile {
   localFilePath?: string;
 }
 
+export interface NotificationAttachment {
+  id: string;
+  name: string;
+  size: number;
+  mimeType: string;
+  url: string; // base64 data url or file url
+  uploadedAt?: string;
+}
+
 export interface NotificationReply {
   id: string;
   senderId: string;
@@ -50,6 +60,7 @@ export interface NotificationReply {
   senderRole: Role;
   message: string;
   timestamp: string;
+  attachments?: NotificationAttachment[];
 }
 
 export interface AppNotification {
@@ -58,10 +69,12 @@ export interface AppNotification {
   message: string;
   senderId: string;
   senderName: string;
+  senderRole?: Role;
   targetUserId: string | 'ALL'; // 'ALL' or specific userId
   timestamp: string;
   readBy: string[]; // userIds
   replies: NotificationReply[];
+  attachments?: NotificationAttachment[];
 }
 
 export interface UserUploadProgress {

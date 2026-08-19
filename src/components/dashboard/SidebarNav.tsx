@@ -75,31 +75,31 @@ export const SidebarNav: React.FC<Props> = ({
 
   return (
     <aside
-      className="w-64 bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[32px] p-5 border border-white/80 shadow-[0_20px_50px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col justify-between shrink-0 h-[calc(100vh-2rem)] sticky top-4 hidden lg:flex"
+      className="w-64 bg-[#161D2F]/90 backdrop-blur-xl rounded-[28px] p-5 border border-[#263047] shadow-[0_20px_50px_rgba(11,15,24,0.7)] flex flex-col justify-between shrink-0 h-[calc(100vh-2rem)] sticky top-4 hidden lg:flex z-10"
       id="desktop-sidebar-nav"
     >
       <div className="space-y-5">
         {/* HRA BRAND LOGO */}
         <div className="flex flex-col gap-1 px-1">
           <div className="h-10 w-full flex items-center justify-start">
-            <HRALogo className="h-9 w-auto" variant="dark" />
+            <HRALogo className="h-9 w-auto" variant="accent" />
           </div>
           <div className="flex items-center gap-2 mt-1.5">
-            <span className="text-[10px] font-black text-[#92798B] uppercase tracking-wider bg-[#E5DAD9] px-2.5 py-0.5 rounded-full border border-white/70 shadow-2xs">
+            <span className="text-[10px] font-black text-[#22D39F] uppercase tracking-wider bg-[#102D30] px-2.5 py-0.5 rounded-full border border-[#22D39F]/30 shadow-inner">
               Accountant
             </span>
-            <span className="text-[10px] font-bold text-[#5A463B]">Files Portal</span>
+            <span className="text-[10px] font-bold text-[#7F8BA3]">Files Portal</span>
           </div>
         </div>
 
         {/* USER PROFILE CHIP */}
-        <div className="p-3 rounded-2xl bg-[#E5DAD9]/80 backdrop-blur-md border border-white/80 flex items-center gap-3 shadow-2xs">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#92798B] to-[#5A463B] text-[#F3EAE2] font-black text-sm flex items-center justify-center shadow-xs shrink-0">
+        <div className="p-3 rounded-2xl bg-[#0B0F18]/90 backdrop-blur-md border border-[#263047] flex items-center gap-3 shadow-inner">
+          <div className="w-9 h-9 rounded-xl bg-[#102D30] text-[#22D39F] font-black text-sm flex items-center justify-center shadow-xs shrink-0 border border-[#22D39F]/30">
             {currentUser.fullName.charAt(0)}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-black text-[#302112] truncate">{currentUser.fullName}</p>
-            <span className="text-[10px] font-extrabold text-[#92798B] bg-[#F3EAE2] px-2 py-0.5 rounded-md inline-block mt-0.5 border border-white/60">
+            <p className="text-xs font-black text-[#F0F4FF] truncate">{currentUser.fullName}</p>
+            <span className="text-[10px] font-extrabold text-[#22D39F] bg-[#102D30] px-2 py-0.5 rounded-md inline-block mt-0.5 border border-[#22D39F]/20">
               {currentUser.role}
             </span>
           </div>
@@ -117,19 +117,19 @@ export const SidebarNav: React.FC<Props> = ({
                 onClick={() => onTabChange(item.id)}
                 className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-extrabold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-gradient-to-r from-[#92798B] via-[#5A463B] to-[#302112] text-[#F3EAE2] shadow-[0_6px_18px_rgba(90,70,59,0.25)] scale-[1.02]'
-                    : 'text-[#5A463B] hover:text-[#302112] hover:bg-[#E5DAD9]/60'
+                    ? 'bg-[#22D39F] text-[#0E1120] shadow-[0_4px_16px_rgba(34,211,159,0.35)] scale-[1.02]'
+                    : 'text-[#AEB8CC] hover:text-[#F0F4FF] hover:bg-[#0B0F18]'
                 }`}
                 id={`sidebar-link-${item.id}`}
               >
                 <div className="flex items-center gap-2.5">
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#FAF6F0]' : 'text-[#92798B]'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-[#0E1120]' : 'text-[#22D39F]'}`} />
                   <span>{item.label}</span>
                 </div>
                 {item.badge && item.badge > 0 ? (
                   <span
                     className={`px-2 py-0.5 text-[10px] font-black rounded-full ${
-                      isActive ? 'bg-[#FAF6F0] text-[#302112]' : 'bg-[#92798B] text-[#FAF6F0]'
+                      isActive ? 'bg-[#0E1120] text-[#22D39F]' : 'bg-[#22D39F] text-[#0E1120]'
                     }`}
                   >
                     {item.badge}
@@ -142,14 +142,14 @@ export const SidebarNav: React.FC<Props> = ({
       </div>
 
       {/* LOGOUT BUTTON AT BOTTOM */}
-      <div className="pt-3 border-t border-white/60">
+      <div className="pt-3 border-t border-[#263047]">
         <button
           type="button"
           onClick={onLogout}
-          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-extrabold text-[#5A463B] hover:text-rose-800 hover:bg-[#E0D1D4] transition-all cursor-pointer"
+          className="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl text-xs font-extrabold text-[#7F8BA3] hover:text-rose-400 hover:bg-[#0B0F18] transition-all cursor-pointer"
           id="btn-sidebar-logout"
         >
-          <LogOut className="w-4 h-4 text-[#FAF6F0] p-0.5 rounded bg-[#92798B]" />
+          <LogOut className="w-4 h-4 text-rose-400 p-0.5 rounded bg-rose-950/50" />
           <span>Log out</span>
         </button>
       </div>

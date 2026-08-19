@@ -35,7 +35,7 @@ export const UploadIntelligenceOverview: React.FC<Props> = ({
 
   return (
     <div
-      className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[32px] p-6 sm:p-7 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col lg:flex-row items-center justify-between gap-6 relative overflow-hidden"
+      className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[32px] p-6 sm:p-7 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] flex flex-col lg:flex-row items-center justify-between gap-6 relative overflow-hidden"
       id="upload-intelligence-overview"
     >
       {/* LEFT / CIRCULAR RING & COMPLETION */}
@@ -47,7 +47,7 @@ export const UploadIntelligenceOverview: React.FC<Props> = ({
               cx={size / 2}
               cy={size / 2}
               r={radius}
-              className="stroke-[#E5DAD9]"
+              className="stroke-[#0B0F18]"
               strokeWidth={strokeWidth}
               fill="transparent"
             />
@@ -56,7 +56,7 @@ export const UploadIntelligenceOverview: React.FC<Props> = ({
               cx={size / 2}
               cy={size / 2}
               r={radius}
-              className="stroke-[#92798B] transition-all duration-1000 ease-out"
+              className="stroke-[#22D39F] transition-all duration-1000 ease-out"
               strokeWidth={strokeWidth}
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
@@ -67,10 +67,10 @@ export const UploadIntelligenceOverview: React.FC<Props> = ({
 
           {/* Center stats */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="text-3xl font-black text-[#302112] tracking-tight" id="overview-percentage">
+            <span className="text-3xl font-black text-[#F0F4FF] tracking-tight" id="overview-percentage">
               {percentage}%
             </span>
-            <span className="text-[9px] font-black text-[#5A463B] uppercase tracking-wider">
+            <span className="text-[9px] font-black text-[#7F8BA3] uppercase tracking-wider">
               Completion
             </span>
           </div>
@@ -79,17 +79,17 @@ export const UploadIntelligenceOverview: React.FC<Props> = ({
         {/* SUMMARY HEADLINE */}
         <div className="space-y-1.5 text-center sm:text-left">
           <div className="flex items-center justify-center sm:justify-start gap-2">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#E5DAD9] text-[#92798B] border border-white/80">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30">
               Upload Intelligence
             </span>
-            <span className="text-xs text-[#5A463B] font-semibold">Q3 Fiscal Year</span>
+            <span className="text-xs text-[#7F8BA3] font-semibold">Q3 Fiscal Year</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-black text-[#302112] tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-black text-[#F0F4FF] tracking-tight">
             {completedSections === 3
               ? 'All Financial Files Ingested'
               : `${completedSections} of 3 Categories Completed`}
           </h2>
-          <p className="text-xs text-[#5A463B] font-semibold max-w-sm leading-relaxed">
+          <p className="text-xs text-[#AEB8CC] font-medium max-w-sm leading-relaxed">
             {completedSections === 3
               ? 'Your compliance records are verified. AI OCR data extraction is active across all dossiers.'
               : `You have ${pendingSections} required document section${pendingSections === 1 ? '' : 's'} awaiting upload.`}
@@ -97,7 +97,7 @@ export const UploadIntelligenceOverview: React.FC<Props> = ({
         </div>
       </div>
 
-      {/* RIGHT / CLICKABLE INTERACTIVE METRICS (Filterable) */}
+      {/* RIGHT / CLICKABLE INTERACTIVE METRICS */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full lg:w-auto">
         {/* TOTAL FILES */}
         <button
@@ -105,17 +105,17 @@ export const UploadIntelligenceOverview: React.FC<Props> = ({
           onClick={() => onFilterClick && onFilterClick('ALL')}
           className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
             activeFilter === 'ALL'
-              ? 'bg-[#92798B] text-[#F3EAE2] border-[#92798B] shadow-xs scale-[1.02]'
-              : 'bg-[#E5DAD9]/80 hover:bg-white border-white/80 text-[#302112]'
+              ? 'bg-[#22D39F] text-[#0E1120] border-[#22D39F] shadow-md scale-[1.02]'
+              : 'bg-[#0B0F18] hover:bg-[#102D30] border-[#263047] text-[#AEB8CC]'
           }`}
         >
           <div className="flex items-center justify-between gap-2">
-            <span className={`text-[10px] font-black uppercase tracking-wider ${activeFilter === 'ALL' ? 'text-[#F3EAE2]/90' : 'text-[#5A463B]'}`}>
+            <span className={`text-[10px] font-black uppercase tracking-wider ${activeFilter === 'ALL' ? 'text-[#0E1120]' : 'text-[#7F8BA3]'}`}>
               Total Files
             </span>
-            <FileText className={`w-3.5 h-3.5 ${activeFilter === 'ALL' ? 'text-[#F3EAE2]' : 'text-[#92798B]'}`} />
+            <FileText className={`w-3.5 h-3.5 ${activeFilter === 'ALL' ? 'text-[#0E1120]' : 'text-[#22D39F]'}`} />
           </div>
-          <span className="text-xl font-black block mt-1">{totalFilesCount}</span>
+          <span className={`text-xl font-black block mt-1 ${activeFilter === 'ALL' ? 'text-[#0E1120]' : 'text-[#F0F4FF]'}`}>{totalFilesCount}</span>
         </button>
 
         {/* COMPLETED */}
@@ -124,17 +124,17 @@ export const UploadIntelligenceOverview: React.FC<Props> = ({
           onClick={() => onFilterClick && onFilterClick('COMPLETED')}
           className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
             activeFilter === 'COMPLETED'
-              ? 'bg-emerald-700 text-[#F3EAE2] border-emerald-700 shadow-xs scale-[1.02]'
-              : 'bg-[#E5DAD9]/80 hover:bg-white border-white/80 text-[#302112]'
+              ? 'bg-[#22D39F] text-[#0E1120] border-[#22D39F] shadow-md scale-[1.02]'
+              : 'bg-[#0B0F18] hover:bg-[#102D30] border-[#263047] text-[#AEB8CC]'
           }`}
         >
           <div className="flex items-center justify-between gap-2">
-            <span className={`text-[10px] font-black uppercase tracking-wider ${activeFilter === 'COMPLETED' ? 'text-[#F3EAE2]/90' : 'text-[#5A463B]'}`}>
+            <span className={`text-[10px] font-black uppercase tracking-wider ${activeFilter === 'COMPLETED' ? 'text-[#0E1120]' : 'text-[#7F8BA3]'}`}>
               Completed
             </span>
-            <CheckCircle2 className={`w-3.5 h-3.5 ${activeFilter === 'COMPLETED' ? 'text-[#F3EAE2]' : 'text-emerald-700'}`} />
+            <CheckCircle2 className={`w-3.5 h-3.5 ${activeFilter === 'COMPLETED' ? 'text-[#0E1120]' : 'text-[#22D39F]'}`} />
           </div>
-          <span className={`text-xl font-black block mt-1 ${activeFilter === 'COMPLETED' ? 'text-white' : 'text-emerald-700'}`}>
+          <span className={`text-xl font-black block mt-1 ${activeFilter === 'COMPLETED' ? 'text-[#0E1120]' : 'text-[#22D39F]'}`}>
             {completedSections}
           </span>
         </button>
@@ -145,17 +145,17 @@ export const UploadIntelligenceOverview: React.FC<Props> = ({
           onClick={() => onFilterClick && onFilterClick('PENDING')}
           className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
             activeFilter === 'PENDING'
-              ? 'bg-[#CBAF87] text-[#302112] border-[#CBAF87] shadow-xs scale-[1.02]'
-              : 'bg-[#E5DAD9]/80 hover:bg-white border-white/80 text-[#302112]'
+              ? 'bg-amber-500 text-[#0E1120] border-amber-500 shadow-md scale-[1.02]'
+              : 'bg-[#0B0F18] hover:bg-[#102D30] border-[#263047] text-[#AEB8CC]'
           }`}
         >
           <div className="flex items-center justify-between gap-2">
-            <span className={`text-[10px] font-black uppercase tracking-wider ${activeFilter === 'PENDING' ? 'text-[#302112]' : 'text-[#5A463B]'}`}>
+            <span className={`text-[10px] font-black uppercase tracking-wider ${activeFilter === 'PENDING' ? 'text-[#0E1120]' : 'text-[#7F8BA3]'}`}>
               Pending
             </span>
-            <AlertCircle className={`w-3.5 h-3.5 ${activeFilter === 'PENDING' ? 'text-[#302112]' : 'text-amber-700'}`} />
+            <AlertCircle className={`w-3.5 h-3.5 ${activeFilter === 'PENDING' ? 'text-[#0E1120]' : 'text-amber-400'}`} />
           </div>
-          <span className={`text-xl font-black block mt-1 ${activeFilter === 'PENDING' ? 'text-[#302112]' : 'text-amber-700'}`}>
+          <span className={`text-xl font-black block mt-1 ${activeFilter === 'PENDING' ? 'text-[#0E1120]' : 'text-amber-400'}`}>
             {pendingSections}
           </span>
         </button>
@@ -166,17 +166,17 @@ export const UploadIntelligenceOverview: React.FC<Props> = ({
           onClick={() => onFilterClick && onFilterClick('PROCESSING')}
           className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
             activeFilter === 'PROCESSING'
-              ? 'bg-[#5A463B] text-[#F3EAE2] border-[#5A463B] shadow-xs scale-[1.02]'
-              : 'bg-[#E5DAD9]/80 hover:bg-white border-white/80 text-[#302112]'
+              ? 'bg-[#102D30] text-[#22D39F] border-[#22D39F] shadow-md scale-[1.02]'
+              : 'bg-[#0B0F18] hover:bg-[#102D30] border-[#263047] text-[#AEB8CC]'
           }`}
         >
           <div className="flex items-center justify-between gap-2">
-            <span className={`text-[10px] font-black uppercase tracking-wider ${activeFilter === 'PROCESSING' ? 'text-[#F3EAE2]/90' : 'text-[#5A463B]'}`}>
+            <span className={`text-[10px] font-black uppercase tracking-wider ${activeFilter === 'PROCESSING' ? 'text-[#22D39F]' : 'text-[#7F8BA3]'}`}>
               AI Active
             </span>
-            <Sparkles className={`w-3.5 h-3.5 ${activeFilter === 'PROCESSING' ? 'text-[#CBAF87]' : 'text-[#92798B]'}`} />
+            <Sparkles className="w-3.5 h-3.5 text-[#22D39F]" />
           </div>
-          <span className={`text-xl font-black block mt-1 ${activeFilter === 'PROCESSING' ? 'text-white' : 'text-[#92798B]'}`}>
+          <span className={`text-xl font-black block mt-1 ${activeFilter === 'PROCESSING' ? 'text-[#22D39F]' : 'text-[#F0F4FF]'}`}>
             {totalFilesCount > 0 ? totalFilesCount : 0}
           </span>
         </button>

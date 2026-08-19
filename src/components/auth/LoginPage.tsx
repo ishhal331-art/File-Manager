@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 import { HRALogo } from '../HRALogo';
+import { LiveBackground } from '../common/LiveBackground';
 
 interface Props {
   onLoginSuccess: (user: any) => void;
@@ -92,24 +93,22 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
 
   return (
     <div 
-      className="min-h-screen w-full bg-gradient-to-br from-[#D0BEC7] via-[#E0D1D4] to-[#C1ACBA] flex flex-col items-center justify-center p-3 sm:p-6 md:p-8 lg:p-10 relative overflow-hidden font-sans selection:bg-[#92798B]/30 selection:text-[#302112]"
+      className="min-h-screen w-full relative flex flex-col items-center justify-center p-3.5 sm:p-6 md:p-8 lg:p-10 overflow-hidden font-sans selection:bg-[#22D39F]/30 selection:text-[#F0F4FF]"
       id="login-liquid-canvas"
     >
-      {/* AMBIENT SOFT BACKGROUND LIQUID GLOWS */}
-      <div className="absolute top-[-10%] left-[-5%] w-[480px] h-[480px] rounded-full bg-[#E0D1D4]/80 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-5%] w-[520px] h-[520px] rounded-full bg-[#C1ACBA]/60 blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] rounded-full bg-[#F3EAE2]/40 blur-3xl pointer-events-none" />
+      {/* LIVE INTERACTIVE AMBIENT BACKGROUND */}
+      <LiveBackground />
 
-      {/* MAIN LIQUID DROP GLASS CONTAINER (INSPIRED BY REFERENCE DESIGN) */}
+      {/* MAIN CONTAINER */}
       <div
-        className="w-full max-w-5xl bg-[#F3EAE2]/75 backdrop-blur-2xl rounded-[36px] sm:rounded-[44px] p-5 sm:p-7 md:p-9 shadow-[0_30px_80px_rgba(48,33,18,0.14),0_10px_25px_rgba(90,70,59,0.06),inset_0_2px_3px_rgba(255,255,255,0.95),inset_0_-2px_3px_rgba(90,70,59,0.05)] border border-white/80 relative z-10 my-auto transition-all duration-300"
+        className="w-full max-w-5xl bg-[#161D2F]/90 backdrop-blur-2xl rounded-[32px] sm:rounded-[40px] p-5 sm:p-7 md:p-9 shadow-[0_30px_80px_rgba(11,15,24,0.8),0_0_40px_rgba(16,45,48,0.3)] border border-[#263047] relative z-10 my-auto transition-all duration-300"
         id="liquid-glass-portal-window"
       >
-        {/* TOP GLASS NAVIGATION HEADER - CENTERED LOGO & NAV */}
-        <header className="flex flex-col items-center justify-center gap-3 pb-5 border-b border-white/60 mb-6 text-center">
-          {/* CENTERED LOGO ONLY */}
+        {/* TOP HEADER - CENTERED LOGO & NAV */}
+        <header className="flex flex-col items-center justify-center gap-3 pb-5 border-b border-[#263047] mb-6 text-center">
+          {/* CENTERED LOGO */}
           <div className="h-12 w-auto flex items-center justify-center">
-            <HRALogo className="h-11 sm:h-12 w-auto" variant="dark" />
+            <HRALogo className="h-11 sm:h-12 w-auto" variant="accent" />
           </div>
 
           {/* TOP NAV PILL BUTTONS */}
@@ -120,10 +119,10 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
                 setMode('signin');
                 handleRoleSwitch('user');
               }}
-              className={`px-5 py-2 min-h-[40px] rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+              className={`px-5 py-2 min-h-[42px] rounded-full text-xs font-extrabold transition-all cursor-pointer ${
                 mode === 'signin'
-                  ? 'bg-[#302112] text-[#F3EAE2] shadow-[0_4px_14px_rgba(48,33,18,0.25)] scale-105'
-                  : 'bg-[#E5DAD9]/80 hover:bg-[#E5DAD9] text-[#5A463B] border border-white/80'
+                  ? 'bg-[#22D39F] text-[#0E1120] shadow-[0_4px_16px_rgba(34,211,159,0.4)] scale-105'
+                  : 'bg-[#0B0F18] hover:bg-[#102D30] text-[#AEB8CC] hover:text-[#F0F4FF] border border-[#263047]'
               }`}
               id="btn-nav-signin"
             >
@@ -132,10 +131,10 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
             <button
               type="button"
               onClick={() => setMode('signup')}
-              className={`px-5 py-2 min-h-[40px] rounded-full text-xs font-extrabold transition-all cursor-pointer ${
+              className={`px-5 py-2 min-h-[42px] rounded-full text-xs font-extrabold transition-all cursor-pointer ${
                 mode === 'signup'
-                  ? 'bg-[#302112] text-[#F3EAE2] shadow-[0_4px_14px_rgba(48,33,18,0.25)] scale-105'
-                  : 'bg-[#E5DAD9]/80 hover:bg-[#E5DAD9] text-[#5A463B] border border-white/80'
+                  ? 'bg-[#22D39F] text-[#0E1120] shadow-[0_4px_16px_rgba(34,211,159,0.4)] scale-105'
+                  : 'bg-[#0B0F18] hover:bg-[#102D30] text-[#AEB8CC] hover:text-[#F0F4FF] border border-[#263047]'
               }`}
               id="btn-nav-signup"
             >
@@ -144,44 +143,44 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
           </div>
         </header>
 
-        {/* BREADCRUMB / SUB-NAV ROW (MATCHING REFERENCE PICTURE SUB-BAR) */}
-        <div className="flex items-center justify-between gap-2 p-2.5 sm:px-4 bg-[#E5DAD9]/70 backdrop-blur-md rounded-2xl border border-white/70 text-[11px] font-bold text-[#5A463B] mb-6 shadow-2xs overflow-x-auto">
+        {/* SUB-NAV BREADCRUMB */}
+        <div className="flex items-center justify-between gap-2 p-3 sm:px-4 bg-[#0B0F18]/85 backdrop-blur-md rounded-2xl border border-[#263047] text-[11px] font-bold text-[#7F8BA3] mb-6 shadow-inner overflow-x-auto">
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[#302112] font-black">HRA Accountant Portal</span>
+            <span className="text-[#F0F4FF] font-black">HRA Accountant Portal</span>
             <span>›</span>
             <span>Fiscal Dossiers</span>
             <span>›</span>
-            <span className="text-[#92798B] font-extrabold">
+            <span className="text-[#22D39F] font-extrabold">
               {mode === 'signin' ? 'Secure Authentication' : 'Client Registration'}
             </span>
           </div>
-          <div className="hidden md:flex items-center gap-3 text-[10px] text-[#5A463B]">
+          <div className="hidden md:flex items-center gap-3 text-[10px] text-[#AEB8CC]">
             <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#92798B]" /> 256-Bit Encrypted
+              <ShieldCheck className="w-3.5 h-3.5 text-[#22D39F]" /> 256-Bit Encrypted
             </span>
             <span className="flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-[#CBAF87]" /> AI OCR Powered
+              <Sparkles className="w-3.5 h-3.5 text-[#22D39F]" /> AI OCR Powered
             </span>
           </div>
         </div>
 
-        {/* SPLIT LAYOUT: AUTHENTICATION FORM + LIQUID BENTO FEATURE GRID */}
+        {/* SPLIT LAYOUT: AUTHENTICATION FORM + BENTO FEATURE GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
           {/* LEFT: AUTHENTICATION FORM (5 COLS) */}
           <div 
-            className="lg:col-span-5 bg-[#F3EAE2]/90 backdrop-blur-xl rounded-[32px] p-6 sm:p-7 border border-white/90 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_2px_2px_rgba(255,255,255,0.9)] flex flex-col justify-between"
+            className="lg:col-span-5 bg-[#0B0F18]/90 backdrop-blur-xl rounded-[28px] p-5 sm:p-6 md:p-7 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] flex flex-col justify-between"
             id="auth-form-card"
           >
             <div>
               {/* HEADING */}
               <div className="mb-4 text-center flex flex-col items-center">
                 <div className="flex items-center justify-center gap-1.5 mb-1 text-center">
-                  <span className="text-[#CBAF87] font-black text-base select-none">≡</span>
-                  <h2 className="text-xl sm:text-2xl font-black text-[#302112] tracking-tight text-center" id="login-title">
-                    {mode === 'signin' ? 'Welcome to HRA Accountant' : 'Create HRA Accountant Account'}
+                  <span className="text-[#22D39F] font-black text-base select-none">≡</span>
+                  <h2 className="text-xl sm:text-2xl font-black text-[#F0F4FF] tracking-tight text-center" id="login-title">
+                    {mode === 'signin' ? 'Welcome to HRA Accountant' : 'Create HRA Account'}
                   </h2>
                 </div>
-                <p className="text-xs font-semibold text-[#5A463B] text-center">
+                <p className="text-xs font-medium text-[#7F8BA3] text-center">
                   {mode === 'signin'
                     ? 'Enter your credentials to access your financial dossier'
                     : 'Register as a new client to submit compliance files'}
@@ -190,7 +189,7 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
 
               {/* ROLE SWITCHER PILLS (USER / ADMIN / MANAGER) */}
               {mode === 'signin' && (
-                <div className="mb-4 p-1 bg-[#E5DAD9] border border-[#B19CAD]/30 rounded-2xl flex items-center gap-1 shadow-inner" id="role-pill-switch">
+                <div className="mb-4 p-1 bg-[#0E1120] border border-[#263047] rounded-2xl flex items-center gap-1 shadow-inner" id="role-pill-switch">
                   {(['user', 'manager', 'admin'] as const).map((r) => (
                     <button
                       key={r}
@@ -198,8 +197,8 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
                       onClick={() => handleRoleSwitch(r)}
                       className={`flex-1 py-2 px-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer capitalize ${
                         activeRoleOption === r
-                          ? 'bg-[#92798B] text-[#F3EAE2] shadow-[0_4px_12px_rgba(146,121,139,0.35)] scale-[1.02]'
-                          : 'text-[#5A463B] hover:text-[#302112] hover:bg-white/40'
+                          ? 'bg-[#22D39F] text-[#0E1120] shadow-[0_4px_12px_rgba(34,211,159,0.35)] scale-[1.02]'
+                          : 'text-[#7F8BA3] hover:text-[#F0F4FF] hover:bg-[#161D2F]'
                       }`}
                       id={`btn-role-tab-${r}`}
                     >
@@ -218,15 +217,15 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
 
               {/* ERROR / SUCCESS ALERTS */}
               {error && (
-                <div className="mb-4 p-3 rounded-2xl bg-[#E0D1D4] border border-rose-300 text-rose-800 text-xs font-semibold flex items-center gap-2" id="auth-error-alert">
-                  <Shield className="w-4 h-4 text-rose-600 shrink-0" />
+                <div className="mb-4 p-3 rounded-2xl bg-rose-950/40 border border-rose-800 text-rose-300 text-xs font-semibold flex items-center gap-2" id="auth-error-alert">
+                  <Shield className="w-4 h-4 text-rose-400 shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
 
               {successMsg && (
-                <div className="mb-4 p-3 rounded-2xl bg-[#E5DAD9] border border-emerald-300 text-emerald-800 text-xs font-semibold flex items-center gap-2" id="auth-success-alert">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <div className="mb-4 p-3 rounded-2xl bg-[#102D30] border border-[#22D39F] text-[#22D39F] text-xs font-semibold flex items-center gap-2" id="auth-success-alert">
+                  <CheckCircle2 className="w-4 h-4 text-[#22D39F] shrink-0" />
                   <span>{successMsg}</span>
                 </div>
               )}
@@ -235,7 +234,7 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
               <form onSubmit={handleAuthSubmit} className="space-y-3.5" id="main-auth-form">
                 {mode === 'signup' && (
                   <div>
-                    <label className="text-xs font-bold text-[#5A463B] pl-1 block mb-1">
+                    <label className="text-xs font-bold text-[#AEB8CC] pl-1 block mb-1">
                       Full Legal Name
                     </label>
                     <input
@@ -243,18 +242,18 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       placeholder="e.g. John Doe (Apex Corp)"
-                      className="w-full px-4 py-3 bg-[#E5DAD9]/80 border border-[#B19CAD]/40 rounded-2xl text-xs font-bold text-[#302112] placeholder-[#92798B]/60 focus:outline-none focus:border-[#92798B] focus:bg-white transition-all shadow-inner"
+                      className="w-full px-4 py-3 bg-[#0E1120] border border-[#263047] rounded-2xl text-xs font-bold text-[#F0F4FF] placeholder-[#7F8BA3] focus:outline-none focus:border-[#22D39F] focus:ring-2 focus:ring-[#22D39F]/20 transition-all shadow-inner"
                       required
                     />
                   </div>
                 )}
 
                 <div>
-                  <label className="text-xs font-bold text-[#5A463B] pl-1 block mb-1">
+                  <label className="text-xs font-bold text-[#AEB8CC] pl-1 block mb-1">
                     Username
                   </label>
                   <div className="relative flex items-center">
-                    <div className="absolute left-3 flex items-center justify-center w-7 h-7 rounded-xl bg-[#92798B] text-[#F3EAE2]">
+                    <div className="absolute left-3 flex items-center justify-center w-7 h-7 rounded-xl bg-[#102D30] text-[#22D39F]">
                       <UserIcon className="w-3.5 h-3.5" />
                     </div>
                     <input
@@ -263,7 +262,7 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       placeholder="Username"
-                      className="w-full pl-12 pr-4 py-3 bg-[#E5DAD9]/80 border border-[#B19CAD]/40 rounded-2xl text-xs font-bold text-[#302112] placeholder-[#92798B]/60 focus:outline-none focus:border-[#92798B] focus:bg-white transition-all shadow-inner"
+                      className="w-full pl-12 pr-4 py-3 bg-[#0E1120] border border-[#263047] rounded-2xl text-xs font-bold text-[#F0F4FF] placeholder-[#7F8BA3] focus:outline-none focus:border-[#22D39F] focus:ring-2 focus:ring-[#22D39F]/20 transition-all shadow-inner"
                       required
                       autoComplete="username"
                     />
@@ -272,7 +271,7 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
 
                 {mode === 'signup' && (
                   <div>
-                    <label className="text-xs font-bold text-[#5A463B] pl-1 block mb-1">
+                    <label className="text-xs font-bold text-[#AEB8CC] pl-1 block mb-1">
                       Email Address
                     </label>
                     <input
@@ -280,18 +279,18 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="name@company.com"
-                      className="w-full px-4 py-3 bg-[#E5DAD9]/80 border border-[#B19CAD]/40 rounded-2xl text-xs font-bold text-[#302112] placeholder-[#92798B]/60 focus:outline-none focus:border-[#92798B] focus:bg-white transition-all shadow-inner"
+                      className="w-full px-4 py-3 bg-[#0E1120] border border-[#263047] rounded-2xl text-xs font-bold text-[#F0F4FF] placeholder-[#7F8BA3] focus:outline-none focus:border-[#22D39F] focus:ring-2 focus:ring-[#22D39F]/20 transition-all shadow-inner"
                       required
                     />
                   </div>
                 )}
 
                 <div>
-                  <label className="text-xs font-bold text-[#5A463B] pl-1 block mb-1">
+                  <label className="text-xs font-bold text-[#AEB8CC] pl-1 block mb-1">
                     Password
                   </label>
                   <div className="relative flex items-center">
-                    <div className="absolute left-3 flex items-center justify-center w-7 h-7 rounded-xl bg-[#92798B] text-[#F3EAE2]">
+                    <div className="absolute left-3 flex items-center justify-center w-7 h-7 rounded-xl bg-[#102D30] text-[#22D39F]">
                       <Lock className="w-3.5 h-3.5" />
                     </div>
                     <input
@@ -300,25 +299,25 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full pl-12 pr-10 py-3 bg-[#E5DAD9]/80 border border-[#B19CAD]/40 rounded-2xl text-xs font-bold text-[#302112] placeholder-[#92798B]/60 focus:outline-none focus:border-[#92798B] focus:bg-white transition-all shadow-inner"
+                      className="w-full pl-12 pr-10 py-3 bg-[#0E1120] border border-[#263047] rounded-2xl text-xs font-bold text-[#F0F4FF] placeholder-[#7F8BA3] focus:outline-none focus:border-[#22D39F] focus:ring-2 focus:ring-[#22D39F]/20 transition-all shadow-inner"
                       required
                       autoComplete="current-password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 text-[#5A463B] hover:text-[#302112] p-1 cursor-pointer"
+                      className="absolute right-3 text-[#7F8BA3] hover:text-[#F0F4FF] p-1 cursor-pointer"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
 
                   {mode === 'signin' && (
-                    <div className="flex justify-end pt-1 pr-1">
+                    <div className="flex justify-end pt-1.5 pr-1">
                       <button
                         type="button"
                         onClick={() => setShowForgotModal(true)}
-                        className="text-[11px] font-bold text-[#92798B] hover:text-[#5A463B] transition-colors cursor-pointer"
+                        className="text-[11px] font-bold text-[#22D39F] hover:text-[#19C99A] transition-colors cursor-pointer"
                         id="btn-forgot-pw"
                       >
                         Forgot Password?
@@ -332,11 +331,11 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3.5 px-6 rounded-full bg-gradient-to-r from-[#92798B] via-[#5A463B] to-[#302112] text-[#F3EAE2] font-black text-xs tracking-wider uppercase shadow-[0_10px_25px_rgba(48,33,18,0.25)] hover:shadow-[0_14px_30px_rgba(48,33,18,0.35)] active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2 group cursor-pointer"
+                    className="w-full py-3.5 px-6 rounded-full bg-[#22D39F] hover:bg-[#19C99A] text-[#0E1120] font-black text-xs tracking-wider uppercase shadow-[0_10px_25px_rgba(34,211,159,0.35)] active:scale-[0.98] transition-all disabled:opacity-60 flex items-center justify-center gap-2 group cursor-pointer"
                     id="btn-submit-auth"
                   >
                     {loading ? (
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      <div className="w-4 h-4 border-2 border-[#0E1120]/30 border-t-[#0E1120] rounded-full animate-spin" />
                     ) : (
                       <>
                         <span>{mode === 'signin' ? 'Sign In to Portal' : 'Complete Registration'}</span>
@@ -349,131 +348,131 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
             </div>
 
             {/* DEMO QUICK-SWITCH FOOTER */}
-            <div className="mt-4 pt-3 border-t border-[#B19CAD]/30 flex items-center justify-between text-[11px] text-[#5A463B] font-semibold">
+            <div className="mt-4 pt-3 border-t border-[#263047] flex items-center justify-between text-[11px] text-[#7F8BA3] font-semibold">
               <span 
                 onClick={() => handleRoleSwitch('user')} 
-                className="hover:text-[#302112] cursor-pointer hover:underline"
+                className="hover:text-[#22D39F] cursor-pointer hover:underline"
               >
-                Client: <strong className="text-[#302112]">user1</strong>
+                Client: <strong className="text-[#F0F4FF]">user1</strong>
               </span>
               <span>•</span>
               <span 
                 onClick={() => handleRoleSwitch('manager')} 
-                className="hover:text-[#302112] cursor-pointer hover:underline"
+                className="hover:text-[#22D39F] cursor-pointer hover:underline"
               >
-                Manager: <strong className="text-[#302112]">manager1</strong>
+                Manager: <strong className="text-[#F0F4FF]">manager1</strong>
               </span>
               <span>•</span>
               <span 
                 onClick={() => handleRoleSwitch('admin')} 
-                className="hover:text-[#302112] cursor-pointer hover:underline"
+                className="hover:text-[#22D39F] cursor-pointer hover:underline"
               >
-                Admin: <strong className="text-[#302112]">admin</strong>
+                Admin: <strong className="text-[#F0F4FF]">admin</strong>
               </span>
             </div>
           </div>
 
-          {/* RIGHT: LIQUID DROP GLASS 6-BENTO CARDS (INSPIRED BY ATTACHED DESIGN) */}
+          {/* RIGHT: DARK TEAL 4-BENTO CARDS */}
           <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-3.5" id="login-bento-features">
             {/* TILE 1: MANAGEMENT */}
-            <div className="bg-[#E5DAD9]/80 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-white/80 shadow-[0_12px_28px_rgba(48,33,18,0.06),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-3 glass-card-hover">
+            <div className="bg-[#0B0F18]/80 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-[#263047] shadow-[0_12px_28px_rgba(11,15,24,0.5)] flex flex-col justify-between space-y-3 glass-card-hover">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 p-1 bg-white/70 rounded-2xl border border-white shadow-2xs">
-                  <div className="w-7 h-7 rounded-xl bg-[#92798B] text-[#F3EAE2] flex items-center justify-center">
+                <div className="flex items-center gap-1.5 p-1 bg-[#161D2F] rounded-2xl border border-[#263047] shadow-inner">
+                  <div className="w-7 h-7 rounded-xl bg-[#102D30] text-[#22D39F] flex items-center justify-center">
                     <Layers className="w-3.5 h-3.5" />
                   </div>
-                  <div className="w-7 h-7 rounded-xl bg-[#CBAF87] text-[#302112] flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-xl bg-[#161D2F] text-[#F0F4FF] flex items-center justify-center">
                     <FolderLock className="w-3.5 h-3.5" />
                   </div>
                 </div>
-                <span className="w-2.5 h-2.5 rounded-full border border-white bg-[#CBAF87]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#22D39F] shadow-[0_0_8px_#22D39F]" />
               </div>
               <div>
-                <h3 className="text-base font-black text-[#302112] tracking-tight">Management</h3>
-                <p className="text-[11px] font-medium text-[#5A463B] mt-1 leading-relaxed">
+                <h3 className="text-base font-black text-[#F0F4FF] tracking-tight">Management</h3>
+                <p className="text-[11px] font-medium text-[#AEB8CC] mt-1 leading-relaxed">
                   Streamlined client ingestion dossiers for sales invoices, purchase receipts, and bank logs.
                 </p>
               </div>
               <div className="flex items-center justify-between pt-1">
-                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#F3EAE2] text-[#92798B] border border-white">
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30">
                   3 Required + 1 Opt
                 </span>
               </div>
             </div>
 
             {/* TILE 2: DATA ANALYTICS */}
-            <div className="bg-[#E0D1D4]/80 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-white/80 shadow-[0_12px_28px_rgba(48,33,18,0.06),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-3 glass-card-hover">
+            <div className="bg-[#0B0F18]/80 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-[#263047] shadow-[0_12px_28px_rgba(11,15,24,0.5)] flex flex-col justify-between space-y-3 glass-card-hover">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 p-1 bg-white/70 rounded-2xl border border-white shadow-2xs">
-                  <div className="w-7 h-7 rounded-xl bg-[#302112] text-[#F3EAE2] flex items-center justify-center">
+                <div className="flex items-center gap-1.5 p-1 bg-[#161D2F] rounded-2xl border border-[#263047] shadow-inner">
+                  <div className="w-7 h-7 rounded-xl bg-[#102D30] text-[#22D39F] flex items-center justify-center">
                     <BarChart3 className="w-3.5 h-3.5" />
                   </div>
-                  <div className="w-7 h-7 rounded-xl bg-[#B19CAD] text-[#302112] flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-xl bg-[#161D2F] text-[#F0F4FF] flex items-center justify-center">
                     <Sparkles className="w-3.5 h-3.5" />
                   </div>
                 </div>
-                <span className="w-2.5 h-2.5 rounded-full border border-white bg-emerald-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#22D39F] shadow-[0_0_8px_#22D39F]" />
               </div>
               <div>
-                <h3 className="text-base font-black text-[#302112] tracking-tight">Data Analytics</h3>
-                <p className="text-[11px] font-medium text-[#5A463B] mt-1 leading-relaxed">
+                <h3 className="text-base font-black text-[#F0F4FF] tracking-tight">Data Analytics</h3>
+                <p className="text-[11px] font-medium text-[#AEB8CC] mt-1 leading-relaxed">
                   Real-time revenue versus expense tracking, tax estimations, and fiscal compliance scoring.
                 </p>
               </div>
               <div className="flex items-center justify-between pt-1">
-                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#F3EAE2] text-[#302112] border border-white">
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30">
                   Live KPIs
                 </span>
               </div>
             </div>
 
             {/* TILE 3: OCR AUTOMATION */}
-            <div className="bg-[#C1ACBA]/70 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-white/80 shadow-[0_12px_28px_rgba(48,33,18,0.06),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-3 glass-card-hover">
+            <div className="bg-[#0B0F18]/80 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-[#263047] shadow-[0_12px_28px_rgba(11,15,24,0.5)] flex flex-col justify-between space-y-3 glass-card-hover">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 p-1 bg-white/70 rounded-2xl border border-white shadow-2xs">
-                  <div className="w-7 h-7 rounded-xl bg-[#5A463B] text-[#F3EAE2] flex items-center justify-center">
+                <div className="flex items-center gap-1.5 p-1 bg-[#161D2F] rounded-2xl border border-[#263047] shadow-inner">
+                  <div className="w-7 h-7 rounded-xl bg-[#102D30] text-[#22D39F] flex items-center justify-center">
                     <Zap className="w-3.5 h-3.5" />
                   </div>
-                  <div className="w-7 h-7 rounded-xl bg-[#CBAF87] text-[#302112] flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-xl bg-[#161D2F] text-[#F0F4FF] flex items-center justify-center">
                     <FileCheck className="w-3.5 h-3.5" />
                   </div>
                 </div>
-                <span className="w-2.5 h-2.5 rounded-full border border-white bg-[#CBAF87]" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#22D39F] shadow-[0_0_8px_#22D39F]" />
               </div>
               <div>
-                <h3 className="text-base font-black text-[#302112] tracking-tight">AI OCR Engine</h3>
-                <p className="text-[11px] font-medium text-[#5A463B] mt-1 leading-relaxed">
+                <h3 className="text-base font-black text-[#F0F4FF] tracking-tight">AI OCR Engine</h3>
+                <p className="text-[11px] font-medium text-[#AEB8CC] mt-1 leading-relaxed">
                   Automated OCR extracting line items, invoice numbers, tax amounts, and counterparty data.
                 </p>
               </div>
               <div className="flex items-center justify-between pt-1">
-                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#F3EAE2] text-[#5A463B] border border-white">
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30">
                   99.4% Accuracy
                 </span>
               </div>
             </div>
 
             {/* TILE 4: ENTERPRISE SECURITY */}
-            <div className="bg-[#F3EAE2]/80 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-white/80 shadow-[0_12px_28px_rgba(48,33,18,0.06),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-3 glass-card-hover">
+            <div className="bg-[#0B0F18]/80 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-[#263047] shadow-[0_12px_28px_rgba(11,15,24,0.5)] flex flex-col justify-between space-y-3 glass-card-hover">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 p-1 bg-white/70 rounded-2xl border border-white shadow-2xs">
-                  <div className="w-7 h-7 rounded-xl bg-[#92798B] text-[#F3EAE2] flex items-center justify-center">
+                <div className="flex items-center gap-1.5 p-1 bg-[#161D2F] rounded-2xl border border-[#263047] shadow-inner">
+                  <div className="w-7 h-7 rounded-xl bg-[#102D30] text-[#22D39F] flex items-center justify-center">
                     <ShieldCheck className="w-3.5 h-3.5" />
                   </div>
-                  <div className="w-7 h-7 rounded-xl bg-[#302112] text-[#F3EAE2] flex items-center justify-center">
+                  <div className="w-7 h-7 rounded-xl bg-[#161D2F] text-[#F0F4FF] flex items-center justify-center">
                     <Building2 className="w-3.5 h-3.5" />
                   </div>
                 </div>
-                <span className="w-2.5 h-2.5 rounded-full border border-white bg-emerald-500" />
+                <span className="w-2.5 h-2.5 rounded-full bg-[#22D39F] shadow-[0_0_8px_#22D39F]" />
               </div>
               <div>
-                <h3 className="text-base font-black text-[#302112] tracking-tight">Multi-Role Security</h3>
-                <p className="text-[11px] font-medium text-[#5A463B] mt-1 leading-relaxed">
+                <h3 className="text-base font-black text-[#F0F4FF] tracking-tight">Multi-Role Security</h3>
+                <p className="text-[11px] font-medium text-[#AEB8CC] mt-1 leading-relaxed">
                   Fine-grained permissions for Clients, Managers, and Admins with tamper-proof audit trails.
                 </p>
               </div>
               <div className="flex items-center justify-between pt-1">
-                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#E5DAD9] text-[#302112] border border-white">
+                <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30">
                   Role-Gated
                 </span>
               </div>
@@ -481,17 +480,17 @@ export const LoginPage: React.FC<Props> = ({ onLoginSuccess }) => {
           </div>
         </div>
 
-        {/* BOTTOM LIQUID GLASS FOOTER */}
-        <footer className="mt-6 pt-4 border-t border-white/60 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-semibold text-[#5A463B]">
+        {/* BOTTOM FOOTER */}
+        <footer className="mt-6 pt-4 border-t border-[#263047] flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-semibold text-[#7F8BA3]">
           <div className="flex items-center gap-2">
-            <span>© 2026 HRA Accountant</span>
+            <span className="text-[#AEB8CC]">© 2026 HRA Accountant</span>
             <span>•</span>
             <span>Financial Ingestion & Intelligence System</span>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-[#302112] font-bold">Privacy Policy</span>
+            <span className="text-[#22D39F] font-bold">Privacy Policy</span>
             <span>•</span>
-            <span className="text-[#302112] font-bold">Compliance Terms</span>
+            <span className="text-[#22D39F] font-bold">Compliance Terms</span>
           </div>
         </footer>
       </div>

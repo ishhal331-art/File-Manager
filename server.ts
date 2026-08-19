@@ -481,18 +481,23 @@ app.put("/api/auth/profile", (req: Request, res: Response) => {
   return res.json({ user: updatedProfile, message: "Personal profile updated successfully." });
 });
 
-// API ROUTE 2: USER MANAGEMENT (Admin/Manager)
+// API ROUTE 2: USER MANAGEMENT (Admin/Manager/Directory)
 app.get("/api/users", (req: Request, res: Response) => {
   const currentUser = getAuthenticatedUser(req);
   if (!currentUser) {
     return res.status(401).json({ error: "Unauthorized." });
   }
 
-  if (currentUser.role !== "ADMIN" && currentUser.role !== "MANAGER") {
-    return res.status(403).json({ error: "Forbidden. Admin or Manager access required." });
+  // Admins & Managers get full user listing
+  if (currentUser.role === "ADMIN" || currentUser.role === "MANAGER") {
+    const list: User[] = Array.from(usersStore.values()).map(({ passwordHash, ...u }) => u);
+    return res.json({ users: list });
   }
 
-  const list: User[] = Array.from(usersStore.values()).map(({ passwordHash, ...u }) => u);
+  // Standard USER accounts get active contact directory for notification dispatching & messaging
+  const list: User[] = Array.from(usersStore.values())
+    .filter((u) => u.status === "ACTIVE")
+    .map(({ passwordHash, ...u }) => u);
   return res.json({ users: list });
 });
 
@@ -1127,29 +1132,42 @@ app.post("/api/notifications/:id/mark-read", (req: Request, res: Response) => {
 
 app.post("/api/notifications", (req: Request, res: Response) => {
   const currentUser = getAuthenticatedUser(req);
-  if (!currentUser || currentUser.role !== "ADMIN") {
-    return res.status(403).json({
-      error: "Forbidden. Only Admin can initiate new notifications.",
+  if (!currentUser) {
+    return res.status(401).json({
+      error: "Unauthorized.",
     });
   }
 
-  const { title, message, targetUserId } = req.body;
+  const { title, message, targetUserId, attachments } = req.body;
 
   if (!title || !message) {
     return res.status(400).json({ error: "Title and message are required." });
   }
 
   const notifId = `notif_${Math.random().toString(36).substring(2, 9)}`;
+  const validAttachments = Array.isArray(attachments)
+    ? attachments.map((att: any) => ({
+        id: att.id || `att_${Math.random().toString(36).substring(2, 9)}`,
+        name: String(att.name || "Attachment"),
+        size: Number(att.size) || 0,
+        mimeType: String(att.mimeType || "application/octet-stream"),
+        url: String(att.url || ""),
+        uploadedAt: att.uploadedAt || new Date().toISOString(),
+      }))
+    : [];
+
   const newNotif: AppNotification = {
     id: notifId,
     title: String(title).trim(),
     message: String(message).trim(),
     senderId: currentUser.id,
     senderName: currentUser.fullName,
+    senderRole: currentUser.role,
     targetUserId: targetUserId || "ALL",
     timestamp: new Date().toISOString(),
     readBy: [currentUser.id],
     replies: [],
+    attachments: validAttachments,
   };
 
   notificationsStore.set(notifId, newNotif);
@@ -1165,10 +1183,21 @@ app.post("/api/notifications/:id/reply", (req: Request, res: Response) => {
   }
 
   const { id } = req.params;
-  const { message } = req.body;
+  const { message, attachments } = req.body;
 
-  if (!message || !String(message).trim()) {
-    return res.status(400).json({ error: "Reply message cannot be empty." });
+  const validAttachments = Array.isArray(attachments)
+    ? attachments.map((att: any) => ({
+        id: att.id || `att_${Math.random().toString(36).substring(2, 9)}`,
+        name: String(att.name || "Attachment"),
+        size: Number(att.size) || 0,
+        mimeType: String(att.mimeType || "application/octet-stream"),
+        url: String(att.url || ""),
+        uploadedAt: att.uploadedAt || new Date().toISOString(),
+      }))
+    : [];
+
+  if ((!message || !String(message).trim()) && validAttachments.length === 0) {
+    return res.status(400).json({ error: "Reply message or attachment is required." });
   }
 
   const notif = notificationsStore.get(id);
@@ -1176,11 +1205,13 @@ app.post("/api/notifications/:id/reply", (req: Request, res: Response) => {
     return res.status(404).json({ error: "Notification thread not found." });
   }
 
-  // Normal user permission check: user can only reply if the notification is targeted to ALL or to them specifically
+  // Permission check: user can reply if the notification is targeted to ALL, or to them specifically, or if they are admin/manager/sender
   if (
     currentUser.role !== "ADMIN" &&
+    currentUser.role !== "MANAGER" &&
     notif.targetUserId !== "ALL" &&
-    notif.targetUserId !== currentUser.id
+    notif.targetUserId !== currentUser.id &&
+    notif.senderId !== currentUser.id
   ) {
     return res.status(403).json({ error: "You cannot reply to this notification." });
   }
@@ -1190,10 +1221,14 @@ app.post("/api/notifications/:id/reply", (req: Request, res: Response) => {
     senderId: currentUser.id,
     senderName: currentUser.fullName,
     senderRole: currentUser.role,
-    message: String(message).trim(),
+    message: String(message || "").trim(),
     timestamp: new Date().toISOString(),
+    attachments: validAttachments,
   };
 
+  if (!notif.replies) {
+    notif.replies = [];
+  }
   notif.replies.push(reply);
   notificationsStore.set(id, notif);
   saveDatabaseToDisk();

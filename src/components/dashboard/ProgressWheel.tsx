@@ -34,7 +34,7 @@ export const ProgressWheel: React.FC<Props> = ({
 
   return (
     <div 
-      className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[32px] p-6 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] border border-white/80 flex flex-col md:flex-row items-center gap-6"
+      className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[28px] p-5 sm:p-6 shadow-[0_15px_40px_rgba(11,15,24,0.6)] border border-[#263047] flex flex-col md:flex-row items-center gap-6"
       id="progress-wheel-card"
     >
       {/* SVG DONUT WHEEL */}
@@ -45,7 +45,7 @@ export const ProgressWheel: React.FC<Props> = ({
             cx={size / 2}
             cy={size / 2}
             r={radius}
-            className="stroke-[#E5DAD9]"
+            className="stroke-[#0B0F18]"
             strokeWidth={strokeWidth}
             fill="transparent"
           />
@@ -54,7 +54,7 @@ export const ProgressWheel: React.FC<Props> = ({
             cx={size / 2}
             cy={size / 2}
             r={radius}
-            className="stroke-[#92798B] transition-all duration-1000 ease-out"
+            className="stroke-[#22D39F] transition-all duration-1000 ease-out"
             strokeWidth={strokeWidth}
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
@@ -65,10 +65,10 @@ export const ProgressWheel: React.FC<Props> = ({
 
         {/* Center label */}
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-          <span className="text-3xl font-black text-[#302112] tracking-tight" id="wheel-percentage">
+          <span className="text-3xl font-black text-[#F0F4FF] tracking-tight" id="wheel-percentage">
             {percentage}%
           </span>
-          <span className="text-[10px] font-black text-[#5A463B] uppercase tracking-wider">
+          <span className="text-[10px] font-black text-[#7F8BA3] uppercase tracking-wider">
             Compliance
           </span>
         </div>
@@ -76,11 +76,11 @@ export const ProgressWheel: React.FC<Props> = ({
 
       {/* DETAILED FILE STATUS LIST */}
       <div className="flex-1 w-full space-y-2">
-        <div className="flex items-center justify-between pb-2 border-b border-white/60">
-          <h3 className="text-sm font-black text-[#302112] tracking-tight">
+        <div className="flex items-center justify-between pb-2 border-b border-[#263047]">
+          <h3 className="text-sm font-black text-[#F0F4FF] tracking-tight">
             Fiscal Dossier Compliance
           </h3>
-          <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-[#E5DAD9] text-[#92798B] border border-white/80">
+          <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30">
             {count} of 3 Required
           </span>
         </div>
@@ -88,24 +88,24 @@ export const ProgressWheel: React.FC<Props> = ({
         {/* Sales File Status */}
         <div 
           onClick={() => onNavigateToUpload?.('SALES')}
-          className="flex items-center justify-between p-2.5 rounded-2xl bg-[#E5DAD9]/80 backdrop-blur-md border border-white/80 transition-all hover:bg-white cursor-pointer shadow-2xs"
+          className="flex items-center justify-between p-2.5 rounded-2xl bg-[#0B0F18] border border-[#263047] transition-all hover:border-[#22D39F] cursor-pointer shadow-inner"
         >
           <div className="flex items-center gap-2.5">
-            <div className={`p-1.5 rounded-xl ${salesUploaded ? 'bg-emerald-100 text-emerald-800' : 'bg-[#D0BEC7] text-[#5A463B]'}`}>
+            <div className={`p-1.5 rounded-xl ${salesUploaded ? 'bg-[#102D30] text-[#22D39F]' : 'bg-[#161D2F] text-[#7F8BA3]'}`}>
               <FileText className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs font-black text-[#302112]">1. Sales Invoices</p>
-              <p className="text-[10px] text-[#5A463B] font-medium">Customer revenue & turnover</p>
+              <p className="text-xs font-bold text-[#F0F4FF]">1. Sales Invoices</p>
+              <p className="text-[10px] text-[#7F8BA3] font-medium">Customer revenue & turnover</p>
             </div>
           </div>
           {salesUploaded ? (
-            <span className="flex items-center gap-1 text-[11px] font-black text-emerald-800 bg-[#F3EAE2] px-2 py-0.5 rounded-md border border-emerald-300">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Ingested
+            <span className="flex items-center gap-1 text-[11px] font-bold text-[#22D39F] bg-[#102D30] px-2 py-0.5 rounded-md border border-[#22D39F]/30">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#22D39F]" /> Ingested
             </span>
           ) : (
-            <span className="flex items-center gap-1 text-[11px] font-bold text-[#5A463B] bg-[#E0D1D4] px-2 py-0.5 rounded-md border border-white">
-              <AlertCircle className="w-3.5 h-3.5 text-amber-700" /> Upload
+            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-800">
+              <AlertCircle className="w-3.5 h-3.5 text-amber-400" /> Upload
             </span>
           )}
         </div>
@@ -113,24 +113,24 @@ export const ProgressWheel: React.FC<Props> = ({
         {/* Purchase File Status */}
         <div 
           onClick={() => onNavigateToUpload?.('PURCHASE')}
-          className="flex items-center justify-between p-2.5 rounded-2xl bg-[#E5DAD9]/80 backdrop-blur-md border border-white/80 transition-all hover:bg-white cursor-pointer shadow-2xs"
+          className="flex items-center justify-between p-2.5 rounded-2xl bg-[#0B0F18] border border-[#263047] transition-all hover:border-[#22D39F] cursor-pointer shadow-inner"
         >
           <div className="flex items-center gap-2.5">
-            <div className={`p-1.5 rounded-xl ${purchaseUploaded ? 'bg-emerald-100 text-emerald-800' : 'bg-[#D0BEC7] text-[#5A463B]'}`}>
+            <div className={`p-1.5 rounded-xl ${purchaseUploaded ? 'bg-[#102D30] text-[#22D39F]' : 'bg-[#161D2F] text-[#7F8BA3]'}`}>
               <FileText className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs font-black text-[#302112]">2. Purchase Receipts</p>
-              <p className="text-[10px] text-[#5A463B] font-medium">Vendor expenses & bills</p>
+              <p className="text-xs font-bold text-[#F0F4FF]">2. Purchase Receipts</p>
+              <p className="text-[10px] text-[#7F8BA3] font-medium">Vendor expenses & bills</p>
             </div>
           </div>
           {purchaseUploaded ? (
-            <span className="flex items-center gap-1 text-[11px] font-black text-emerald-800 bg-[#F3EAE2] px-2 py-0.5 rounded-md border border-emerald-300">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Ingested
+            <span className="flex items-center gap-1 text-[11px] font-bold text-[#22D39F] bg-[#102D30] px-2 py-0.5 rounded-md border border-[#22D39F]/30">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#22D39F]" /> Ingested
             </span>
           ) : (
-            <span className="flex items-center gap-1 text-[11px] font-bold text-[#5A463B] bg-[#E0D1D4] px-2 py-0.5 rounded-md border border-white">
-              <AlertCircle className="w-3.5 h-3.5 text-amber-700" /> Upload
+            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-800">
+              <AlertCircle className="w-3.5 h-3.5 text-amber-400" /> Upload
             </span>
           )}
         </div>
@@ -138,24 +138,24 @@ export const ProgressWheel: React.FC<Props> = ({
         {/* Bank Statement Status */}
         <div 
           onClick={() => onNavigateToUpload?.('BANK_STATEMENT')}
-          className="flex items-center justify-between p-2.5 rounded-2xl bg-[#E5DAD9]/80 backdrop-blur-md border border-white/80 transition-all hover:bg-white cursor-pointer shadow-2xs"
+          className="flex items-center justify-between p-2.5 rounded-2xl bg-[#0B0F18] border border-[#263047] transition-all hover:border-[#22D39F] cursor-pointer shadow-inner"
         >
           <div className="flex items-center gap-2.5">
-            <div className={`p-1.5 rounded-xl ${bankUploaded ? 'bg-emerald-100 text-emerald-800' : 'bg-[#D0BEC7] text-[#5A463B]'}`}>
+            <div className={`p-1.5 rounded-xl ${bankUploaded ? 'bg-[#102D30] text-[#22D39F]' : 'bg-[#161D2F] text-[#7F8BA3]'}`}>
               <FileText className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs font-black text-[#302112]">3. Bank Statement</p>
-              <p className="text-[10px] text-[#5A463B] font-medium">Official statement logs</p>
+              <p className="text-xs font-bold text-[#F0F4FF]">3. Bank Statement</p>
+              <p className="text-[10px] text-[#7F8BA3] font-medium">Official statement logs</p>
             </div>
           </div>
           {bankUploaded ? (
-            <span className="flex items-center gap-1 text-[11px] font-black text-emerald-800 bg-[#F3EAE2] px-2 py-0.5 rounded-md border border-emerald-300">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Ingested
+            <span className="flex items-center gap-1 text-[11px] font-bold text-[#22D39F] bg-[#102D30] px-2 py-0.5 rounded-md border border-[#22D39F]/30">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#22D39F]" /> Ingested
             </span>
           ) : (
-            <span className="flex items-center gap-1 text-[11px] font-bold text-[#5A463B] bg-[#E0D1D4] px-2 py-0.5 rounded-md border border-white">
-              <AlertCircle className="w-3.5 h-3.5 text-amber-700" /> Upload
+            <span className="flex items-center gap-1 text-[11px] font-bold text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded-md border border-amber-800">
+              <AlertCircle className="w-3.5 h-3.5 text-amber-400" /> Upload
             </span>
           )}
         </div>
@@ -163,17 +163,17 @@ export const ProgressWheel: React.FC<Props> = ({
         {/* Optional Additional Files Status */}
         <div 
           onClick={() => onNavigateToUpload?.('ADDITIONAL')}
-          className="flex items-center justify-between p-2 rounded-2xl bg-[#F3EAE2] border border-white/60 transition-all hover:bg-white cursor-pointer"
+          className="flex items-center justify-between p-2 rounded-2xl bg-[#0B0F18] border border-[#263047] transition-all hover:border-[#22D39F] cursor-pointer shadow-inner"
         >
           <div className="flex items-center gap-2">
-            <div className="p-1 rounded-lg bg-[#E5DAD9] text-[#92798B]">
+            <div className="p-1 rounded-lg bg-[#102D30] text-[#22D39F]">
               <PlusCircle className="w-3.5 h-3.5" />
             </div>
             <div>
-              <p className="text-[11px] font-black text-[#302112]">4. Additional Documents (Optional)</p>
+              <p className="text-[11px] font-bold text-[#AEB8CC]">4. Additional Documents (Optional)</p>
             </div>
           </div>
-          <span className="text-[10px] font-black text-[#92798B] bg-[#E5DAD9] px-2 py-0.5 rounded-md">
+          <span className="text-[10px] font-bold text-[#7F8BA3] bg-[#161D2F] px-2 py-0.5 rounded-md border border-[#263047]">
             {additionalCount > 0 ? `${additionalCount} Uploaded` : 'Optional'}
           </span>
         </div>

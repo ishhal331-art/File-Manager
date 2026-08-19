@@ -31,6 +31,7 @@ import { AnalyticsAndGraphsView } from './AnalyticsAndGraphsView';
 import { AIAdvisorHub } from './AIAdvisorHub';
 import { InteractiveDashboardHub } from './InteractiveDashboardHub';
 import { HRALogo } from '../HRALogo';
+import { LiveBackground } from '../common/LiveBackground';
 import { BarChart3 } from 'lucide-react';
 
 interface Props {
@@ -58,11 +59,13 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
         ]);
         if (mounted) {
           setFiles(filesRes.files || []);
-          const unread = (notifRes.notifications || []).filter((n: any) => !n.isRead).length;
+          const unread = (notifRes.notifications || []).filter(
+            (n: any) => !n.read && (n.targetUserId === 'ALL' || n.targetUserId === currentUser.id)
+          ).length;
           setNotifCount(unread);
         }
       } catch (err) {
-        console.error('Error loading dashboard data:', err);
+        console.error('Failed to load user portal data:', err);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -71,27 +74,43 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [currentUser.id]);
 
-  const salesFiles = files.filter((f) => f.fileType === 'SALES');
-  const purchaseFiles = files.filter((f) => f.fileType === 'PURCHASE');
-  const bankFiles = files.filter((f) => f.fileType === 'BANK_STATEMENT');
-  const additionalFiles = files.filter((f) => f.fileType === 'ADDITIONAL');
+  // Derived categorized lists
+  const salesFiles = files.filter(
+    (f) => f.fileType === 'SALES' || (f as any).type === 'SALES_INVOICE' || (f as any).type === 'SALES'
+  );
+  const purchaseFiles = files.filter(
+    (f) => f.fileType === 'PURCHASE' || (f as any).type === 'PURCHASE_RECEIPT' || (f as any).type === 'PURCHASE'
+  );
+  const bankFiles = files.filter(
+    (f) => f.fileType === 'BANK_STATEMENT' || (f as any).type === 'BANK_STATEMENT'
+  );
+  const additionalFiles = files.filter(
+    (f) => f.fileType === 'ADDITIONAL' || (f as any).type === 'ADDITIONAL_DOC' || (f as any).type === 'ADDITIONAL'
+  );
 
-  // Handle browser back button
+  // Filtered files for search
+  const filteredFiles = files.filter((f) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    const typeStr = (f.fileType || (f as any).type || '').toLowerCase();
+    return (
+      f.originalName.toLowerCase().includes(q) ||
+      (f.summary && f.summary.toLowerCase().includes(q)) ||
+      typeStr.includes(q)
+    );
+  });
+
   useEffect(() => {
-    const handleBackButton = (e: Event) => {
-      if (selectedFileForViewer) {
-        e.preventDefault();
-        setSelectedFileForViewer(null);
-      } else if (activeTab !== 'dashboard') {
-        e.preventDefault();
-        setActiveTab('dashboard');
-      }
+    if (selectedFileForViewer) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
     };
-
-    window.addEventListener('app:backbutton', handleBackButton);
-    return () => window.removeEventListener('app:backbutton', handleBackButton);
   }, [selectedFileForViewer, activeTab]);
 
   const handleUploadSuccess = (newFile: UploadedFile) => {
@@ -114,10 +133,13 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
 
   return (
     <div 
-      className="min-h-screen bg-[#D0BEC7] text-[#302112] font-sans selection:bg-[#92798B]/30 selection:text-[#302112] p-3 sm:p-5 lg:p-6 flex gap-6"
+      className="min-h-screen relative bg-[#0E1120] text-[#AEB8CC] font-sans selection:bg-[#22D39F]/30 selection:text-[#F0F4FF] p-3 sm:p-5 lg:p-6 flex gap-6"
       id="client-portal-root"
     >
-      {/* DESKTOP SIDEBAR NAVIGATION (NO DOCS TAB, REFINED PALETTE) */}
+      {/* LIVE INTERACTIVE BACKGROUND */}
+      <LiveBackground />
+
+      {/* DESKTOP SIDEBAR NAVIGATION */}
       <SidebarNav
         currentUser={currentUser}
         activeTab={activeTab}
@@ -127,27 +149,27 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
       />
 
       {/* MAIN CONTENT AREA */}
-      <div className="flex-1 min-w-0 flex flex-col space-y-5 pb-32 sm:pb-36">
-        {/* TOP LIQUID GLASS HEADER */}
+      <div className="flex-1 min-w-0 flex flex-col space-y-5 pb-28 sm:pb-32 relative z-10">
+        {/* TOP HEADER */}
         <header
-          className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col md:flex-row md:items-center justify-between gap-4"
+          className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[28px] p-4 sm:p-5 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] flex flex-col md:flex-row md:items-center justify-between gap-4"
           id="top-portal-header"
         >
           {/* HELLO GREETING & HRA BRANDING */}
           <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-[#92798B] to-[#5A463B] text-[#F3EAE2] flex items-center justify-center font-black text-lg shadow-xs shrink-0">
-              <Sparkles className="w-5 h-5 text-[#CBAF87]" />
+            <div className="w-11 h-11 rounded-2xl bg-[#102D30] text-[#22D39F] flex items-center justify-center font-black text-lg shadow-inner border border-[#22D39F]/30 shrink-0">
+              <Sparkles className="w-5 h-5 text-[#22D39F]" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-black text-[#302112] tracking-tight leading-tight truncate">
+                <h1 className="text-xl sm:text-2xl font-black text-[#F0F4FF] tracking-tight leading-tight truncate">
                   HELLO, {currentUser.fullName.toUpperCase()}!
                 </h1>
-                <span className="hidden sm:inline px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#E5DAD9] text-[#92798B] border border-white/80">
+                <span className="hidden sm:inline px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30">
                   HRA Accountant
                 </span>
               </div>
-              <p className="text-xs text-[#5A463B] font-semibold truncate">
+              <p className="text-xs text-[#7F8BA3] font-medium truncate">
                 Fiscal Ingestion, AI OCR Compliance & Dossier Manager
               </p>
             </div>
@@ -156,20 +178,20 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
           {/* SEARCH BAR & QUICK ACTIONS */}
           <div className="flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
             <div className="relative flex-1 sm:w-60">
-              <Search className="w-4 h-4 text-[#92798B] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-[#7F8BA3] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search file name..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-xs font-bold text-[#302112] bg-[#E5DAD9] border border-white/80 rounded-full focus:outline-none focus:border-[#92798B] focus:bg-white placeholder:text-[#5A463B]/60 transition-all shadow-inner"
+                className="w-full pl-9 pr-4 py-2 text-xs font-bold text-[#F0F4FF] bg-[#0B0F18] border border-[#263047] rounded-full focus:outline-none focus:border-[#22D39F] focus:ring-2 focus:ring-[#22D39F]/20 placeholder:text-[#7F8BA3] transition-all shadow-inner"
                 id="header-search-input"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#5A463B] hover:text-[#302112]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#7F8BA3] hover:text-[#F0F4FF]"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -180,15 +202,15 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
             <button
               type="button"
               onClick={() => setActiveTab('notifications')}
-              className={`p-2.5 sm:px-3 sm:py-2 min-h-[44px] min-w-[44px] rounded-2xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs relative active:scale-95 shrink-0 ${
+              className={`p-2.5 sm:px-3 sm:py-2 min-h-[44px] min-w-[44px] rounded-2xl border text-xs font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-inner relative active:scale-95 shrink-0 ${
                 activeTab === 'notifications'
-                  ? 'bg-[#92798B] text-[#FAF6F0] border-[#92798B]'
-                  : 'bg-[#E5DAD9] text-[#302112] border-white/80 hover:bg-white'
+                  ? 'bg-[#22D39F] text-[#0E1120] border-[#22D39F]'
+                  : 'bg-[#0B0F18] text-[#AEB8CC] border-[#263047] hover:border-[#22D39F] hover:text-[#F0F4FF]'
               }`}
               title="Notifications & Messages"
               id="btn-header-notifications"
             >
-              <Bell className="w-4 h-4 text-[#FAF6F0] p-0.5 rounded-md bg-[#92798B]" />
+              <Bell className="w-4 h-4" />
               <span className="hidden md:inline">Messages</span>
               {notifCount > 0 && (
                 <span className="px-1.5 py-0.2 text-[9px] font-black bg-rose-600 text-white rounded-full">
@@ -201,16 +223,16 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
             <button
               type="button"
               onClick={onLogout}
-              className="lg:hidden p-2.5 min-h-[44px] min-w-[44px] rounded-2xl bg-[#E5DAD9] hover:bg-rose-50 text-rose-700 border border-white/80 transition-all cursor-pointer shadow-2xs flex items-center justify-center active:scale-95 shrink-0"
+              className="lg:hidden p-2.5 min-h-[44px] min-w-[44px] rounded-2xl bg-[#0B0F18] hover:bg-rose-950/40 text-rose-400 border border-[#263047] hover:border-rose-700 transition-all cursor-pointer shadow-inner flex items-center justify-center active:scale-95 shrink-0"
               title="Log out"
               id="btn-header-logout"
             >
-              <LogOut className="w-4 h-4 text-[#FAF6F0] p-0.5 rounded-md bg-[#92798B]" />
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </header>
 
-        {/* TAB 1: INTERACTIVE DASHBOARD HUB (CLEANED UP - UPLOADS MOVED TO DEDICATED TAB) */}
+        {/* TAB 1: INTERACTIVE DASHBOARD HUB */}
         {activeTab === 'dashboard' && (
           <InteractiveDashboardHub
             currentUser={currentUser}
@@ -220,7 +242,7 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
           />
         )}
 
-        {/* TAB 2: CENTRAL UPLOAD CENTER (SALES, PURCHASE, BANK, OPTIONAL ADDITIONAL) */}
+        {/* TAB 2: CENTRAL UPLOAD CENTER */}
         {activeTab === 'upload' && (
           <div className="space-y-6 animate-fade-in" id="upload-center-tab-view">
             {/* 1. UPLOAD INTELLIGENCE OVERVIEW */}
@@ -246,228 +268,181 @@ export const ClientDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
                   salesUploaded={salesFiles.length > 0}
                   purchaseUploaded={purchaseFiles.length > 0}
                   bankUploaded={bankFiles.length > 0}
-                  additionalUploaded={additionalFiles.length > 0}
                   additionalCount={additionalFiles.length}
                 />
               </div>
             </div>
 
-            {/* 3. FOUR UPLOAD CARDS GRID */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-base font-black text-[#302112] tracking-tight flex items-center gap-2">
-                    <span>Target Dossier Vaults</span>
-                    <span className="text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full bg-[#E5DAD9] text-[#92798B] border border-white/80">
-                      3 Required + 1 Optional
-                    </span>
-                  </h3>
-                  <p className="text-xs text-[#5A463B] font-semibold">
-                    Upload documents directly into specific dossier vaults or manage existing uploads.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4" id="upload-cards-grid">
-                {/* 1. SALES FILE (REQUIRED) */}
-                <UploadCard
-                  fileType="SALES"
-                  title="1. Sales File"
-                  description="Upload revenue invoices, sales ledgers, customer receipts, or trade invoices."
-                  badgeNumber="01"
-                  categoryFiles={salesFiles}
-                  onUploadSuccess={handleUploadSuccess}
-                  onViewFile={(file) => setSelectedFileForViewer(file)}
-                  onDeleteFile={handleDeleteFile}
-                />
-
-                {/* 2. PURCHASE FILE (REQUIRED) */}
-                <UploadCard
-                  fileType="PURCHASE"
-                  title="2. Purchase File"
-                  description="Upload vendor bills, supplier accounts, operational expenses, or purchase orders."
-                  badgeNumber="02"
-                  categoryFiles={purchaseFiles}
-                  onUploadSuccess={handleUploadSuccess}
-                  onViewFile={(file) => setSelectedFileForViewer(file)}
-                  onDeleteFile={handleDeleteFile}
-                />
-
-                {/* 3. BANK STATEMENT (REQUIRED) */}
-                <UploadCard
-                  fileType="BANK_STATEMENT"
-                  title="3. Bank Statement"
-                  description="Upload official monthly bank statements, credit logs, account balances, or deposit records."
-                  badgeNumber="03"
-                  categoryFiles={bankFiles}
-                  onUploadSuccess={handleUploadSuccess}
-                  onViewFile={(file) => setSelectedFileForViewer(file)}
-                  onDeleteFile={handleDeleteFile}
-                />
-
-                {/* 4. ADDITIONAL FILES (OPTIONAL) */}
-                <UploadCard
-                  fileType="ADDITIONAL"
-                  title="4. Additional Files (Optional)"
-                  description="Upload supporting records: VAT certificates, trade licenses, contracts, payroll, or misc."
-                  badgeNumber="04"
-                  categoryFiles={additionalFiles}
-                  onUploadSuccess={handleUploadSuccess}
-                  onViewFile={(file) => setSelectedFileForViewer(file)}
-                  onDeleteFile={handleDeleteFile}
-                />
-              </div>
+            {/* 3. DOSSIER UPLOAD CARDS GRID */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-5">
+              <UploadCard
+                title="Sales Invoices"
+                description="Client bills, outgoing invoices, point-of-sale logs & tax receipts."
+                type="SALES_INVOICE"
+                required={true}
+                files={salesFiles}
+                onUploadSuccess={handleUploadSuccess}
+                onDeleteFile={handleDeleteFile}
+                onInspectFile={(file) => setSelectedFileForViewer(file)}
+                badgeColor="border-[#22D39F] text-[#22D39F]"
+              />
+              <UploadCard
+                title="Purchase Receipts"
+                description="Vendor bills, operational expenses, inventory acquisitions & supplies."
+                type="PURCHASE_RECEIPT"
+                required={true}
+                files={purchaseFiles}
+                onUploadSuccess={handleUploadSuccess}
+                onDeleteFile={handleDeleteFile}
+                onInspectFile={(file) => setSelectedFileForViewer(file)}
+                badgeColor="border-[#22D39F] text-[#22D39F]"
+              />
+              <UploadCard
+                title="Bank Statements"
+                description="Monthly transaction logs, credit reconciliation & account summaries."
+                type="BANK_STATEMENT"
+                required={true}
+                files={bankFiles}
+                onUploadSuccess={handleUploadSuccess}
+                onDeleteFile={handleDeleteFile}
+                onInspectFile={(file) => setSelectedFileForViewer(file)}
+                badgeColor="border-[#22D39F] text-[#22D39F]"
+              />
+              <UploadCard
+                title="Additional Documents"
+                description="Tax filings, legal agreements, audits & auxiliary financial docs."
+                type="ADDITIONAL_DOC"
+                required={false}
+                files={additionalFiles}
+                onUploadSuccess={handleUploadSuccess}
+                onDeleteFile={handleDeleteFile}
+                onInspectFile={(file) => setSelectedFileForViewer(file)}
+                badgeColor="border-[#7F8BA3] text-[#AEB8CC]"
+              />
             </div>
           </div>
         )}
 
-        {/* TAB 3: GRAPHS & VISUAL ANALYTICS */}
+        {/* TAB 3: GRAPHS & ANALYTICS VIEW */}
         {activeTab === 'analytics' && (
-          <div className="space-y-6 animate-fade-in" id="analytics-tab-view">
+          <div className="animate-fade-in" id="analytics-tab-view">
             <AnalyticsAndGraphsView
-              currentUser={currentUser}
-              users={[currentUser]}
-              userProgressList={[]}
               files={files}
               onInspectFile={(file) => setSelectedFileForViewer(file)}
             />
           </div>
         )}
 
-        {/* TAB 4: AI OCR & FISCAL ADVISOR */}
+        {/* TAB 4: AI ADVISOR & OCR HUB */}
         {activeTab === 'ai' && (
-          <div className="space-y-8 animate-fade-in" id="ai-insights-tab-view">
+          <div className="animate-fade-in" id="ai-advisor-tab-view">
             <AIAdvisorHub
+              files={files}
               currentUser={currentUser}
-              users={[currentUser]}
-              files={files}
-              onReviewFile={(file) => setSelectedFileForViewer(file)}
-            />
-            <AIDocumentIntelligenceCard
-              files={files}
-              onReviewExtractedData={(file) => setSelectedFileForViewer(file)}
+              onInspectFile={(file) => setSelectedFileForViewer(file)}
             />
           </div>
         )}
 
-        {/* TAB 4: GOOGLE TASKS & PERSONAL NOTES */}
+        {/* TAB 5: GOOGLE TASKS & NOTES */}
         {activeTab === 'tasks' && (
           <div className="animate-fade-in" id="tasks-tab-view">
             <GoogleTasksTab currentUser={currentUser} />
           </div>
         )}
 
-        {/* TAB 5: NOTIFICATIONS & MESSAGES */}
+        {/* TAB 6: NOTIFICATIONS & MESSAGES */}
         {activeTab === 'notifications' && (
           <div className="animate-fade-in" id="notifications-tab-view">
-            <NotificationsTab
-              currentUser={currentUser}
-              onNotificationsViewed={() => {
-                api.getNotifications().then((res) => {
-                  const unread = (res.notifications || []).filter((n: any) => !n.isRead).length;
-                  setNotifCount(unread);
-                });
-              }}
-            />
-          </div>
-        )}
-
-        {/* TAB 6: ACTIVITY AUDIT LOG */}
-        {activeTab === 'activity' && (
-          <div className="animate-fade-in" id="activity-tab-view">
-            <RecentActivityTimeline
-              files={files}
-              onInspectFile={(file) => setSelectedFileForViewer(file)}
-              onOpenNotifications={() => setActiveTab('notifications')}
-            />
+            <NotificationsTab currentUser={currentUser} />
           </div>
         )}
 
         {/* TAB 7: PROFILE SETTINGS */}
         {activeTab === 'profile' && (
           <div className="animate-fade-in" id="profile-tab-view">
-            <ProfileTab currentUser={currentUser} onUserUpdated={() => {}} />
+            <ProfileTab currentUser={currentUser} />
           </div>
         )}
       </div>
 
-      {/* MOBILE BOTTOM NAVIGATION BAR (FIXED ON SMARTPHONES & TABLETS - NO DOCS TAB) */}
-      <div 
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#F3EAE2]/95 backdrop-blur-xl border-t border-white/80 px-2 py-2 flex items-center justify-around shadow-[0_-8px_25px_rgba(48,33,18,0.12)]"
+      {/* MOBILE BOTTOM NAVIGATION */}
+      <div
+        className="lg:hidden fixed bottom-3 left-3 right-3 z-40 bg-[#161D2F]/95 backdrop-blur-2xl rounded-2xl p-2 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.9)] flex items-center justify-around"
         id="mobile-bottom-nav"
       >
         <button
           type="button"
           onClick={() => setActiveTab('dashboard')}
-          className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all cursor-pointer ${
-            activeTab === 'dashboard' ? 'text-[#302112] font-black bg-[#E5DAD9]' : 'text-[#5A463B] font-semibold'
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all cursor-pointer min-h-[44px] min-w-[44px] justify-center ${
+            activeTab === 'dashboard' ? 'text-[#22D39F] font-black bg-[#102D30]' : 'text-[#7F8BA3] font-semibold'
           }`}
           id="mobile-nav-home"
         >
-          <LayoutDashboard className="w-5 h-5 text-[#92798B]" />
+          <LayoutDashboard className="w-5 h-5" />
           <span className="text-[10px]">Home</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('upload')}
-          className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all cursor-pointer ${
-            activeTab === 'upload' ? 'text-[#302112] font-black bg-[#E5DAD9]' : 'text-[#5A463B] font-semibold'
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all cursor-pointer min-h-[44px] min-w-[44px] justify-center ${
+            activeTab === 'upload' ? 'text-[#22D39F] font-black bg-[#102D30]' : 'text-[#7F8BA3] font-semibold'
           }`}
           id="mobile-nav-upload"
         >
-          <UploadCloud className="w-5 h-5 text-[#92798B]" />
+          <UploadCloud className="w-5 h-5" />
           <span className="text-[10px]">Upload</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('ai')}
-          className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all cursor-pointer ${
-            activeTab === 'ai' ? 'text-[#302112] font-black bg-[#E5DAD9]' : 'text-[#5A463B] font-semibold'
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all cursor-pointer min-h-[44px] min-w-[44px] justify-center ${
+            activeTab === 'ai' ? 'text-[#22D39F] font-black bg-[#102D30]' : 'text-[#7F8BA3] font-semibold'
           }`}
           id="mobile-nav-ai"
         >
-          <Sparkles className="w-5 h-5 text-[#CBAF87]" />
+          <Sparkles className="w-5 h-5" />
           <span className="text-[10px]">AI OCR</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('tasks')}
-          className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all cursor-pointer ${
-            activeTab === 'tasks' ? 'text-[#302112] font-black bg-[#E5DAD9]' : 'text-[#5A463B] font-semibold'
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all cursor-pointer min-h-[44px] min-w-[44px] justify-center ${
+            activeTab === 'tasks' ? 'text-[#22D39F] font-black bg-[#102D30]' : 'text-[#7F8BA3] font-semibold'
           }`}
           id="mobile-nav-tasks"
         >
-          <CheckSquare className="w-5 h-5 text-[#92798B]" />
+          <CheckSquare className="w-5 h-5" />
           <span className="text-[10px]">Tasks</span>
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('notifications')}
-          className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all cursor-pointer relative ${
-            activeTab === 'notifications' ? 'text-[#302112] font-black bg-[#E5DAD9]' : 'text-[#5A463B] font-semibold'
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all cursor-pointer relative min-h-[44px] min-w-[44px] justify-center ${
+            activeTab === 'notifications' ? 'text-[#22D39F] font-black bg-[#102D30]' : 'text-[#7F8BA3] font-semibold'
           }`}
           id="mobile-nav-alerts"
         >
-          <Bell className="w-5 h-5 text-[#92798B]" />
+          <Bell className="w-5 h-5" />
           <span className="text-[10px]">Alerts</span>
           {notifCount > 0 && (
-            <span className="absolute top-1 right-2 w-2 h-2 rounded-full bg-rose-600" />
+            <span className="absolute top-1.5 right-2.5 w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_6px_#f43f5e]" />
           )}
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('profile')}
-          className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all cursor-pointer ${
-            activeTab === 'profile' ? 'text-[#302112] font-black bg-[#E5DAD9]' : 'text-[#5A463B] font-semibold'
+          className={`flex flex-col items-center gap-1 p-2 rounded-xl transition-all cursor-pointer min-h-[44px] min-w-[44px] justify-center ${
+            activeTab === 'profile' ? 'text-[#22D39F] font-black bg-[#102D30]' : 'text-[#7F8BA3] font-semibold'
           }`}
           id="mobile-nav-profile"
         >
-          <UserIcon className="w-5 h-5 text-[#92798B]" />
+          <UserIcon className="w-5 h-5" />
           <span className="text-[10px]">Profile</span>
         </button>
       </div>

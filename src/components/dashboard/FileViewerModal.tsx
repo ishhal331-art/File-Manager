@@ -77,27 +77,27 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/40 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-[#0B0F18]/80 backdrop-blur-md animate-fade-in">
       <div 
-        className="w-full max-w-4xl max-h-[90vh] bg-[#F3EAE2] rounded-[32px] p-6 sm:p-8 shadow-[0_25px_60px_rgba(48,33,18,0.25)] border border-white/90 flex flex-col relative overflow-hidden"
+        className="w-full max-w-4xl max-h-[90vh] bg-[#161D2F] rounded-[32px] p-6 sm:p-8 shadow-[0_25px_60px_rgba(11,15,24,0.9)] border border-[#263047] flex flex-col relative overflow-hidden"
         id="file-viewer-card"
       >
         {/* HEADER */}
-        <div className="flex items-center justify-between pb-4 border-b border-white/60 shrink-0 gap-3">
+        <div className="flex items-center justify-between pb-4 border-b border-[#263047] shrink-0 gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-2xl bg-[#E5DAD9] text-[#92798B] border border-white/80 flex items-center justify-center shadow-2xs shrink-0">
-              <FileText className="w-5 h-5 text-[#CBAF87]" />
+            <div className="w-10 h-10 rounded-2xl bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30 flex items-center justify-center shadow-inner shrink-0">
+              <FileText className="w-5 h-5 text-[#22D39F]" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-base sm:text-lg font-black text-[#302112] tracking-tight truncate max-w-[200px] sm:max-w-md" id="viewer-file-title" title={file.originalName}>
+                <h3 className="text-base sm:text-lg font-black text-[#F0F4FF] tracking-tight truncate max-w-[200px] sm:max-w-md" id="viewer-file-title" title={file.originalName}>
                   {file.originalName}
                 </h3>
-                <span className="text-[10px] font-black text-[#92798B] bg-[#E5DAD9] px-2.5 py-0.5 rounded-md border border-white/80 shadow-2xs shrink-0">
-                  {file.fileType}
+                <span className="text-[10px] font-black text-[#22D39F] bg-[#102D30] px-2.5 py-0.5 rounded-md border border-[#22D39F]/30 shadow-inner shrink-0">
+                  {file.fileType || file.type}
                 </span>
               </div>
-              <p className="text-[11px] sm:text-xs text-[#5A463B] font-semibold mt-0.5 truncate">
+              <p className="text-[11px] sm:text-xs text-[#7F8BA3] font-medium mt-0.5 truncate">
                 Uploaded {new Date(file.uploadedAt).toLocaleString()} • AI OCR Extracted & Editable
               </p>
             </div>
@@ -105,7 +105,7 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
 
           <button
             onClick={onClose}
-            className="p-2 rounded-full text-[#5A463B] hover:text-[#302112] hover:bg-[#E5DAD9] transition-all shrink-0 cursor-pointer"
+            className="p-2 rounded-full text-[#7F8BA3] hover:text-[#F0F4FF] hover:bg-[#0B0F18] transition-all shrink-0 cursor-pointer"
             id="btn-close-viewer"
           >
             <X className="w-5 h-5" />
@@ -115,13 +115,13 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
         {/* CONTENT BODY */}
         <div className="flex-1 overflow-y-auto py-5 space-y-6 pr-1 custom-scrollbar">
           {/* AI SUMMARY BOX */}
-          <div className="p-4 rounded-2xl bg-[#E5DAD9]/80 backdrop-blur-md border border-white/80 flex items-start gap-3 shadow-2xs">
-            <div className="p-2 rounded-xl bg-white text-[#92798B] shadow-2xs shrink-0 border border-white/80">
-              <Sparkles className="w-4 h-4 text-[#CBAF87]" />
+          <div className="p-4 rounded-2xl bg-[#0B0F18] border border-[#263047] flex items-start gap-3 shadow-inner">
+            <div className="p-2 rounded-xl bg-[#102D30] text-[#22D39F] shadow-inner shrink-0 border border-[#22D39F]/30">
+              <Sparkles className="w-4 h-4 text-[#22D39F]" />
             </div>
             <div>
-              <p className="text-xs font-black text-[#302112]">AI Document Executive Summary</p>
-              <p className="text-xs text-[#5A463B] font-semibold mt-0.5 leading-relaxed">
+              <p className="text-xs font-bold text-[#F0F4FF]">AI Document Executive Summary</p>
+              <p className="text-xs text-[#AEB8CC] font-medium mt-0.5 leading-relaxed">
                 {file.summary || 'Document parsed successfully. Structured line items extracted below.'}
               </p>
             </div>
@@ -130,13 +130,13 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
           {/* EDITABLE LINE ITEMS DATA TABLE */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-black text-[#302112] tracking-tight">
+              <h4 className="text-sm font-bold text-[#F0F4FF] tracking-tight">
                 Extracted Data Line Items
               </h4>
               <button
                 type="button"
                 onClick={handleAddRow}
-                className="px-3 py-1.5 rounded-xl bg-[#E5DAD9] hover:bg-white text-[#92798B] text-xs font-black flex items-center gap-1 transition-all border border-white/80 cursor-pointer shadow-2xs"
+                className="px-3 py-1.5 rounded-xl bg-[#102D30] hover:bg-[#22D39F] text-[#22D39F] hover:text-[#0E1120] text-xs font-bold flex items-center gap-1 transition-all border border-[#22D39F]/30 cursor-pointer shadow-inner"
                 id="btn-add-table-row"
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -144,10 +144,10 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
               </button>
             </div>
 
-            <div className="overflow-x-auto rounded-2xl border border-white/80 bg-white/90 shadow-2xs">
+            <div className="overflow-x-auto rounded-2xl border border-[#263047] bg-[#0B0F18] shadow-inner">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-[#E5DAD9] border-b border-white/80 text-[#302112] font-black">
+                  <tr className="bg-[#161D2F] border-b border-[#263047] text-[#F0F4FF] font-bold">
                     <th className="p-3">Date</th>
                     <th className="p-3">Description / Particulars</th>
                     <th className="p-3">Vendor / Entity</th>
@@ -156,22 +156,22 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
                     <th className="p-3 text-center">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#E5DAD9]/50 font-semibold text-[#302112]">
+                <tbody className="divide-y divide-[#263047]/60 font-medium text-[#AEB8CC]">
                   {extractedData.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="p-6 text-center text-[#5A463B] font-semibold">
+                      <td colSpan={6} className="p-6 text-center text-[#7F8BA3] font-medium">
                         No line items parsed. Click "Add Row" to enter custom data.
                       </td>
                     </tr>
                   ) : (
                     extractedData.map((row, idx) => (
-                      <tr key={idx} className="hover:bg-[#F3EAE2]/50 transition-colors">
+                      <tr key={idx} className="hover:bg-[#161D2F]/50 transition-colors">
                         <td className="p-2">
                           <input
                             type="text"
                             value={row.date || ''}
                             onChange={(e) => handleRowChange(idx, 'date', e.target.value)}
-                            className="w-full px-2 py-1 bg-[#F3EAE2] border border-white/80 rounded-lg text-xs font-bold text-[#302112] focus:outline-none focus:border-[#92798B]"
+                            className="w-full px-2 py-1 bg-[#161D2F] border border-[#263047] rounded-lg text-xs font-medium text-[#F0F4FF] focus:outline-none focus:border-[#22D39F]"
                           />
                         </td>
                         <td className="p-2">
@@ -179,7 +179,7 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
                             type="text"
                             value={row.description || ''}
                             onChange={(e) => handleRowChange(idx, 'description', e.target.value)}
-                            className="w-full px-2 py-1 bg-[#F3EAE2] border border-white/80 rounded-lg text-xs font-bold text-[#302112] focus:outline-none focus:border-[#92798B]"
+                            className="w-full px-2 py-1 bg-[#161D2F] border border-[#263047] rounded-lg text-xs font-medium text-[#F0F4FF] focus:outline-none focus:border-[#22D39F]"
                           />
                         </td>
                         <td className="p-2">
@@ -187,7 +187,7 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
                             type="text"
                             value={row.vendor || ''}
                             onChange={(e) => handleRowChange(idx, 'vendor', e.target.value)}
-                            className="w-full px-2 py-1 bg-[#F3EAE2] border border-white/80 rounded-lg text-xs font-bold text-[#302112] focus:outline-none focus:border-[#92798B]"
+                            className="w-full px-2 py-1 bg-[#161D2F] border border-[#263047] rounded-lg text-xs font-medium text-[#F0F4FF] focus:outline-none focus:border-[#22D39F]"
                           />
                         </td>
                         <td className="p-2">
@@ -195,7 +195,7 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
                             type="text"
                             value={row.referenceNo || ''}
                             onChange={(e) => handleRowChange(idx, 'referenceNo', e.target.value)}
-                            className="w-full px-2 py-1 bg-[#F3EAE2] border border-white/80 rounded-lg text-xs font-bold text-[#302112] focus:outline-none focus:border-[#92798B]"
+                            className="w-full px-2 py-1 bg-[#161D2F] border border-[#263047] rounded-lg text-xs font-medium text-[#F0F4FF] focus:outline-none focus:border-[#22D39F]"
                           />
                         </td>
                         <td className="p-2 text-right">
@@ -204,14 +204,14 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
                             step="0.01"
                             value={row.amount || 0}
                             onChange={(e) => handleRowChange(idx, 'amount', parseFloat(e.target.value) || 0)}
-                            className="w-24 px-2 py-1 bg-[#F3EAE2] border border-white/80 rounded-lg text-xs font-black text-right text-[#302112] focus:outline-none focus:border-[#92798B]"
+                            className="w-24 px-2 py-1 bg-[#161D2F] border border-[#263047] rounded-lg text-xs font-bold text-right text-[#22D39F] focus:outline-none focus:border-[#22D39F]"
                           />
                         </td>
                         <td className="p-2 text-center">
                           <button
                             type="button"
                             onClick={() => handleDeleteRow(idx)}
-                            className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                            className="p-1.5 text-[#7F8BA3] hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition-colors cursor-pointer"
                             title="Remove row"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -228,40 +228,40 @@ export const FileViewerModal: React.FC<Props> = ({ file, onClose, onSaved }) => 
           {/* RAW OCR TEXT VIEW */}
           {extractedText && (
             <div>
-              <h4 className="text-sm font-black text-[#302112] mb-2">Full Document Text Transcript</h4>
+              <h4 className="text-sm font-bold text-[#F0F4FF] mb-2">Full Document Text Transcript</h4>
               <textarea
                 value={extractedText}
                 onChange={(e) => setExtractedText(e.target.value)}
                 rows={4}
-                className="w-full p-3 bg-[#E5DAD9]/80 border border-white/80 rounded-2xl text-xs font-mono text-[#302112] font-semibold focus:outline-none focus:border-[#92798B] shadow-inner"
+                className="w-full p-3 bg-[#0B0F18] border border-[#263047] rounded-2xl text-xs font-mono text-[#AEB8CC] font-medium focus:outline-none focus:border-[#22D39F] shadow-inner"
               />
             </div>
           )}
         </div>
 
         {/* FOOTER ACTIONS */}
-        <div className="pt-4 border-t border-white/60 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
+        <div className="pt-4 border-t border-[#263047] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 shrink-0">
           <button
             type="button"
             onClick={handleDownloadOriginal}
-            className="px-4 py-2.5 rounded-full bg-[#E5DAD9] hover:bg-white text-[#302112] text-xs font-black flex items-center justify-center gap-2 transition-all cursor-pointer border border-white/80 shadow-2xs order-2 sm:order-1"
+            className="px-4 py-2.5 rounded-full bg-[#0B0F18] hover:bg-[#161D2F] text-[#F0F4FF] text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer border border-[#263047] shadow-inner order-2 sm:order-1"
             id="btn-download-raw"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4 text-[#22D39F]" />
             <span>Download Raw File</span>
           </button>
 
           <div className="flex items-center justify-end gap-3 order-1 sm:order-2">
             {savedSuccess && (
-              <span className="text-xs font-black text-emerald-800 flex items-center gap-1">
-                <CheckCircle2 className="w-4 h-4 text-emerald-700" /> Saved Changes
+              <span className="text-xs font-bold text-[#22D39F] flex items-center gap-1">
+                <CheckCircle2 className="w-4 h-4 text-[#22D39F]" /> Saved Changes
               </span>
             )}
             <button
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-[#92798B] hover:bg-[#5A463B] text-[#F3EAE2] text-xs font-black flex items-center justify-center gap-2 shadow-xs hover:shadow-md transition-all cursor-pointer disabled:opacity-50"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-full bg-[#22D39F] hover:bg-[#19C99A] text-[#0E1120] text-xs font-black flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer disabled:opacity-50"
               id="btn-save-file-data"
             >
               <Save className="w-4 h-4" />

@@ -21,9 +21,9 @@ import {
 import { User, UploadedFile, UserUploadProgress } from '../../types';
 
 interface Props {
-  currentUser: User;
-  users: User[];
-  userProgressList: UserUploadProgress[];
+  currentUser?: User;
+  users?: User[];
+  userProgressList?: UserUploadProgress[];
   files: UploadedFile[];
   onInspectUser?: (user: User) => void;
   onInspectFile?: (file: UploadedFile) => void;
@@ -31,8 +31,8 @@ interface Props {
 
 export const AnalyticsAndGraphsView: React.FC<Props> = ({
   currentUser,
-  users,
-  userProgressList,
+  users = [],
+  userProgressList = [],
   files,
   onInspectUser,
   onInspectFile,
@@ -41,13 +41,13 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
   const [hoveredPoint, setHoveredPoint] = useState<any | null>(null);
   const [vatRate, setVatRate] = useState<number>(15);
 
-  const clientUsers = useMemo(() => users.filter((u) => u.role === 'USER'), [users]);
+  const clientUsers = useMemo(() => (users || []).filter((u) => u.role === 'USER'), [users]);
 
   // Compute file category metrics
-  const salesFiles = useMemo(() => files.filter((f) => f.fileType === 'SALES'), [files]);
-  const purchaseFiles = useMemo(() => files.filter((f) => f.fileType === 'PURCHASE'), [files]);
-  const bankFiles = useMemo(() => files.filter((f) => f.fileType === 'BANK_STATEMENT'), [files]);
-  const additionalFiles = useMemo(() => files.filter((f) => f.fileType === 'ADDITIONAL'), [files]);
+  const salesFiles = useMemo(() => files.filter((f) => f.fileType === 'SALES' || f.type === 'SALES_INVOICE'), [files]);
+  const purchaseFiles = useMemo(() => files.filter((f) => f.fileType === 'PURCHASE' || f.type === 'PURCHASE_RECEIPT'), [files]);
+  const bankFiles = useMemo(() => files.filter((f) => f.fileType === 'BANK_STATEMENT' || f.type === 'BANK_STATEMENT'), [files]);
+  const additionalFiles = useMemo(() => files.filter((f) => f.fileType === 'ADDITIONAL' || f.type === 'ADDITIONAL_DOCS'), [files]);
 
   // Helper to compute extracted or estimated values
   const calculateTotalVolume = (fileList: UploadedFile[], defaultUnit: number) => {
@@ -79,9 +79,9 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
     clientUsers.forEach((u) => {
       const prog = userProgressList.find((p) => p.userId === u.id);
       const userFiles = files.filter((f) => f.userId === u.id);
-      const hasSales = prog?.salesUploaded || userFiles.some((f) => f.fileType === 'SALES');
-      const hasPurch = prog?.purchaseUploaded || userFiles.some((f) => f.fileType === 'PURCHASE');
-      const hasBank = prog?.bankUploaded || userFiles.some((f) => f.fileType === 'BANK_STATEMENT');
+      const hasSales = prog?.salesUploaded || userFiles.some((f) => f.fileType === 'SALES' || f.type === 'SALES_INVOICE');
+      const hasPurch = prog?.purchaseUploaded || userFiles.some((f) => f.fileType === 'PURCHASE' || f.type === 'PURCHASE_RECEIPT');
+      const hasBank = prog?.bankUploaded || userFiles.some((f) => f.fileType === 'BANK_STATEMENT' || f.type === 'BANK_STATEMENT');
 
       const count = (hasSales ? 1 : 0) + (hasPurch ? 1 : 0) + (hasBank ? 1 : 0);
       if (count === 3) complete++;
@@ -113,10 +113,10 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
 
   // Category Distribution Data
   const categoryData = [
-    { category: 'Sales Invoices', count: salesFiles.length, estimatedAmount: totalSalesVal, color: '#2E7D32' },
-    { category: 'Purchase Receipts', count: purchaseFiles.length, estimatedAmount: totalPurchaseVal, color: '#92798B' },
-    { category: 'Bank Statements', count: bankFiles.length, estimatedAmount: 0, color: '#5A463B' },
-    { category: 'Additional Records', count: additionalFiles.length, estimatedAmount: 0, color: '#CBAF87' },
+    { category: 'Sales Invoices', count: salesFiles.length, estimatedAmount: totalSalesVal, color: '#22D39F' },
+    { category: 'Purchase Receipts', count: purchaseFiles.length, estimatedAmount: totalPurchaseVal, color: '#60A5FA' },
+    { category: 'Bank Statements', count: bankFiles.length, estimatedAmount: 0, color: '#FBBF24' },
+    { category: 'Additional Records', count: additionalFiles.length, estimatedAmount: 0, color: '#A78BFA' },
   ];
 
   // VAT calculations
@@ -171,100 +171,100 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
       {/* 1. TOP METRIC SUMMARY CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* TOTAL SALES INGESTION */}
-        <div className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[28px] p-5 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex items-center justify-between">
+        <div className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[28px] p-5 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#5A463B]">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[#7F8BA3]">
               Total Ingested Sales
             </p>
-            <h3 className="text-2xl font-black text-[#302112] tracking-tight">
+            <h3 className="text-2xl font-black text-[#F0F4FF] tracking-tight">
               ${totalSalesVal.toLocaleString()}
             </h3>
-            <p className="text-[10px] font-bold text-emerald-800 flex items-center gap-1">
-              <TrendingUp className="w-3 h-3 text-emerald-700" />
+            <p className="text-[10px] font-bold text-[#22D39F] flex items-center gap-1">
+              <TrendingUp className="w-3 h-3 text-[#22D39F]" />
               <span>{salesFiles.length} sales files processed</span>
             </p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-100/80 text-emerald-900 border border-emerald-200/80 flex items-center justify-center shadow-xs shrink-0">
-            <TrendingUp className="w-6 h-6 text-emerald-800" />
+          <div className="w-12 h-12 rounded-2xl bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30 flex items-center justify-center shadow-inner shrink-0">
+            <TrendingUp className="w-6 h-6 text-[#22D39F]" />
           </div>
         </div>
 
         {/* TOTAL PURCHASE EXPENSES */}
-        <div className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[28px] p-5 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex items-center justify-between">
+        <div className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[28px] p-5 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#5A463B]">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[#7F8BA3]">
               Total Purchases / Expenses
             </p>
-            <h3 className="text-2xl font-black text-[#302112] tracking-tight">
+            <h3 className="text-2xl font-black text-[#F0F4FF] tracking-tight">
               ${totalPurchaseVal.toLocaleString()}
             </h3>
-            <p className="text-[10px] font-bold text-[#92798B] flex items-center gap-1">
-              <Layers className="w-3 h-3 text-[#92798B]" />
+            <p className="text-[10px] font-medium text-[#AEB8CC] flex items-center gap-1">
+              <Layers className="w-3 h-3 text-[#22D39F]" />
               <span>{purchaseFiles.length} purchase files logged</span>
             </p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-[#E5DAD9] text-[#92798B] border border-white/80 flex items-center justify-center shadow-xs shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-[#0B0F18] text-[#22D39F] border border-[#263047] flex items-center justify-center shadow-inner shrink-0">
             <FileSpreadsheet className="w-6 h-6" />
           </div>
         </div>
 
         {/* NET FISCAL MARGIN */}
-        <div className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[28px] p-5 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex items-center justify-between">
+        <div className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[28px] p-5 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#5A463B]">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[#7F8BA3]">
               Net Fiscal Position
             </p>
-            <h3 className="text-2xl font-black text-[#302112] tracking-tight">
+            <h3 className="text-2xl font-black text-[#F0F4FF] tracking-tight">
               ${netProfit.toLocaleString()}
             </h3>
-            <p className="text-[10px] font-bold text-emerald-800 flex items-center gap-1">
+            <p className="text-[10px] font-bold text-[#22D39F] flex items-center gap-1">
               <span>Margin Rate: {marginPct}%</span>
             </p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-[#92798B] text-[#FAF6F0] flex items-center justify-center shadow-xs shrink-0">
-            <Sparkles className="w-6 h-6 text-[#CBAF87]" />
+          <div className="w-12 h-12 rounded-2xl bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30 flex items-center justify-center shadow-inner shrink-0">
+            <Sparkles className="w-6 h-6 text-[#22D39F]" />
           </div>
         </div>
 
         {/* GLOBAL COMPLIANCE RATE */}
-        <div className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[28px] p-5 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex items-center justify-between">
+        <div className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[28px] p-5 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] flex items-center justify-between">
           <div className="space-y-1">
-            <p className="text-[11px] font-extrabold uppercase tracking-wider text-[#5A463B]">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-[#7F8BA3]">
               Dossier Compliance
             </p>
-            <h3 className="text-2xl font-black text-[#302112] tracking-tight">
+            <h3 className="text-2xl font-black text-[#F0F4FF] tracking-tight">
               {clientUsers.length > 0
                 ? Math.round((complianceStats.complete / clientUsers.length) * 100)
                 : 100}
               %
             </h3>
-            <p className="text-[10px] font-bold text-[#5A463B] flex items-center gap-1">
+            <p className="text-[10px] font-medium text-[#AEB8CC] flex items-center gap-1">
               <span>
                 {complianceStats.complete} of {clientUsers.length} complete
               </span>
             </p>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-300 flex items-center justify-center shadow-xs shrink-0">
-            <ShieldCheck className="w-6 h-6 text-emerald-700" />
+          <div className="w-12 h-12 rounded-2xl bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30 flex items-center justify-center shadow-inner shrink-0">
+            <ShieldCheck className="w-6 h-6 text-[#22D39F]" />
           </div>
         </div>
       </div>
 
-      {/* 2. MAIN CHARTS GRID (HIGH PERFORMANCE NATIVE CHARTS) */}
+      {/* 2. MAIN CHARTS GRID */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* CHART 1: MONTHLY SALES VS PURCHASES INGESTION (AREA CHART) */}
-        <div className="lg:col-span-2 bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[32px] p-5 sm:p-6 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-white/60">
+        {/* CHART 1: MONTHLY SALES VS PURCHASES INGESTION */}
+        <div className="lg:col-span-2 bg-[#161D2F]/90 backdrop-blur-xl rounded-[32px] p-5 sm:p-6 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[#263047]">
             <div>
-              <h3 className="text-base font-black text-[#302112] tracking-tight flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-[#92798B]" />
+              <h3 className="text-base font-black text-[#F0F4FF] tracking-tight flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-[#22D39F]" />
                 <span>Financial Ingestion Velocity (Sales vs Purchases)</span>
               </h3>
-              <p className="text-xs text-[#5A463B] font-semibold">
+              <p className="text-xs text-[#AEB8CC] font-medium">
                 Monthly revenue and operating expense ingestion velocity curve.
               </p>
             </div>
-            <div className="flex items-center gap-1 bg-[#E5DAD9] p-1 rounded-xl border border-white/80 text-xs font-black">
+            <div className="flex items-center gap-1 bg-[#0B0F18] p-1 rounded-xl border border-[#263047] text-xs font-bold">
               {(['Q1', 'Q2', 'Q3', 'YEAR'] as const).map((r) => (
                 <button
                   key={r}
@@ -272,8 +272,8 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
                   onClick={() => setTimeRange(r as any)}
                   className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                     timeRange === r
-                      ? 'bg-[#92798B] text-[#FAF6F0] shadow-2xs'
-                      : 'text-[#5A463B] hover:text-[#302112]'
+                      ? 'bg-[#22D39F] text-[#0E1120] font-black shadow-md'
+                      : 'text-[#AEB8CC] hover:text-[#F0F4FF]'
                   }`}
                 >
                   {r}
@@ -287,12 +287,12 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
             <svg viewBox={`0 0 ${svgWidth} ${svgHeight}`} className="w-full h-64 overflow-visible">
               <defs>
                 <linearGradient id="salesGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2E7D32" stopOpacity="0.35" />
-                  <stop offset="100%" stopColor="#2E7D32" stopOpacity="0.0" />
+                  <stop offset="0%" stopColor="#22D39F" stopOpacity="0.4" />
+                  <stop offset="100%" stopColor="#22D39F" stopOpacity="0.0" />
                 </linearGradient>
                 <linearGradient id="purchaseGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#92798B" stopOpacity="0.35" />
-                  <stop offset="100%" stopColor="#92798B" stopOpacity="0.0" />
+                  <stop offset="0%" stopColor="#60A5FA" stopOpacity="0.3" />
+                  <stop offset="100%" stopColor="#60A5FA" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
 
@@ -307,7 +307,7 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
                       y1={yPos}
                       x2={svgWidth - padX}
                       y2={yPos}
-                      stroke="#E0D2C7"
+                      stroke="#263047"
                       strokeDasharray="4 4"
                     />
                     <text
@@ -316,7 +316,7 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
                       textAnchor="end"
                       fontSize="9"
                       fontWeight="700"
-                      fill="#5A463B"
+                      fill="#7F8BA3"
                     >
                       ${labelVal}k
                     </text>
@@ -329,14 +329,14 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
               <path d={purchaseAreaPath} fill="url(#purchaseGradient)" />
 
               {/* Line Strokes */}
-              <path d={salesPath} fill="none" stroke="#2E7D32" strokeWidth="3" strokeLinecap="round" />
-              <path d={purchasePath} fill="none" stroke="#92798B" strokeWidth="2.5" strokeLinecap="round" />
+              <path d={salesPath} fill="none" stroke="#22D39F" strokeWidth="3" strokeLinecap="round" />
+              <path d={purchasePath} fill="none" stroke="#60A5FA" strokeWidth="2.5" strokeLinecap="round" />
 
               {/* Interactive Data Points */}
               {pointsSales.map((p, i) => (
                 <g key={`s-${i}`} className="cursor-pointer" onMouseEnter={() => setHoveredPoint({ ...p, type: 'Sales' })}>
-                  <circle cx={p.x} cy={p.y} r="5" fill="#FAF6F0" stroke="#2E7D32" strokeWidth="2.5" />
-                  <text x={p.x} y={padY + chartH + 16} textAnchor="middle" fontSize="10" fontWeight="800" fill="#302112">
+                  <circle cx={p.x} cy={p.y} r="5" fill="#0E1120" stroke="#22D39F" strokeWidth="2.5" />
+                  <text x={p.x} y={padY + chartH + 16} textAnchor="middle" fontSize="10" fontWeight="800" fill="#AEB8CC">
                     {p.month}
                   </text>
                 </g>
@@ -344,7 +344,7 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
 
               {pointsPurchase.map((p, i) => (
                 <g key={`p-${i}`} className="cursor-pointer" onMouseEnter={() => setHoveredPoint({ ...p, type: 'Purchase' })}>
-                  <circle cx={p.x} cy={p.y} r="4" fill="#FAF6F0" stroke="#92798B" strokeWidth="2.5" />
+                  <circle cx={p.x} cy={p.y} r="4" fill="#0E1120" stroke="#60A5FA" strokeWidth="2.5" />
                 </g>
               ))}
             </svg>
@@ -352,21 +352,21 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
             {/* Hover Tooltip Overlay */}
             {hoveredPoint && (
               <div
-                className="absolute top-2 right-4 bg-[#FAF6F0] p-3 rounded-2xl border border-white/90 shadow-lg text-xs font-bold text-[#302112] animate-fade-in"
+                className="absolute top-2 right-4 bg-[#0B0F18] p-3 rounded-2xl border border-[#263047] shadow-xl text-xs font-bold text-[#F0F4FF] animate-fade-in"
                 onMouseLeave={() => setHoveredPoint(null)}
               >
-                <div className="flex items-center justify-between gap-4 font-black mb-1 border-b border-black/10 pb-1">
+                <div className="flex items-center justify-between gap-4 font-bold mb-1 border-b border-[#263047] pb-1">
                   <span>{hoveredPoint.month} Snapshot</span>
-                  <span className="text-[10px] text-[#5A463B]">{hoveredPoint.files} files</span>
+                  <span className="text-[10px] text-[#7F8BA3]">{hoveredPoint.files} files</span>
                 </div>
                 <div className="space-y-0.5 text-[11px]">
-                  <p className="text-emerald-800 font-extrabold flex items-center justify-between gap-3">
+                  <p className="text-[#22D39F] font-bold flex items-center justify-between gap-3">
                     <span>Sales:</span> <span>${hoveredPoint.sales.toLocaleString()}</span>
                   </p>
-                  <p className="text-[#92798B] font-extrabold flex items-center justify-between gap-3">
+                  <p className="text-[#60A5FA] font-bold flex items-center justify-between gap-3">
                     <span>Purchases:</span> <span>${hoveredPoint.purchase.toLocaleString()}</span>
                   </p>
-                  <p className="text-[#302112] font-black flex items-center justify-between gap-3 pt-1 border-t border-black/5">
+                  <p className="text-[#F0F4FF] font-bold flex items-center justify-between gap-3 pt-1 border-t border-[#263047]">
                     <span>Net Margin:</span> <span>${hoveredPoint.net.toLocaleString()}</span>
                   </p>
                 </div>
@@ -375,26 +375,26 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
           </div>
 
           {/* Legend */}
-          <div className="flex items-center justify-center gap-6 pt-2 border-t border-white/60 text-xs font-black">
-            <span className="flex items-center gap-2 text-emerald-800">
-              <span className="w-3 h-3 rounded-full bg-[#2E7D32]"></span>
+          <div className="flex items-center justify-center gap-6 pt-2 border-t border-[#263047] text-xs font-bold">
+            <span className="flex items-center gap-2 text-[#22D39F]">
+              <span className="w-3 h-3 rounded-full bg-[#22D39F]"></span>
               <span>Ingested Sales Revenue</span>
             </span>
-            <span className="flex items-center gap-2 text-[#92798B]">
-              <span className="w-3 h-3 rounded-full bg-[#92798B]"></span>
+            <span className="flex items-center gap-2 text-[#60A5FA]">
+              <span className="w-3 h-3 rounded-full bg-[#60A5FA]"></span>
               <span>Operating Purchases / Expenses</span>
             </span>
           </div>
         </div>
 
         {/* CHART 2: DOSSIER COMPLIANCE DISTRIBUTION (DONUT CHART) */}
-        <div className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[32px] p-5 sm:p-6 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col justify-between space-y-4">
-          <div className="pb-2 border-b border-white/60">
-            <h3 className="text-base font-black text-[#302112] tracking-tight flex items-center gap-2">
-              <PieIcon className="w-5 h-5 text-[#92798B]" />
+        <div className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[32px] p-5 sm:p-6 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] flex flex-col justify-between space-y-4">
+          <div className="pb-2 border-b border-[#263047]">
+            <h3 className="text-base font-black text-[#F0F4FF] tracking-tight flex items-center gap-2">
+              <PieIcon className="w-5 h-5 text-[#22D39F]" />
               <span>Dossier Compliance Status</span>
             </h3>
-            <p className="text-xs text-[#5A463B] font-semibold">
+            <p className="text-xs text-[#AEB8CC] font-medium">
               Distribution of mandatory file submissions across all client accounts.
             </p>
           </div>
@@ -408,7 +408,7 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
                 cy="80"
                 r="65"
                 fill="none"
-                stroke="#E5DAD9"
+                stroke="#0B0F18"
                 strokeWidth="18"
               />
 
@@ -418,7 +418,7 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
                 cy="80"
                 r="65"
                 fill="none"
-                stroke="#2E7D32"
+                stroke="#22D39F"
                 strokeWidth="18"
                 strokeDasharray={`${strokeComplete} ${totalCircumference}`}
                 strokeDashoffset="0"
@@ -432,7 +432,7 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
                   cy="80"
                   r="65"
                   fill="none"
-                  stroke="#CBAF87"
+                  stroke="#FBBF24"
                   strokeWidth="18"
                   strokeDasharray={`${strokeInProgress} ${totalCircumference}`}
                   strokeDashoffset={-strokeComplete}
@@ -447,7 +447,7 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
                   cy="80"
                   r="65"
                   fill="none"
-                  stroke="#92798B"
+                  stroke="#60A5FA"
                   strokeWidth="18"
                   strokeDasharray={`${strokeNotStarted} ${totalCircumference}`}
                   strokeDashoffset={-(strokeComplete + strokeInProgress)}
@@ -458,38 +458,38 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
 
             {/* Center percentage badge */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-2xl font-black text-[#302112]">
+              <span className="text-2xl font-black text-[#F0F4FF]">
                 {clientUsers.length > 0
                   ? Math.round((complianceStats.complete / clientUsers.length) * 100)
                   : 100}
                 %
               </span>
-              <span className="text-[10px] font-extrabold text-[#5A463B] uppercase">Compliant</span>
+              <span className="text-[10px] font-bold text-[#7F8BA3] uppercase">Compliant</span>
             </div>
           </div>
 
           {/* Legend breakdown list */}
-          <div className="space-y-2 pt-2 border-t border-white/60">
-            <div className="flex items-center justify-between text-xs font-bold text-[#302112]">
+          <div className="space-y-2 pt-2 border-t border-[#263047]">
+            <div className="flex items-center justify-between text-xs font-bold text-[#F0F4FF]">
               <span className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#2E7D32]"></span>
+                <span className="w-3 h-3 rounded-full bg-[#22D39F]"></span>
                 <span>Fully Compliant (3/3 Vaults)</span>
               </span>
-              <span className="font-black">{complianceStats.complete} users</span>
+              <span className="font-black text-[#22D39F]">{complianceStats.complete} users</span>
             </div>
-            <div className="flex items-center justify-between text-xs font-bold text-[#302112]">
+            <div className="flex items-center justify-between text-xs font-bold text-[#F0F4FF]">
               <span className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#CBAF87]"></span>
+                <span className="w-3 h-3 rounded-full bg-[#FBBF24]"></span>
                 <span>In Progress (1-2 Vaults)</span>
               </span>
-              <span className="font-black">{complianceStats.inProgress} users</span>
+              <span className="font-black text-amber-400">{complianceStats.inProgress} users</span>
             </div>
-            <div className="flex items-center justify-between text-xs font-bold text-[#302112]">
+            <div className="flex items-center justify-between text-xs font-bold text-[#F0F4FF]">
               <span className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#92798B]"></span>
+                <span className="w-3 h-3 rounded-full bg-[#60A5FA]"></span>
                 <span>Not Started (0/3 Vaults)</span>
               </span>
-              <span className="font-black">{complianceStats.notStarted} users</span>
+              <span className="font-black text-[#7F8BA3]">{complianceStats.notStarted} users</span>
             </div>
           </div>
         </div>
@@ -498,18 +498,18 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
       {/* 3. CATEGORY BREAKDOWN & VAT LIABILITY SIMULATOR */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* CATEGORY BAR BREAKDOWN */}
-        <div className="lg:col-span-2 bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[32px] p-5 sm:p-6 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-white/60">
+        <div className="lg:col-span-2 bg-[#161D2F]/90 backdrop-blur-xl rounded-[32px] p-5 sm:p-6 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-[#263047]">
             <div>
-              <h3 className="text-base font-black text-[#302112] tracking-tight flex items-center gap-2">
-                <Layers className="w-5 h-5 text-[#92798B]" />
+              <h3 className="text-base font-black text-[#F0F4FF] tracking-tight flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#22D39F]" />
                 <span>Document Volume by Vault Category</span>
               </h3>
-              <p className="text-xs text-[#5A463B] font-semibold">
+              <p className="text-xs text-[#AEB8CC] font-medium">
                 Uploaded document distribution across mandatory & supporting vaults.
               </p>
             </div>
-            <span className="text-xs font-black px-3 py-1 bg-[#E5DAD9] rounded-xl text-[#302112] border border-white/80">
+            <span className="text-xs font-bold px-3 py-1 bg-[#0B0F18] rounded-xl text-[#22D39F] border border-[#263047]">
               Total {files.length} Files
             </span>
           </div>
@@ -518,18 +518,18 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
             {categoryData.map((cat, i) => (
               <div
                 key={i}
-                className="p-4 rounded-2xl bg-[#E5DAD9]/80 border border-white/80 shadow-2xs space-y-2"
+                className="p-4 rounded-2xl bg-[#0B0F18] border border-[#263047] shadow-inner space-y-2"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-[#302112] flex items-center gap-1.5">
+                  <span className="text-xs font-bold text-[#F0F4FF] flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }}></span>
                     {cat.category}
                   </span>
-                  <span className="text-xs font-black px-2.5 py-0.5 rounded-full bg-white text-[#302112] shadow-2xs">
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#161D2F] text-[#F0F4FF] border border-[#263047]">
                     {cat.count} files
                   </span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-[#D0BEC7] overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-[#161D2F] overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500"
                     style={{
@@ -539,7 +539,7 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
                   />
                 </div>
                 {cat.estimatedAmount > 0 && (
-                  <p className="text-[11px] font-bold text-[#5A463B] text-right">
+                  <p className="text-[11px] font-medium text-[#7F8BA3] text-right">
                     Ingested Value: ${cat.estimatedAmount.toLocaleString()}
                   </p>
                 )}
@@ -549,22 +549,22 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
         </div>
 
         {/* INTERACTIVE VAT & TAX LIABILITY ESTIMATOR */}
-        <div className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[32px] p-5 sm:p-6 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] space-y-4">
-          <div className="pb-2 border-b border-white/60">
-            <h3 className="text-base font-black text-[#302112] tracking-tight flex items-center gap-2">
-              <Calculator className="w-5 h-5 text-[#92798B]" />
+        <div className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[32px] p-5 sm:p-6 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] space-y-4">
+          <div className="pb-2 border-b border-[#263047]">
+            <h3 className="text-base font-black text-[#F0F4FF] tracking-tight flex items-center gap-2">
+              <Calculator className="w-5 h-5 text-[#22D39F]" />
               <span>Tax & VAT Liability Simulator</span>
             </h3>
-            <p className="text-xs text-[#5A463B] font-semibold">
+            <p className="text-xs text-[#AEB8CC] font-medium">
               Simulate estimated output vs deductible input tax.
             </p>
           </div>
 
           <div className="space-y-3">
             <div>
-              <div className="flex items-center justify-between text-xs font-bold text-[#302112] mb-1">
+              <div className="flex items-center justify-between text-xs font-bold text-[#F0F4FF] mb-1">
                 <span>Standard VAT / GST Rate</span>
-                <span className="font-black px-2 py-0.5 rounded-lg bg-[#92798B] text-[#FAF6F0]">
+                <span className="font-black px-2 py-0.5 rounded-lg bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30">
                   {vatRate}%
                 </span>
               </div>
@@ -575,22 +575,22 @@ export const AnalyticsAndGraphsView: React.FC<Props> = ({
                 step="1"
                 value={vatRate}
                 onChange={(e) => setVatRate(Number(e.target.value))}
-                className="w-full accent-[#92798B] cursor-pointer"
+                className="w-full accent-[#22D39F] cursor-pointer"
               />
             </div>
 
-            <div className="space-y-2 bg-[#E5DAD9]/80 p-3.5 rounded-2xl border border-white/80 text-xs">
-              <div className="flex items-center justify-between text-[#5A463B] font-bold">
+            <div className="space-y-2 bg-[#0B0F18] p-3.5 rounded-2xl border border-[#263047] text-xs">
+              <div className="flex items-center justify-between text-[#AEB8CC] font-medium">
                 <span>Estimated Output VAT (Sales):</span>
-                <span className="text-[#302112] font-black">${outputVat.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                <span className="text-[#F0F4FF] font-bold">${outputVat.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
               </div>
-              <div className="flex items-center justify-between text-[#5A463B] font-bold">
+              <div className="flex items-center justify-between text-[#AEB8CC] font-medium">
                 <span>Deductible Input VAT (Purchases):</span>
-                <span className="text-emerald-800 font-black">-${inputVat.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                <span className="text-[#22D39F] font-bold">-${inputVat.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
               </div>
-              <div className="pt-2 border-t border-white/60 flex items-center justify-between text-sm font-black text-[#302112]">
+              <div className="pt-2 border-t border-[#263047] flex items-center justify-between text-sm font-black text-[#F0F4FF]">
                 <span>Net Estimated Tax Due:</span>
-                <span className="text-[#92798B]">${netVatPayable.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                <span className="text-[#22D39F]">${netVatPayable.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
               </div>
             </div>
           </div>

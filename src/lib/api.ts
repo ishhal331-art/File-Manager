@@ -163,6 +163,9 @@ export const api = {
   getUsers: async (): Promise<{ users: User[] }> => {
     return request('/api/users');
   },
+  getAllUsers: async (): Promise<{ users: User[] }> => {
+    return request('/api/users');
+  },
 
   createUser: async (userData: {
     username: string;
@@ -179,6 +182,12 @@ export const api = {
   },
 
   toggleUserStatus: async (userId: string, status: string) => {
+    return request(`/api/users/${userId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  },
+  adminUpdateUserStatus: async (userId: string, status: string) => {
     return request(`/api/users/${userId}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
@@ -210,6 +219,16 @@ export const api = {
       return { files: [] };
     }
   },
+  getAllFiles: async (targetUserId?: string): Promise<{ files: UploadedFile[] }> => {
+    const query = targetUserId ? `?userId=${encodeURIComponent(targetUserId)}` : '';
+    try {
+      const data = await request(`/api/files${query}`);
+      return { files: Array.isArray(data?.files) ? data.files : [] };
+    } catch (err: any) {
+      console.warn('api.getAllFiles error, returning empty files array:', err?.message || err);
+      return { files: [] };
+    }
+  },
 
   getUserProgress: async (): Promise<{ userProgress: any[] }> => {
     try {
@@ -217,6 +236,15 @@ export const api = {
       return { userProgress: Array.isArray(data?.userProgress) ? data.userProgress : [] };
     } catch (err: any) {
       console.warn('api.getUserProgress error, returning empty list:', err?.message || err);
+      return { userProgress: [] };
+    }
+  },
+  getAllUserProgress: async (): Promise<{ userProgress: any[] }> => {
+    try {
+      const data = await request('/api/files/user-progress');
+      return { userProgress: Array.isArray(data?.userProgress) ? data.userProgress : [] };
+    } catch (err: any) {
+      console.warn('api.getAllUserProgress error, returning empty list:', err?.message || err);
       return { userProgress: [] };
     }
   },
@@ -265,17 +293,26 @@ export const api = {
     });
   },
 
-  createNotification: async (title: string, message: string, targetUserId: string = 'ALL') => {
+  createNotification: async (
+    title: string,
+    message: string,
+    targetUserId: string = 'ALL',
+    attachments: Array<{ name: string; size: number; mimeType: string; url: string }> = []
+  ) => {
     return request('/api/notifications', {
       method: 'POST',
-      body: JSON.stringify({ title, message, targetUserId }),
+      body: JSON.stringify({ title, message, targetUserId, attachments }),
     });
   },
 
-  replyNotification: async (notificationId: string, message: string) => {
+  replyNotification: async (
+    notificationId: string,
+    message: string,
+    attachments: Array<{ name: string; size: number; mimeType: string; url: string }> = []
+  ) => {
     return request(`/api/notifications/${notificationId}/reply`, {
       method: 'POST',
-      body: JSON.stringify({ message }),
+      body: JSON.stringify({ message, attachments }),
     });
   },
 

@@ -77,9 +77,9 @@ export default function App() {
 
   if (initializing) {
     return (
-      <div className="min-h-screen w-full bg-gradient-to-br from-[#ECE7FA] via-[#E2DCF7] to-[#D5CBF5] flex flex-col items-center justify-center p-4">
-        <div className="w-12 h-12 border-4 border-[#8364ED]/20 border-t-[#8364ED] rounded-full animate-spin mb-3" />
-        <p className="text-xs font-bold text-slate-700 tracking-wide animate-pulse">
+      <div className="min-h-screen w-full bg-[#0E1120] text-[#AEB8CC] flex flex-col items-center justify-center p-4">
+        <div className="w-12 h-12 border-4 border-[#22D39F]/20 border-t-[#22D39F] rounded-full animate-spin mb-3" />
+        <p className="text-xs font-bold text-[#F0F4FF] tracking-wide animate-pulse">
           Initializing HRA Accountant Portal...
         </p>
       </div>

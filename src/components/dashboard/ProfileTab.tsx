@@ -82,32 +82,32 @@ export const ProfileTab: React.FC<Props> = ({ currentUser, onUserUpdated }) => {
 
   return (
     <div className="space-y-6 animate-fade-in" id="profile-tab-container">
-      {/* PERSONAL INFORMATION EDITABLE CARD WITH LIQUID DROP GLASS */}
+      {/* PERSONAL INFORMATION EDITABLE CARD */}
       <div 
-        className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[32px] p-6 sm:p-8 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] space-y-6"
+        className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[32px] p-6 sm:p-8 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] space-y-6"
       >
-        <div className="flex items-center justify-between pb-4 border-b border-white/60 flex-wrap gap-4">
+        <div className="flex items-center justify-between pb-4 border-b border-[#263047] flex-wrap gap-4">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-[#92798B] to-[#5A463B] text-[#F3EAE2] font-black text-2xl flex items-center justify-center shadow-md shrink-0">
+            <div className="w-16 h-16 rounded-3xl bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30 font-black text-2xl flex items-center justify-center shadow-inner shrink-0">
               {(fullName || currentUser.username).charAt(0).toUpperCase()}
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xl sm:text-2xl font-black text-[#302112] tracking-tight" id="profile-full-name">
+                <h2 className="text-xl sm:text-2xl font-black text-[#F0F4FF] tracking-tight" id="profile-full-name">
                   {currentUser.fullName}
                 </h2>
-                <span className="text-xs font-black px-3 py-0.5 rounded-full bg-[#E5DAD9] text-[#92798B] border border-white/80 shadow-2xs">
+                <span className="text-xs font-bold px-3 py-0.5 rounded-full bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30 shadow-inner">
                   {currentUser.role}
                 </span>
               </div>
-              <p className="text-xs font-bold text-[#5A463B] mt-0.5">
-                @{currentUser.username} • Account Status: <span className="text-emerald-700 font-black">{currentUser.status}</span>
+              <p className="text-xs font-medium text-[#7F8BA3] mt-0.5">
+                @{currentUser.username} • Account Status: <span className="text-[#22D39F] font-bold">{currentUser.status}</span>
               </p>
             </div>
           </div>
 
           <div className="text-right">
-            <span className="text-[11px] font-black text-[#92798B] bg-[#E5DAD9] px-3.5 py-1.5 rounded-2xl border border-white/80 shadow-2xs inline-flex items-center gap-1.5">
+            <span className="text-[11px] font-bold text-[#22D39F] bg-[#102D30] px-3.5 py-1.5 rounded-2xl border border-[#22D39F]/30 shadow-inner inline-flex items-center gap-1.5">
               <Edit3 className="w-3.5 h-3.5" />
               <span>Self-Managed Personal Details</span>
             </span>
@@ -115,15 +115,15 @@ export const ProfileTab: React.FC<Props> = ({ currentUser, onUserUpdated }) => {
         </div>
 
         {profileError && (
-          <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold flex items-center gap-2 shadow-2xs">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          <div className="p-3.5 rounded-2xl bg-rose-950/40 border border-rose-800 text-rose-300 text-xs font-bold flex items-center gap-2 shadow-inner">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
             <span>{profileError}</span>
           </div>
         )}
 
         {profileSuccess && (
-          <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-2 shadow-2xs">
-            <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+          <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-800 text-emerald-300 text-xs font-bold flex items-center gap-2 shadow-inner">
+            <CheckCircle2 className="w-4 h-4 text-[#22D39F] shrink-0" />
             <span>{profileSuccess}</span>
           </div>
         )}
@@ -132,59 +132,59 @@ export const ProfileTab: React.FC<Props> = ({ currentUser, onUserUpdated }) => {
         <form onSubmit={handleProfileSave} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* FULL NAME */}
-            <div className="p-4 rounded-2xl bg-[#E5DAD9]/80 backdrop-blur-md border border-white/80 space-y-1.5 shadow-2xs">
-              <label className="text-[10px] font-black text-[#5A463B] uppercase tracking-wider flex items-center gap-1">
-                <UserCheck className="w-3.5 h-3.5 text-[#92798B]" /> Full Name
+            <div className="p-4 rounded-2xl bg-[#0B0F18] backdrop-blur-md border border-[#263047] space-y-1.5 shadow-inner">
+              <label className="text-[10px] font-bold text-[#7F8BA3] uppercase tracking-wider flex items-center gap-1">
+                <UserCheck className="w-3.5 h-3.5 text-[#22D39F]" /> Full Name
               </label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="Enter full name"
-                className="w-full px-3 py-2 bg-white border border-white/80 rounded-xl text-xs font-bold text-[#302112] focus:outline-none focus:border-[#92798B] shadow-inner"
+                className="w-full px-3 py-2 bg-[#161D2F] border border-[#263047] rounded-xl text-xs font-bold text-[#F0F4FF] focus:outline-none focus:border-[#22D39F] shadow-inner"
                 required
               />
             </div>
 
             {/* EMAIL */}
-            <div className="p-4 rounded-2xl bg-[#E5DAD9]/80 backdrop-blur-md border border-white/80 space-y-1.5 shadow-2xs">
-              <label className="text-[10px] font-black text-[#5A463B] uppercase tracking-wider flex items-center gap-1">
-                <Mail className="w-3.5 h-3.5 text-[#92798B]" /> Email Address
+            <div className="p-4 rounded-2xl bg-[#0B0F18] backdrop-blur-md border border-[#263047] space-y-1.5 shadow-inner">
+              <label className="text-[10px] font-bold text-[#7F8BA3] uppercase tracking-wider flex items-center gap-1">
+                <Mail className="w-3.5 h-3.5 text-[#22D39F]" /> Email Address
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your.email@company.com"
-                className="w-full px-3 py-2 bg-white border border-white/80 rounded-xl text-xs font-bold text-[#302112] focus:outline-none focus:border-[#92798B] shadow-inner"
+                className="w-full px-3 py-2 bg-[#161D2F] border border-[#263047] rounded-xl text-xs font-bold text-[#F0F4FF] focus:outline-none focus:border-[#22D39F] shadow-inner"
               />
             </div>
 
             {/* PHONE */}
-            <div className="p-4 rounded-2xl bg-[#E5DAD9]/80 backdrop-blur-md border border-white/80 space-y-1.5 shadow-2xs">
-              <label className="text-[10px] font-black text-[#5A463B] uppercase tracking-wider flex items-center gap-1">
-                <Phone className="w-3.5 h-3.5 text-[#92798B]" /> Phone Number
+            <div className="p-4 rounded-2xl bg-[#0B0F18] backdrop-blur-md border border-[#263047] space-y-1.5 shadow-inner">
+              <label className="text-[10px] font-bold text-[#7F8BA3] uppercase tracking-wider flex items-center gap-1">
+                <Phone className="w-3.5 h-3.5 text-[#22D39F]" /> Phone Number
               </label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+1 (555) 000-0000"
-                className="w-full px-3 py-2 bg-white border border-white/80 rounded-xl text-xs font-bold text-[#302112] focus:outline-none focus:border-[#92798B] shadow-inner"
+                className="w-full px-3 py-2 bg-[#161D2F] border border-[#263047] rounded-xl text-xs font-bold text-[#F0F4FF] focus:outline-none focus:border-[#22D39F] shadow-inner"
               />
             </div>
 
             {/* EMPLOYEE ID */}
-            <div className="p-4 rounded-2xl bg-[#E5DAD9]/80 backdrop-blur-md border border-white/80 space-y-1.5 shadow-2xs">
-              <label className="text-[10px] font-black text-[#5A463B] uppercase tracking-wider flex items-center gap-1">
-                <Hash className="w-3.5 h-3.5 text-[#92798B]" /> Employee ID
+            <div className="p-4 rounded-2xl bg-[#0B0F18] backdrop-blur-md border border-[#263047] space-y-1.5 shadow-inner">
+              <label className="text-[10px] font-bold text-[#7F8BA3] uppercase tracking-wider flex items-center gap-1">
+                <Hash className="w-3.5 h-3.5 text-[#22D39F]" /> Employee ID
               </label>
               <input
                 type="text"
                 value={employeeId}
                 onChange={(e) => setEmployeeId(e.target.value)}
                 placeholder="EMP-100"
-                className="w-full px-3 py-2 bg-white border border-white/80 rounded-xl text-xs font-bold text-[#302112] focus:outline-none focus:border-[#92798B] shadow-inner"
+                className="w-full px-3 py-2 bg-[#161D2F] border border-[#263047] rounded-xl text-xs font-bold text-[#F0F4FF] focus:outline-none focus:border-[#22D39F] shadow-inner"
               />
             </div>
           </div>
@@ -193,7 +193,7 @@ export const ProfileTab: React.FC<Props> = ({ currentUser, onUserUpdated }) => {
             <button
               type="submit"
               disabled={savingProfile}
-              className="px-6 py-2.5 rounded-full bg-[#92798B] hover:bg-[#5A463B] text-[#F3EAE2] text-xs font-black shadow-xs hover:shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+              className="px-6 py-2.5 rounded-full bg-[#22D39F] hover:bg-[#19C99A] text-[#0E1120] text-xs font-black shadow-md transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
               id="btn-save-personal-info"
             >
               <Save className="w-4 h-4" />
@@ -203,72 +203,72 @@ export const ProfileTab: React.FC<Props> = ({ currentUser, onUserUpdated }) => {
         </form>
       </div>
 
-      {/* CHANGE PASSWORD WORKFLOW CARD WITH LIQUID DROP GLASS */}
+      {/* CHANGE PASSWORD WORKFLOW CARD */}
       <div 
-        className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[32px] p-6 sm:p-8 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] space-y-5"
+        className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[32px] p-6 sm:p-8 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] space-y-5"
       >
-        <div className="flex items-center gap-3 pb-3 border-b border-white/60">
-          <div className="p-2.5 rounded-xl bg-[#E5DAD9] text-[#92798B] border border-white/80 shadow-2xs">
-            <KeyRound className="w-5 h-5 text-[#CBAF87]" />
+        <div className="flex items-center gap-3 pb-3 border-b border-[#263047]">
+          <div className="p-2.5 rounded-xl bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30 shadow-inner">
+            <KeyRound className="w-5 h-5 text-[#22D39F]" />
           </div>
           <div>
-            <h3 className="text-base font-black text-[#302112] tracking-tight">
+            <h3 className="text-base font-black text-[#F0F4FF] tracking-tight">
               Security & Password Credentials
             </h3>
-            <p className="text-xs text-[#5A463B] font-semibold">
+            <p className="text-xs text-[#AEB8CC] font-medium">
               Update your account access key. Passwords remain securely salted and hashed server-side.
             </p>
           </div>
         </div>
 
         {passErrorMsg && (
-          <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold flex items-center gap-2 shadow-2xs">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          <div className="p-3.5 rounded-2xl bg-rose-950/40 border border-rose-800 text-rose-300 text-xs font-bold flex items-center gap-2 shadow-inner">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
             <span>{passErrorMsg}</span>
           </div>
         )}
 
         {passSuccessMsg && (
-          <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center gap-2 shadow-2xs">
-            <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
+          <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-800 text-emerald-300 text-xs font-bold flex items-center gap-2 shadow-inner">
+            <CheckCircle2 className="w-4 h-4 text-[#22D39F] shrink-0" />
             <span>{passSuccessMsg}</span>
           </div>
         )}
 
         <form onSubmit={handlePasswordChange} className="space-y-4 max-w-lg" id="change-password-form">
           <div>
-            <label className="block text-xs font-black text-[#302112] mb-1">Current Password</label>
+            <label className="block text-xs font-bold text-[#F0F4FF] mb-1">Current Password</label>
             <input
               type="password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
               placeholder="Enter current password"
-              className="w-full px-4 py-2.5 bg-[#E5DAD9] border border-white/80 rounded-2xl text-xs font-bold text-[#302112] placeholder:text-[#5A463B]/60 focus:outline-none focus:border-[#92798B] focus:bg-white shadow-inner"
+              className="w-full px-4 py-2.5 bg-[#0B0F18] border border-[#263047] rounded-2xl text-xs font-medium text-[#F0F4FF] placeholder:text-[#7F8BA3] focus:outline-none focus:border-[#22D39F] shadow-inner"
               required
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-black text-[#302112] mb-1">New Password</label>
+              <label className="block text-xs font-bold text-[#F0F4FF] mb-1">New Password</label>
               <input
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="New password (min 6 chars)"
-                className="w-full px-4 py-2.5 bg-[#E5DAD9] border border-white/80 rounded-2xl text-xs font-bold text-[#302112] placeholder:text-[#5A463B]/60 focus:outline-none focus:border-[#92798B] focus:bg-white shadow-inner"
+                className="w-full px-4 py-2.5 bg-[#0B0F18] border border-[#263047] rounded-2xl text-xs font-medium text-[#F0F4FF] placeholder:text-[#7F8BA3] focus:outline-none focus:border-[#22D39F] shadow-inner"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-black text-[#302112] mb-1">Confirm New Password</label>
+              <label className="block text-xs font-bold text-[#F0F4FF] mb-1">Confirm New Password</label>
               <input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"
-                className="w-full px-4 py-2.5 bg-[#E5DAD9] border border-white/80 rounded-2xl text-xs font-bold text-[#302112] placeholder:text-[#5A463B]/60 focus:outline-none focus:border-[#92798B] focus:bg-white shadow-inner"
+                className="w-full px-4 py-2.5 bg-[#0B0F18] border border-[#263047] rounded-2xl text-xs font-medium text-[#F0F4FF] placeholder:text-[#7F8BA3] focus:outline-none focus:border-[#22D39F] shadow-inner"
                 required
               />
             </div>
@@ -278,7 +278,7 @@ export const ProfileTab: React.FC<Props> = ({ currentUser, onUserUpdated }) => {
             <button
               type="submit"
               disabled={loadingPass}
-              className="px-6 py-2.5 rounded-full bg-[#92798B] hover:bg-[#5A463B] text-[#F3EAE2] text-xs font-black shadow-xs hover:shadow-md transition-all cursor-pointer disabled:opacity-50"
+              className="px-6 py-2.5 rounded-full bg-[#22D39F] hover:bg-[#19C99A] text-[#0E1120] text-xs font-black shadow-md transition-all cursor-pointer disabled:opacity-50"
               id="btn-submit-change-password"
             >
               {loadingPass ? 'Updating...' : 'Update Password'}

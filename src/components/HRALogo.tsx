@@ -2,48 +2,43 @@ import React from 'react';
 
 interface Props {
   className?: string;
-  variant?: 'dark' | 'light' | 'mauve' | 'gold';
+  variant?: 'dark' | 'light' | 'accent' | 'teal';
   showText?: boolean;
   showSubtitle?: boolean;
 }
 
 export const HRALogo: React.FC<Props> = ({
   className = 'w-auto h-12',
-  variant = 'dark',
+  variant = 'accent',
   showText = true,
   showSubtitle = true,
 }) => {
   const arcColor =
     variant === 'light'
-      ? '#F3EAE2'
-      : variant === 'gold'
-      ? '#CBAF87'
-      : variant === 'mauve'
-      ? '#92798B'
-      : '#302112';
+      ? '#F0F4FF'
+      : variant === 'teal'
+      ? '#102D30'
+      : variant === 'dark'
+      ? '#7F8BA3'
+      : '#22D39F'; // Primary Accent
 
   const textColor =
     variant === 'light'
-      ? '#F3EAE2'
-      : variant === 'gold'
-      ? '#CBAF87'
-      : variant === 'mauve'
-      ? '#92798B'
-      : '#302112';
+      ? '#F0F4FF'
+      : variant === 'accent'
+      ? '#F0F4FF'
+      : variant === 'teal'
+      ? '#22D39F'
+      : '#AEB8CC';
 
   const subtextColor =
     variant === 'light'
-      ? '#CBAF87'
-      : variant === 'gold'
-      ? '#F3EAE2'
-      : variant === 'mauve'
-      ? '#302112'
-      : '#92798B';
-
-  const arcGradientEnd =
-    variant === 'light'
-      ? 'rgba(243, 234, 226, 0.15)'
-      : 'rgba(90, 70, 59, 0.08)';
+      ? '#22D39F'
+      : variant === 'accent'
+      ? '#22D39F'
+      : variant === 'teal'
+      ? '#AEB8CC'
+      : '#7F8BA3';
 
   return (
     <div className={`flex items-center select-none ${className}`} id="hra-logo-container">
@@ -56,12 +51,12 @@ export const HRALogo: React.FC<Props> = ({
       >
         <defs>
           <linearGradient id={`hraArcGrad-${variant}`} x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor={arcColor} stopOpacity="1" />
+            <stop offset="0%" stopColor="#22D39F" stopOpacity="1" />
             <stop offset="65%" stopColor={arcColor} stopOpacity="0.85" />
-            <stop offset="100%" stopColor={arcGradientEnd} stopOpacity="0.1" />
+            <stop offset="100%" stopColor="#102D30" stopOpacity="0.2" />
           </linearGradient>
           <filter id={`hraSubtleGlow-${variant}`} x="-10%" y="-10%" width="120%" height="120%">
-            <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#B19CAD" floodOpacity="0.2" />
+            <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#22D39F" floodOpacity="0.35" />
           </filter>
         </defs>
 
@@ -69,6 +64,7 @@ export const HRALogo: React.FC<Props> = ({
         <path
           d="M 28 148 C 55 65 145 16 380 36 C 320 26 175 20 54 105 C 42 122 33 138 28 148 Z"
           fill={`url(#hraArcGrad-${variant})`}
+          filter={`url(#hraSubtleGlow-${variant})`}
         />
 
         {/* MAIN HRA TYPOGRAPHY */}

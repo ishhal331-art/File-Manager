@@ -26,6 +26,7 @@ interface Props {
   users?: User[];
   files: UploadedFile[];
   onReviewFile?: (file: UploadedFile) => void;
+  onInspectFile?: (file: UploadedFile) => void;
 }
 
 export const AIAdvisorHub: React.FC<Props> = ({
@@ -33,6 +34,7 @@ export const AIAdvisorHub: React.FC<Props> = ({
   users = [],
   files,
   onReviewFile,
+  onInspectFile,
 }) => {
   const [query, setQuery] = useState('');
   const [selectedUserFilter, setSelectedUserFilter] = useState<string>('ALL');
@@ -108,21 +110,21 @@ export const AIAdvisorHub: React.FC<Props> = ({
   return (
     <div className="space-y-6 animate-fade-in" id="ai-advisor-hub">
       {/* 1. TOP HERO BANNER */}
-      <div className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[32px] p-6 sm:p-8 border border-white/80 shadow-[0_20px_50px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
+      <div className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[32px] p-6 sm:p-8 border border-[#263047] shadow-[0_20px_50px_rgba(11,15,24,0.6)] flex flex-col md:flex-row items-start md:items-center justify-between gap-5">
         <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#92798B] to-[#5A463B] text-[#FAF6F0] flex items-center justify-center font-black text-xl shadow-xs shrink-0">
-            <Sparkles className="w-6 h-6 text-[#CBAF87]" />
+          <div className="w-12 h-12 rounded-2xl bg-[#102D30] text-[#22D39F] flex items-center justify-center font-black text-xl shadow-inner border border-[#22D39F]/30 shrink-0">
+            <Sparkles className="w-6 h-6 text-[#22D39F]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl sm:text-2xl font-black text-[#302112] tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-black text-[#F0F4FF] tracking-tight">
                 AI Fiscal & Compliance Advisor
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-[#E5DAD9] text-[#92798B] border border-white/80">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#102D30] text-[#22D39F] border border-[#22D39F]/30 shadow-inner">
                 Gemini 2.5 Intelligence
               </span>
             </div>
-            <p className="text-xs text-[#5A463B] font-semibold mt-0.5">
+            <p className="text-xs text-[#AEB8CC] font-medium mt-0.5">
               Ask fiscal questions, audit missing compliance files, calculate VAT margins, and query document data.
             </p>
           </div>
@@ -130,16 +132,18 @@ export const AIAdvisorHub: React.FC<Props> = ({
 
         {/* TARGET USER SCOPE (IF ADMIN / MANAGER) */}
         {isAdminOrManager && clientUsers.length > 0 && (
-          <div className="flex items-center gap-2 bg-[#E5DAD9] p-1.5 rounded-2xl border border-white/80">
-            <Users className="w-4 h-4 text-[#92798B] ml-2" />
+          <div className="flex items-center gap-2 bg-[#0B0F18] p-1.5 rounded-2xl border border-[#263047]">
+            <Users className="w-4 h-4 text-[#22D39F] ml-2" />
             <select
               value={selectedUserFilter}
               onChange={(e) => setSelectedUserFilter(e.target.value)}
-              className="bg-transparent border-none text-xs font-black text-[#302112] focus:outline-none pr-2 cursor-pointer"
+              className="bg-transparent border-none text-xs font-bold text-[#F0F4FF] focus:outline-none pr-2 cursor-pointer"
             >
-              <option value="ALL">🌐 Entire Organization ({clientUsers.length} Clients)</option>
+              <option value="ALL" className="bg-[#161D2F] text-[#F0F4FF]">
+                🌐 Entire Organization ({clientUsers.length} Clients)
+              </option>
               {clientUsers.map((u) => (
-                <option key={u.id} value={u.id}>
+                <option key={u.id} value={u.id} className="bg-[#161D2F] text-[#F0F4FF]">
                   👤 {u.fullName} (@{u.username})
                 </option>
               ))}
@@ -150,7 +154,7 @@ export const AIAdvisorHub: React.FC<Props> = ({
 
       {/* 2. PRESET PROMPTS */}
       <div className="space-y-2">
-        <h3 className="text-xs font-black text-[#5A463B] uppercase tracking-wider px-1">
+        <h3 className="text-xs font-bold text-[#7F8BA3] uppercase tracking-wider px-1">
           Quick Audit & Intelligence Queries
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -162,16 +166,16 @@ export const AIAdvisorHub: React.FC<Props> = ({
                 type="button"
                 onClick={() => handleAsk(item.question)}
                 disabled={loading}
-                className="p-3.5 rounded-2xl bg-[#F3EAE2]/85 backdrop-blur-xl border border-white/80 hover:bg-white hover:border-[#92798B] text-left transition-all cursor-pointer shadow-2xs group flex items-start gap-3 disabled:opacity-50"
+                className="p-3.5 rounded-2xl bg-[#161D2F]/90 backdrop-blur-xl border border-[#263047] hover:bg-[#102D30] hover:border-[#22D39F] text-left transition-all cursor-pointer shadow-inner group flex items-start gap-3 disabled:opacity-50"
               >
-                <div className="p-2 rounded-xl bg-[#E5DAD9] text-[#92798B] group-hover:bg-[#92798B] group-hover:text-[#FAF6F0] transition-colors shrink-0">
+                <div className="p-2 rounded-xl bg-[#0B0F18] text-[#22D39F] group-hover:bg-[#22D39F] group-hover:text-[#0E1120] transition-colors shrink-0 border border-[#263047]">
                   <Icon className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="text-xs font-black text-[#302112] group-hover:text-[#92798B] transition-colors truncate">
+                  <h4 className="text-xs font-bold text-[#F0F4FF] group-hover:text-[#22D39F] transition-colors truncate">
                     {item.label}
                   </h4>
-                  <p className="text-[11px] text-[#5A463B] font-semibold line-clamp-2 mt-0.5">
+                  <p className="text-[11px] text-[#AEB8CC] font-medium line-clamp-2 mt-0.5">
                     {item.question}
                   </p>
                 </div>
@@ -182,7 +186,7 @@ export const AIAdvisorHub: React.FC<Props> = ({
       </div>
 
       {/* 3. NATURAL LANGUAGE INPUT BAR */}
-      <div className="bg-[#F3EAE2]/85 backdrop-blur-xl rounded-[32px] p-4 sm:p-5 border border-white/80 shadow-[0_15px_40px_rgba(48,33,18,0.08),inset_0_1.5px_2px_rgba(255,255,255,0.9)] space-y-3">
+      <div className="bg-[#161D2F]/90 backdrop-blur-xl rounded-[32px] p-4 sm:p-5 border border-[#263047] shadow-[0_15px_40px_rgba(11,15,24,0.6)] space-y-3">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -191,29 +195,29 @@ export const AIAdvisorHub: React.FC<Props> = ({
           className="flex flex-col sm:flex-row items-center gap-3"
         >
           <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 text-[#92798B] absolute left-4 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#22D39F] absolute left-4 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Ask anything about invoices, sales ledgers, compliance status, or VAT liabilities..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-[#E5DAD9] border border-white/80 rounded-2xl text-xs font-bold text-[#302112] placeholder:text-[#5A463B]/60 focus:outline-none focus:border-[#92798B] focus:bg-white shadow-inner"
+              className="w-full pl-11 pr-4 py-3 bg-[#0B0F18] border border-[#263047] rounded-2xl text-xs font-bold text-[#F0F4FF] placeholder:text-[#7F8BA3] focus:outline-none focus:border-[#22D39F] shadow-inner"
             />
           </div>
 
           <button
             type="submit"
             disabled={!query.trim() || loading}
-            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#92798B] hover:bg-[#5A463B] text-[#FAF6F0] text-xs font-black flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer disabled:opacity-40"
+            className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-[#22D39F] hover:bg-[#19C99A] text-[#0E1120] text-xs font-black flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer disabled:opacity-40"
           >
             {loading ? (
               <>
-                <RefreshCw className="w-4 h-4 animate-spin text-[#FAF6F0]" />
+                <RefreshCw className="w-4 h-4 animate-spin text-[#0E1120]" />
                 <span>Analyzing Fiscal Data...</span>
               </>
             ) : (
               <>
-                <Send className="w-4 h-4 text-[#FAF6F0]" />
+                <Send className="w-4 h-4 text-[#0E1120]" />
                 <span>Ask AI Advisor</span>
               </>
             )}
@@ -223,17 +227,17 @@ export const AIAdvisorHub: React.FC<Props> = ({
 
       {/* 4. AI RESPONSE CARD */}
       {response && (
-        <div className="bg-[#F3EAE2]/90 backdrop-blur-2xl rounded-[32px] p-6 sm:p-8 border border-white/90 shadow-[0_20px_50px_rgba(48,33,18,0.12),inset_0_2px_3px_rgba(255,255,255,0.95)] space-y-4 animate-fade-in">
-          <div className="flex items-center justify-between pb-3 border-b border-white/60">
+        <div className="bg-[#161D2F]/95 backdrop-blur-2xl rounded-[32px] p-6 sm:p-8 border border-[#263047] shadow-[0_20px_50px_rgba(11,15,24,0.8)] space-y-4 animate-fade-in">
+          <div className="flex items-center justify-between pb-3 border-b border-[#263047]">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#92798B] to-[#5A463B] text-[#FAF6F0] flex items-center justify-center font-black shadow-xs">
-                <Sparkles className="w-4 h-4 text-[#CBAF87]" />
+              <div className="w-8 h-8 rounded-xl bg-[#102D30] text-[#22D39F] flex items-center justify-center font-black shadow-inner border border-[#22D39F]/30">
+                <Sparkles className="w-4 h-4 text-[#22D39F]" />
               </div>
               <div>
-                <h4 className="text-sm font-black text-[#302112]">
+                <h4 className="text-sm font-black text-[#F0F4FF]">
                   Fiscal Intelligence Report
                 </h4>
-                <p className="text-[10px] font-bold text-[#5A463B]">
+                <p className="text-[10px] font-medium text-[#7F8BA3]">
                   Generated in real-time from ingested files and compliance state.
                 </p>
               </div>
@@ -242,17 +246,17 @@ export const AIAdvisorHub: React.FC<Props> = ({
             <button
               type="button"
               onClick={handleCopy}
-              className="px-3 py-1.5 rounded-xl bg-[#E5DAD9] hover:bg-white text-[#302112] text-xs font-black border border-white/80 flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-[#0B0F18] hover:bg-[#102D30] text-[#F0F4FF] hover:text-[#22D39F] text-xs font-bold border border-[#263047] hover:border-[#22D39F] flex items-center gap-1.5 shadow-inner transition-all cursor-pointer"
               title="Copy response to clipboard"
             >
               {copied ? (
                 <>
-                  <Check className="w-3.5 h-3.5 text-emerald-700" />
-                  <span>Copied!</span>
+                  <Check className="w-3.5 h-3.5 text-[#22D39F]" />
+                  <span className="text-[#22D39F]">Copied!</span>
                 </>
               ) : (
                 <>
-                  <Copy className="w-3.5 h-3.5 text-[#92798B]" />
+                  <Copy className="w-3.5 h-3.5 text-[#22D39F]" />
                   <span>Copy Report</span>
                 </>
               )}
@@ -260,28 +264,28 @@ export const AIAdvisorHub: React.FC<Props> = ({
           </div>
 
           {/* RESPONSE BODY */}
-          <div className="text-xs sm:text-sm font-semibold text-[#302112] whitespace-pre-line leading-relaxed space-y-2 bg-[#E5DAD9]/80 p-5 rounded-2xl border border-white/80 shadow-inner">
+          <div className="text-xs sm:text-sm font-medium text-[#F0F4FF] whitespace-pre-line leading-relaxed space-y-2 bg-[#0B0F18] p-5 rounded-2xl border border-[#263047] shadow-inner">
             {response}
           </div>
 
           {/* SUMMARY PILLS */}
           {responseStats && (
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-              <div className="p-3 rounded-xl bg-white/70 border border-white/80 text-center">
-                <p className="text-[10px] font-extrabold text-[#5A463B] uppercase">Sales Files</p>
-                <p className="text-sm font-black text-[#302112]">{responseStats.salesCount}</p>
+              <div className="p-3 rounded-xl bg-[#0B0F18] border border-[#263047] text-center shadow-inner">
+                <p className="text-[10px] font-bold text-[#7F8BA3] uppercase">Sales Files</p>
+                <p className="text-sm font-black text-[#22D39F]">{responseStats.salesCount}</p>
               </div>
-              <div className="p-3 rounded-xl bg-white/70 border border-white/80 text-center">
-                <p className="text-[10px] font-extrabold text-[#5A463B] uppercase">Purchases</p>
-                <p className="text-sm font-black text-[#302112]">{responseStats.purchaseCount}</p>
+              <div className="p-3 rounded-xl bg-[#0B0F18] border border-[#263047] text-center shadow-inner">
+                <p className="text-[10px] font-bold text-[#7F8BA3] uppercase">Purchases</p>
+                <p className="text-sm font-black text-[#60A5FA]">{responseStats.purchaseCount}</p>
               </div>
-              <div className="p-3 rounded-xl bg-white/70 border border-white/80 text-center">
-                <p className="text-[10px] font-extrabold text-[#5A463B] uppercase">Net Margin</p>
-                <p className="text-sm font-black text-[#302112]">${(responseStats.netProfit || 0).toLocaleString()}</p>
+              <div className="p-3 rounded-xl bg-[#0B0F18] border border-[#263047] text-center shadow-inner">
+                <p className="text-[10px] font-bold text-[#7F8BA3] uppercase">Net Margin</p>
+                <p className="text-sm font-black text-[#F0F4FF]">${(responseStats.netProfit || 0).toLocaleString()}</p>
               </div>
-              <div className="p-3 rounded-xl bg-white/70 border border-white/80 text-center">
-                <p className="text-[10px] font-extrabold text-[#5A463B] uppercase">Compliance</p>
-                <p className="text-sm font-black text-emerald-800">
+              <div className="p-3 rounded-xl bg-[#0B0F18] border border-[#263047] text-center shadow-inner">
+                <p className="text-[10px] font-bold text-[#7F8BA3] uppercase">Compliance</p>
+                <p className="text-sm font-black text-[#22D39F]">
                   {responseStats.compliantDossiers}/{responseStats.totalDossiers} Complete
                 </p>
               </div>
