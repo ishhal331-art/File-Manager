@@ -119,12 +119,18 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
   const loadManagerData = async () => {
     setLoading(true);
     try {
-      const [usersRes, progressRes, filesRes, notifsRes] = await Promise.all([
+      const results = await Promise.allSettled([
         api.getUsers(),
         api.getUserProgress(),
         api.getFiles(),
-        api.getNotifications().catch(() => ({ notifications: [], unreadCount: 0 })),
+        api.getNotifications(),
       ]);
+
+      const usersRes = results[0].status === 'fulfilled' ? results[0].value : { users: [] };
+      const progressRes = results[1].status === 'fulfilled' ? results[1].value : { userProgress: [] };
+      const filesRes = results[2].status === 'fulfilled' ? results[2].value : { files: [] };
+      const notifsRes = results[3].status === 'fulfilled' ? results[3].value : { notifications: [], unreadCount: 0 };
+
       setAllUsers(usersRes.users || []);
       setUserProgressList(progressRes.userProgress || []);
       setAllUploadedFiles(filesRes.files || []);
@@ -133,7 +139,7 @@ export const ManagerDashboard: React.FC<Props> = ({ currentUser, onLogout }) => 
         : (notifsRes.notifications || []).filter((n: any) => !n.readBy || !n.readBy.includes(currentUser.id)).length;
       setNotifCount(unread);
     } catch (err) {
-      console.error('Failed to load manager data:', err);
+      console.warn('Handled manager data load warning:', err);
     } finally {
       setLoading(false);
     }

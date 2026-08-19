@@ -1,7 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { FileType, UploadedFile } from '../../types';
 import { api } from '../../lib/api';
-import { Upload, CheckCircle2, FileSpreadsheet, Eye, Sparkles, RefreshCw, Download, Trash2, Layers } from 'lucide-react';
+import { Upload, CheckCircle2, FileSpreadsheet, Eye, Sparkles, RefreshCw, Download, Trash2, Layers, Camera } from 'lucide-react';
+import { CameraCaptureModal } from '../common/CameraCaptureModal';
 
 interface Props {
   fileType?: FileType | string;
@@ -39,9 +40,11 @@ export const UploadCard: React.FC<Props> = ({
   const inspectHandler = onInspectFile || onViewFile || (() => {});
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const mobileCameraRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState<string>('ALL');
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   useEffect(() => {
     if (effectiveCategoryFiles.length > 0 && selectedFileId !== 'ALL') {
@@ -92,6 +95,9 @@ export const UploadCard: React.FC<Props> = ({
       setUploading(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
+      }
+      if (mobileCameraRef.current) {
+        mobileCameraRef.current.value = '';
       }
     }
   };
@@ -148,6 +154,15 @@ export const UploadCard: React.FC<Props> = ({
         accept="*/*"
         id={`input-file-${effectiveType.toLowerCase()}`}
       />
+      <input
+        ref={mobileCameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={handleFileChange}
+        id={`input-camera-${effectiveType.toLowerCase()}`}
+      />
 
       {/* HEADER SECTION */}
       <div>
@@ -187,7 +202,7 @@ export const UploadCard: React.FC<Props> = ({
         {/* AI CAPABILITY TAG */}
         <div className="mt-2.5 flex items-center gap-1.5 text-[10px] font-bold text-[#22D39F] bg-[#102D30] px-2.5 py-1 rounded-xl w-max border border-[#22D39F]/30 shadow-inner">
           <Sparkles className="w-3 h-3 text-[#22D39F]" />
-          <span>Supports Excel, Word, PDF, Images (AI OCR)</span>
+          <span>Excel, Word, PDF, Images & Camera OCR</span>
         </div>
 
         {/* FILE SELECTION DROPDOWN */}
@@ -274,11 +289,11 @@ export const UploadCard: React.FC<Props> = ({
                   ))}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
                   <button
                     type="button"
                     onClick={handleDownloadAll}
-                    className="w-full py-2.5 px-3 rounded-xl bg-[#161D2F] hover:bg-[#102D30] text-[#F0F4FF] border border-[#263047] text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-inner cursor-pointer"
+                    className="w-full py-2.5 px-2 rounded-xl bg-[#161D2F] hover:bg-[#102D30] text-[#F0F4FF] border border-[#263047] text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-inner cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5 text-[#22D39F]" />
                     <span>Download All</span>
@@ -289,10 +304,19 @@ export const UploadCard: React.FC<Props> = ({
                     onClick={() => {
                       if (fileInputRef.current) fileInputRef.current.click();
                     }}
-                    className="w-full py-2.5 px-3 rounded-xl bg-[#22D39F] hover:bg-[#19C99A] text-[#0E1120] text-xs font-black flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer"
+                    className="w-full py-2.5 px-2 rounded-xl bg-[#0B0F18] hover:bg-[#102D30] text-[#F0F4FF] border border-[#263047] hover:border-[#22D39F] text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-inner cursor-pointer"
                   >
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>+ Upload New</span>
+                    <Upload className="w-3.5 h-3.5 text-[#22D39F]" />
+                    <span>+ Add File</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsCameraOpen(true)}
+                    className="w-full py-2.5 px-2 rounded-xl bg-[#102D30] hover:bg-[#22D39F] text-[#22D39F] hover:text-[#0E1120] border border-[#22D39F]/40 text-xs font-black flex items-center justify-center gap-1.5 transition-all shadow-inner cursor-pointer"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>+ Take Photo</span>
                   </button>
                 </div>
               </div>
@@ -347,37 +371,73 @@ export const UploadCard: React.FC<Props> = ({
                   </button>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (fileInputRef.current) fileInputRef.current.click();
-                  }}
-                  className="w-full py-2.5 px-3 rounded-xl bg-[#0B0F18] hover:bg-[#102D30] text-[#F0F4FF] border border-[#263047] hover:border-[#22D39F] text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-inner"
-                >
-                  <Upload className="w-3.5 h-3.5 text-[#22D39F]" />
-                  <span>+ Upload Another File</span>
-                </button>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (fileInputRef.current) fileInputRef.current.click();
+                    }}
+                    className="w-full py-2 px-2.5 rounded-xl bg-[#0B0F18] hover:bg-[#102D30] text-[#F0F4FF] border border-[#263047] hover:border-[#22D39F] text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-inner"
+                  >
+                    <Upload className="w-3.5 h-3.5 text-[#22D39F]" />
+                    <span>Choose File</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsCameraOpen(true)}
+                    className="w-full py-2 px-2.5 rounded-xl bg-[#102D30] hover:bg-[#22D39F] text-[#22D39F] hover:text-[#0E1120] border border-[#22D39F]/40 text-[11px] font-black flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-inner"
+                  >
+                    <Camera className="w-3.5 h-3.5" />
+                    <span>Click Photo</span>
+                  </button>
+                </div>
               </div>
             ) : null}
           </div>
         ) : (
-          /* UPLOAD PROMPT BUTTON WHEN NO FILES EXIST */
-          <button
-            type="button"
-            onClick={() => {
-              if (fileInputRef.current) fileInputRef.current.click();
-            }}
-            className="w-full py-5 px-4 rounded-2xl bg-[#22D39F] hover:bg-[#19C99A] text-[#0E1120] font-black text-xs tracking-wide shadow-[0_10px_22px_rgba(34,211,159,0.3)] active:scale-[0.98] transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer"
-            id={`btn-upload-${effectiveType.toLowerCase()}`}
-          >
-            <div className="w-9 h-9 rounded-full bg-[#0E1120]/15 flex items-center justify-center shadow-inner">
-              <Upload className="w-4 h-4 text-[#0E1120]" />
-            </div>
-            <span>Click or Drag & Drop File</span>
-            <span className="text-[10px] font-bold text-[#0E1120]/80">Any file format supported</span>
-          </button>
+          /* DUAL ACTION BUTTON WHEN NO FILES EXIST */
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                if (fileInputRef.current) fileInputRef.current.click();
+              }}
+              className="py-4 px-3 rounded-2xl bg-[#0B0F18] hover:bg-[#102D30] border border-[#263047] hover:border-[#22D39F] text-[#F0F4FF] font-black text-xs shadow-inner active:scale-[0.98] transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer group"
+              id={`btn-choose-file-${effectiveType.toLowerCase()}`}
+            >
+              <div className="w-9 h-9 rounded-2xl bg-[#161D2F] group-hover:bg-[#102D30] text-[#22D39F] flex items-center justify-center shadow-inner border border-[#263047] group-hover:border-[#22D39F]">
+                <Upload className="w-4 h-4" />
+              </div>
+              <span>Choose File</span>
+              <span className="text-[10px] font-medium text-[#AEB8CC]">PDF, Excel, Word</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsCameraOpen(true)}
+              className="py-4 px-3 rounded-2xl bg-[#22D39F] hover:bg-[#19C99A] text-[#0E1120] font-black text-xs shadow-[0_10px_22px_rgba(34,211,159,0.3)] active:scale-[0.98] transition-all flex flex-col items-center justify-center gap-1.5 cursor-pointer"
+              id={`btn-camera-photo-${effectiveType.toLowerCase()}`}
+            >
+              <div className="w-9 h-9 rounded-2xl bg-[#0E1120]/15 flex items-center justify-center shadow-inner">
+                <Camera className="w-4 h-4 text-[#0E1120]" />
+              </div>
+              <span>Click Picture</span>
+              <span className="text-[10px] font-bold text-[#0E1120]/80">Live camera OCR</span>
+            </button>
+          </div>
         )}
       </div>
+
+      {/* LIVE CAMERA CAPTURE MODAL */}
+      <CameraCaptureModal
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onCapture={(file) => processSelectedFile(file)}
+        title={`Take Photo for ${title}`}
+        categoryLabel={title}
+      />
     </div>
   );
 };
+

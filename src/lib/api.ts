@@ -47,7 +47,7 @@ export function getAuthToken(): string | null {
   return authToken || safeStorage.getItem('files_manager_token') || safeStorage.getItem('clay_portal_token');
 }
 
-async function request(endpoint: string, options: RequestInit = {}) {
+async function request(endpoint: string, options: RequestInit = {}, retries = 2): Promise<any> {
   const token = getAuthToken();
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -79,7 +79,20 @@ async function request(endpoint: string, options: RequestInit = {}) {
 
     return data;
   } catch (err: any) {
-    if (err.message && err.message !== 'Failed to fetch') {
+    const isNetworkError =
+      !err.status &&
+      (err.message === 'Failed to fetch' ||
+        err.name === 'TypeError' ||
+        err.message?.includes('NetworkError') ||
+        err.message?.includes('Load failed'));
+
+    if (isNetworkError && retries > 0) {
+      // Wait briefly and retry to handle server reboots or brief network hiccups
+      await new Promise((resolve) => setTimeout(resolve, (3 - retries) * 300));
+      return request(endpoint, options, retries - 1);
+    }
+
+    if (err.message && !isNetworkError) {
       throw err;
     }
     console.warn(`Network request to ${endpoint} failed:`, err?.message || err);
@@ -161,10 +174,22 @@ export const api = {
 
   // Users Management (Admin/Manager)
   getUsers: async (): Promise<{ users: User[] }> => {
-    return request('/api/users');
+    try {
+      const data = await request('/api/users');
+      return { users: Array.isArray(data?.users) ? data.users : [] };
+    } catch (err: any) {
+      console.warn('api.getUsers error, returning empty user list:', err?.message || err);
+      return { users: [] };
+    }
   },
   getAllUsers: async (): Promise<{ users: User[] }> => {
-    return request('/api/users');
+    try {
+      const data = await request('/api/users');
+      return { users: Array.isArray(data?.users) ? data.users : [] };
+    } catch (err: any) {
+      console.warn('api.getAllUsers error, returning empty user list:', err?.message || err);
+      return { users: [] };
+    }
   },
 
   createUser: async (userData: {
@@ -278,7 +303,16 @@ export const api = {
 
   // Notifications
   getNotifications: async (): Promise<{ notifications: AppNotification[]; unreadCount?: number }> => {
-    return request('/api/notifications');
+    try {
+      const data = await request('/api/notifications');
+      return {
+        notifications: Array.isArray(data?.notifications) ? data.notifications : [],
+        unreadCount: typeof data?.unreadCount === 'number' ? data.unreadCount : undefined,
+      };
+    } catch (err: any) {
+      console.warn('api.getNotifications error, returning empty notifications array:', err?.message || err);
+      return { notifications: [] };
+    }
   },
 
   markNotificationsRead: async (): Promise<{ success: boolean }> => {

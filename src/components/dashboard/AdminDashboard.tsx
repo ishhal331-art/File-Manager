@@ -144,12 +144,17 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
   const loadAdminData = async () => {
     setLoading(true);
     try {
-      const [usersRes, progressRes, filesRes, notifRes] = await Promise.all([
+      const results = await Promise.allSettled([
         api.getAllUsers(),
         api.getAllUserProgress(),
         api.getAllFiles(),
         api.getNotifications(),
       ]);
+
+      const usersRes = results[0].status === 'fulfilled' ? results[0].value : { users: [] };
+      const progressRes = results[1].status === 'fulfilled' ? results[1].value : { userProgress: [] };
+      const filesRes = results[2].status === 'fulfilled' ? results[2].value : { files: [] };
+      const notifRes = results[3].status === 'fulfilled' ? results[3].value : { notifications: [] };
 
       if (usersRes && Array.isArray(usersRes.users)) {
         setUsers(usersRes.users);
@@ -165,7 +170,7 @@ export const AdminDashboard: React.FC<Props> = ({ currentUser, onLogout }) => {
         setNotifCount(unread);
       }
     } catch (err) {
-      console.error('Error fetching admin data:', err);
+      console.warn('Handled admin data load warning:', err);
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
-import { Paperclip, Image as ImageIcon, X, File, FileText, FileSpreadsheet } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Paperclip, Image as ImageIcon, X, File, FileText, FileSpreadsheet, Camera } from 'lucide-react';
 import { formatFileSize, getFileCategory } from './NotificationAttachmentItem';
+import { CameraCaptureModal } from './CameraCaptureModal';
 
 export interface PendingAttachment {
   id: string;
@@ -27,6 +28,8 @@ export const AttachmentPicker: React.FC<Props> = ({
   disabled = false,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const mobileCameraRef = useRef<HTMLInputElement | null>(null);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   const processFiles = (fileList: FileList | File[]) => {
     const remainingSlots = maxFiles - attachments.length;
@@ -71,6 +74,13 @@ export const AttachmentPicker: React.FC<Props> = ({
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+    if (mobileCameraRef.current) {
+      mobileCameraRef.current.value = '';
+    }
+  };
+
+  const handleCameraPhoto = (file: File) => {
+    processFiles([file]);
   };
 
   const handleRemove = (id: string) => {
@@ -85,6 +95,16 @@ export const AttachmentPicker: React.FC<Props> = ({
         type="file"
         multiple
         accept="image/*,.pdf,.docx,.doc,.xlsx,.xls,.csv,.pptx,.ppt,.txt,.json,.zip,.rar"
+        className="hidden"
+        onChange={handleFileInputChange}
+        disabled={disabled}
+      />
+      {/* HIDDEN DIRECT MOBILE CAMERA INPUT */}
+      <input
+        ref={mobileCameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
         className="hidden"
         onChange={handleFileInputChange}
         disabled={disabled}
@@ -123,6 +143,17 @@ export const AttachmentPicker: React.FC<Props> = ({
         >
           <ImageIcon className="w-3.5 h-3.5 text-[#22D39F]" />
           <span>Image / Screenshot</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setIsCameraOpen(true)}
+          disabled={disabled || attachments.length >= maxFiles}
+          className="px-3 py-1.5 rounded-full bg-[#102D30] hover:bg-[#22D39F] text-[#22D39F] hover:text-[#0E1120] border border-[#22D39F]/40 text-[11px] font-black flex items-center gap-1.5 shadow-inner transition-all cursor-pointer disabled:opacity-50"
+          title="Click Picture with Camera"
+        >
+          <Camera className="w-3.5 h-3.5" />
+          <span>Click Picture</span>
         </button>
 
         {attachments.length > 0 && (
@@ -184,6 +215,15 @@ export const AttachmentPicker: React.FC<Props> = ({
           })}
         </div>
       )}
+
+      {/* CAMERA CAPTURE MODAL */}
+      <CameraCaptureModal
+        isOpen={isCameraOpen}
+        onClose={() => setIsCameraOpen(false)}
+        onCapture={handleCameraPhoto}
+        title="Capture Photo Attachment"
+        categoryLabel="Message Attachment"
+      />
     </div>
   );
 };

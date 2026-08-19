@@ -1,6 +1,8 @@
 {
   "name": "HRA Accountant",
   "description": "HRA Accountant Files Manager and Secure Portal with AI OCR extraction, Google Tasks, user management, and multi-format document ingestion.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": [
+    "camera"
+  ],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
